@@ -1,10 +1,10 @@
 ---
 change_id: private-garden-storage-boundary
 title: Minimalny prywatny zapis działki
-status: implemented
+status: archived
 created: 2026-09-23
 updated: 2026-09-24
-archived_at: null
+archived_at: 2026-09-24T21:08:08Z
 ---
 
 ## Notes

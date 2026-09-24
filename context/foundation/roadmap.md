@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-23
+updated: 2026-09-24
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -39,7 +39,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
-| F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | in-progress |
+| F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | ready |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | proposed |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | blocked |
@@ -80,7 +80,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Wczesne ustalenie granicy właściciela ogranicza ryzyko ujawnienia cudzej działki; zbyt szeroki model danych spowolniłby główny przepływ.
-- **Status:** in-progress
+- **Status:** done
 
 ## Slices
 
@@ -196,4 +196,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 
 ## Done
 
-(Puste przy pierwszej generacji. `/10x-archive` dopisuje tu elementy po zarchiwizowaniu zmian.)
+- **F-01: (foundation) Można trwale zapisać minimalny rekord jednej działki i powiązać go z właścicielem konta; skrzynie, katalog upraw i reguły planowania będą dodawane w pionowych funkcjach.** — Archived 2026-09-24 → `context/archive/2026-09-23-private-garden-storage-boundary/`. Lesson: —.
