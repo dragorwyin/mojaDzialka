@@ -151,4 +151,4 @@ Wymóg PRD dotyczący zablokowanych kont nie jest realizowany przez F-01. Zanim 
 
 #### Manual
 
-- [x] 2.4 W wynikach joba CI widać osobny krok `npm run test:db` przed dotychczasowym buildem i smoke testem.
+- [x] 2.4 W wynikach joba CI widać osobny krok `npm run test:db` przed dotychczasowym buildem i smoke testem. — fa7ae0c
