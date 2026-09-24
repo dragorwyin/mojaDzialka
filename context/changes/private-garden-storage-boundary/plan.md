@@ -145,9 +145,9 @@ Wymóg PRD dotyczący zablokowanych kont nie jest realizowany przez F-01. Zanim 
 
 #### Automated
 
-- [ ] 2.1 `npm run test:db` stosuje migracje od zera i przechodzi wszystkie asercje pgTAP.
+- [x] 2.1 `npm run test:db` stosuje migracje od zera i przechodzi wszystkie asercje pgTAP.
 - [ ] 2.2 Job `smoke` w CI przechodzi z testami DB oraz dotychczasowym smoke testem aplikacji.
-- [ ] 2.3 Job zatrzymuje lokalne Supabase także po niepowodzeniu testów.
+- [x] 2.3 Job zatrzymuje lokalne Supabase także po niepowodzeniu testów.
 
 #### Manual
 
