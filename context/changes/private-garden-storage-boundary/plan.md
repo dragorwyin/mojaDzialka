@@ -139,7 +139,7 @@ Wymóg PRD dotyczący zablokowanych kont nie jest realizowany przez F-01. Zanim 
 
 #### Automated
 
-- [x] 1.1 `supabase db reset --local --no-seed` stosuje migrację na pustej lokalnej bazie bez błędu.
+- [x] 1.1 `supabase db reset --local --no-seed` stosuje migrację na pustej lokalnej bazie bez błędu. — 423a260
 
 ### Phase 2: Testy DB i integracja CI
 
