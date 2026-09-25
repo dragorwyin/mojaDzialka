@@ -52,7 +52,7 @@ const steps = [
     { status: 302, location: "/auth/signup?error=password_too_short" },
   ],
   [
-    "signup creates account",
+    "signup succeeds without email confirmation and creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password, confirmPassword: password } }),
     { status: 302, location: "/dashboard" },
   ],
@@ -66,12 +66,20 @@ const steps = [
   [
     "signin rejects wrong password",
     () => request("/api/auth/signin", { method: "POST", form: { email, password: "wrong", returnTo: "/dashboard" } }),
-    { status: 302, location: "/auth/signin?error=signin_failed&returnTo=%2Fdashboard" },
+    {
+      status: 302,
+      location: "/auth/signin?error=signin_failed&returnTo=%2Fdashboard",
+      locationExcludes: ["Invalid login credentials"],
+    },
   ],
   [
     "wrong-password error displays a generic signin message",
     () => request("/auth/signin?error=signin_failed&returnTo=%2Fdashboard"),
-    { status: 200, includes: "Email or password is incorrect.", excludes: "signin_failed" },
+    {
+      status: 200,
+      includes: "Email or password is incorrect.",
+      excludes: ["signin_failed", "Invalid login credentials"],
+    },
   ],
   [
     "signin accepts correct password and returns to requested dashboard",
@@ -123,8 +131,13 @@ for (const [name, run, expected] of steps) {
   const ok =
     actual.status === expected.status &&
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&
+    (expected.locationExcludes === undefined ||
+      expected.locationExcludes.every((text) => !decodeURIComponent(actual.location).includes(text))) &&
     (expected.includes === undefined || actual.body.includes(expected.includes)) &&
-    (expected.excludes === undefined || !actual.body.includes(expected.excludes));
+    (expected.excludes === undefined ||
+      (Array.isArray(expected.excludes)
+        ? expected.excludes.every((text) => !actual.body.includes(text))
+        : !actual.body.includes(expected.excludes)));
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
