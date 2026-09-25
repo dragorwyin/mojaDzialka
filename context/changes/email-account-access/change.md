@@ -1,7 +1,7 @@
 ---
 change_id: email-account-access
 title: Email account access
-status: plan_reviewed
+status: impl_reviewed
 created: 2026-09-24
 updated: 2026-09-25
 archived_at: null

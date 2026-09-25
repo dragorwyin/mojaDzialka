@@ -93,6 +93,14 @@ Wyrównać walidację i komunikaty między UI, endpointami oraz sesją Supabase.
 
 **Contract**: Żaden aktywny link ani endpoint rejestracji nie wymaga potwierdzenia adresu. Strony auth prezentują wyłącznie komunikaty z allowlisty kodów błędów, a nieznane wartości query zastępują ogólnym komunikatem. Ekran potwierdzenia może zostać usunięty po sprawdzeniu, że nie ma innych odwołań. README opisuje aktualny przepływ signup i nie przedstawia `/auth/confirm-email` jako ekranu po udanej rejestracji.
 
+#### 5. Współdzielone narzędzia auth
+
+**File**: `src/lib/auth-utils.ts`
+
+**Intent**: Centralizować mapowanie kodów błędów auth na kontrolowane komunikaty oraz walidację bezpiecznego lokalnego `returnTo`, używane przez endpointy i strony auth.
+
+**Contract**: Nieznany kod błędu wyświetla komunikat ogólny; niepoprawny `returnTo` kończy się na `/dashboard`, a prawidłowy zachowuje wyłącznie lokalną ścieżkę, query i hash.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -194,19 +202,19 @@ Zmiana nie wymaga migracji bazy. Istniejące konta i sesje Supabase pozostają b
 
 #### Automated
 
-- [ ] 1.1 Walidacja formularza rejestracji i endpointu odrzuca hasło krótsze niż 8 znaków.
-- [ ] 1.2 Endpointy signup i signin nie przekazują surowych komunikatów Supabase w adresie ani do interfejsu.
-- [ ] 1.3 `npm run lint` przechodzi.
-- [ ] 1.4 `npx astro check` przechodzi.
-- [ ] 1.8 Niepoprawne wartości `returnTo` — pełny URL, `//obcy-host` lub wartość z backslashem — prowadzą do `/dashboard`.
-- [ ] 1.9 Nieznany lub dowolny parametr `?error=` na stronach auth pokazuje wyłącznie ogólny komunikat.
+- [x] 1.1 Walidacja formularza rejestracji i endpointu odrzuca hasło krótsze niż 8 znaków.
+- [x] 1.2 Endpointy signup i signin nie przekazują surowych komunikatów Supabase w adresie ani do interfejsu.
+- [x] 1.3 `npm run lint` przechodzi.
+- [x] 1.4 `npx astro check` przechodzi.
+- [x] 1.8 Niepoprawne wartości `returnTo` — pełny URL, `//obcy-host` lub wartość z backslashem — prowadzą do `/dashboard`.
+- [x] 1.9 Nieznany lub dowolny parametr `?error=` na stronach auth pokazuje wyłącznie ogólny komunikat.
 
 #### Manual
 
-- [ ] 1.5 Rejestracja poprawnym adresem i hasłem tworzy sesję i otwiera `/dashboard` bez ekranu potwierdzenia.
-- [ ] 1.6 Logowanie z błędnym hasłem pokazuje ogólny komunikat, a nie surowy błąd dostawcy.
-- [ ] 1.7 Logowanie po wejściu na chronioną ścieżkę wraca do niej; zwykłe logowanie kończy się na `/dashboard`.
-- [ ] 1.10 README wymienia aktualne trasy auth i nie opisuje potwierdzenia e-mail jako kroku po rejestracji.
+- [x] 1.5 Rejestracja poprawnym adresem i hasłem tworzy sesję i otwiera `/dashboard` bez ekranu potwierdzenia.
+- [x] 1.6 Logowanie z błędnym hasłem pokazuje ogólny komunikat, a nie surowy błąd dostawcy.
+- [x] 1.7 Logowanie po wejściu na chronioną ścieżkę wraca do niej; zwykłe logowanie kończy się na `/dashboard`.
+- [x] 1.10 README wymienia aktualne trasy auth i nie opisuje potwierdzenia e-mail jako kroku po rejestracji.
 
 ### Phase 2: Testy przepływu i gotowość produkcyjna
 
