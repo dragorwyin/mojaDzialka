@@ -40,7 +40,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
-| S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | ready |
+| S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | planning |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | proposed |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | blocked |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
@@ -94,7 +94,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** Skonfigurowanie produkcyjnych sekretów Supabase i adresów przekierowań; plan wdrożenia wskazuje, że nadal tego brakuje.
 - **Unknowns:** —
 - **Risk:** Gotowy szkielet ogranicza zakres, ale brak konfiguracji produkcyjnej może opóźnić sprawdzenie logowania na wdrożeniu.
-- **Status:** ready
+- **Status:** planning
 
 ### S-02: Prywatna działka i jej wymiary
 
