@@ -40,7 +40,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
-| S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | in-progress |
+| S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | proposed |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | blocked |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
@@ -94,7 +94,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** Skonfigurowanie produkcyjnych sekretów Supabase i adresów przekierowań; plan wdrożenia wskazuje, że nadal tego brakuje.
 - **Unknowns:** —
 - **Risk:** Gotowy szkielet ogranicza zakres, ale brak konfiguracji produkcyjnej może opóźnić sprawdzenie logowania na wdrożeniu.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Prywatna działka i jej wymiary
 
@@ -197,3 +197,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 ## Done
 
 - **F-01: (foundation) Można trwale zapisać minimalny rekord jednej działki i powiązać go z właścicielem konta; skrzynie, katalog upraw i reguły planowania będą dodawane w pionowych funkcjach.** — Archived 2026-09-24 → `context/archive/2026-09-23-private-garden-storage-boundary/`. Lesson: —.
+- **S-01: Użytkownik może samodzielnie założyć konto oraz logować się adresem e-mail i hasłem.** — Archived 2026-09-25 → `context/archive/2026-09-24-email-account-access/`. Lesson: —.

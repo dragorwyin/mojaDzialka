@@ -1,10 +1,10 @@
 ---
 change_id: email-account-access
 title: Email account access
-status: impl_reviewed
+status: archived
 created: 2026-09-24
 updated: 2026-09-25
-archived_at: null
+archived_at: 2026-09-25T16:34:12Z
 ---
 
 ## Notes
