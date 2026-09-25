@@ -97,10 +97,35 @@ Pozostaje ustawić produkcyjne sekrety `SUPABASE_URL` i `SUPABASE_KEY`. Do tego 
 funkcje uwierzytelniania pozostają wyłączone. Sekretów nie ma lokalnie w środowisku
 agenta i nie należy przekazywać ich w rozmowie.
 
-## Ręczne bramki
+## Ręczne bramki auth
+
+Przed uznaniem produkcyjnego auth za gotowy operator wykonuje poniższe kontrole
+w Cloudflare i Supabase. Wartości sekretów pozostają poza repozytorium, logami,
+zrzutami ekranu i rozmową — nie należy ich wyświetlać ani wklejać podczas
+raportowania wyniku.
+
+1. W ustawieniach produkcyjnego Workera `moja-dzialka-prod` sprawdzić, że
+   skonfigurowano oba sekrety `SUPABASE_URL` i `SUPABASE_KEY` oraz że wskazują
+   właściwy produkcyjny projekt Supabase. Kontrola dotyczy obecności i celu
+   sekretów; nie ujawniać ich wartości.
+2. W ustawieniach Authentication projektu Supabase sprawdzić minimalną długość
+   hasła równą co najmniej 8 znaków oraz wyłączone wymaganie potwierdzenia
+   adresu e-mail przed logowaniem (`Confirm email` / `enable_confirmations`).
+3. W preview ręcznie sprawdzić rejestrację bez linku e-mailowego, logowanie,
+   dostęp do `/dashboard` i wylogowanie. Nie używać danych prawdziwego
+   użytkownika.
+
+Smoke test `scripts/smoke.mjs` uruchamiać wyłącznie przeciwko lokalnemu preview,
+nigdy przeciwko produkcji. Jeśli produkcyjna rejestracja jest wyjątkowo
+konieczna i zatwierdzona, użyć dedykowanego syntetycznego konta testowego, a po
+teście usunąć je z Supabase Authentication.
+
+SMTP oraz redirect URL-e używane przez linki potwierdzające lub resetujące
+hasło są odłożone, dopóki takie przepływy nie zostaną włączone. Bieżący signup
+nie wymaga wysyłania wiadomości e-mail.
+
+Pozostałe bramki wdrożeniowe:
 
 - konto Cloudflare i uprawnienia do konkretnego Workera;
-- utworzenie lub wskazanie produkcyjnego projektu Supabase;
-- konfiguracja redirect URL-i Supabase po poznaniu adresu Workera;
-- zatwierdzenie publikacji produkcyjnej po smoke teście;
-- osobne sekrety i projekt Supabase dla preview.
+- osobny nieprodukcyjny projekt Supabase i osobne sekrety dla preview;
+- zatwierdzenie publikacji produkcyjnej po testach.
