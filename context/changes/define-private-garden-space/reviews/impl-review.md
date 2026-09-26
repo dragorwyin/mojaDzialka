@@ -53,4 +53,4 @@
 
 ## Manual Verification
 
-- Authenticated add/edit/delete/save flow remains pending because local Supabase was unavailable; the plan's manual Progress rows stay unchecked.
+- User confirmed the authenticated add/edit/delete/save flow, required-field validation and logout; the attached screenshot shows the multi-space form with persisted values.
