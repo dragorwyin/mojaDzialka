@@ -160,8 +160,8 @@ Migracja jest addytywna i korzysta z istniejącej tabeli `gardens`. Usunięcie d
 
 #### Automated
 
-- [ ] 1.1 Migracje nakładają się na lokalnej bazie bez błędu: `npx supabase db reset --local --no-seed`.
-- [ ] 1.2 Testy migracji, constraintów i RLS przechodzą: `npm run test:db`.
+- [x] 1.1 Migracje nakładają się na lokalnej bazie bez błędu: `npx supabase db reset --local --no-seed`.
+- [x] 1.2 Testy migracji, constraintów i RLS przechodzą: `npm run test:db`.
 
 #### Manual
 

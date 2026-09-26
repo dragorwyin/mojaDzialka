@@ -27,9 +27,9 @@
 - **Impact**: 🏃 LOW — szybka, wąska weryfikacja po zmianie środowiska
 - **Dimension**: Success Criteria
 - **Location**: `supabase/tests/garden_spaces.test.sql`
-- **Detail**: `npm run test:db` nie uruchomił się, ponieważ Supabase CLI nie połączył się z Docker API (`dockerDesktopLinuxEngine` nie działa). Migracja i testy są zapisane, ale wynik pgTAP pozostaje niezweryfikowany lokalnie.
-- **Fix**: Uruchomić Docker Desktop i ponowić `npm run test:db` albo odczytać wynik joba CI.
-- **Decision**: PENDING
+- **Detail**: Pierwsze uruchomienie wykryło rozbieżność licznika pgTAP (plan 20, wykonano 19). Po korekcie deklaracji planu test uruchomił Docker, zastosował obie migracje i przeszedł 37/37 asercji.
+- **Fix**: Skorygowano licznik `select plan(19)` i ponowiono `npm run test:db`.
+- **Decision**: FIXED
 
 ### F2 — Pełny `astro check` nie działa w lokalnym środowisku Windows
 
@@ -48,7 +48,7 @@
 - `npm run build` — PASS; SSR build Astro/Cloudflare zakończony poprawnie.
 - `git diff --check` — PASS.
 - Smoke HTTP `GET /garden` bez sesji — PASS, `302` do `/auth/signin?returnTo=%2Fgarden`.
-- `npm run test:db` — BLOCKED: brak działającego Docker Desktop.
+- `npm run test:db` — PASS po korekcie planu pgTAP; 2 pliki, 37 testów.
 - `npx astro check` — BLOCKED: lokalny błąd `source-map-js`/Vite.
 
 ## Manual Verification
