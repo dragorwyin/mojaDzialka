@@ -173,7 +173,7 @@ Migracja jest addytywna i korzysta z istniejącej tabeli `gardens`. Usunięcie d
 
 - [ ] 2.1 Type checking Astro przechodzi: `npx astro check`.
 - [ ] 2.2 Lint aplikacji przechodzi: `npm run lint`.
-- [x] 2.3 Produkcyjny build SSR przechodzi: `npm run build`.
+- [x] 2.3 Produkcyjny build SSR przechodzi: `npm run build`. — 28c477d
 
 #### Manual
 
