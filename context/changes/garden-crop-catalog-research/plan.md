@@ -275,13 +275,13 @@ Brak migracji bazy i brak zmiany istniejących danych. Statyczny moduł jest św
 
 #### Automated
 
-- [x] 3.1 npm run test:unit przechodzi bez błędów.
-- [x] 3.2 npm run lint przechodzi bez nowych ostrzeżeń lub błędów związanych z katalogiem.
-- [x] 3.3 npm run build przechodzi z nowym modułem i testową zależnością.
-- [x] 3.4 Istniejące supabase/tests/gardens.test.sql pozostaje niezmienione, a zakres diffu obejmuje tylko pliki katalogu, repository, testów i package manifestów.
+- [x] 3.1 npm run test:unit przechodzi bez błędów. — aa31ada
+- [x] 3.2 npm run lint przechodzi bez nowych ostrzeżeń lub błędów związanych z katalogiem. — aa31ada
+- [x] 3.3 npm run build przechodzi z nowym modułem i testową zależnością. — aa31ada
+- [x] 3.4 Istniejące supabase/tests/gardens.test.sql pozostaje niezmienione, a zakres diffu obejmuje tylko pliki katalogu, repository, testów i package manifestów. — aa31ada
 
 #### Manual
 
-- [x] 3.5 Przegląd test outputu i przykładowych rekordów potwierdza, że ostrzeżenia są opisowe, a nie blokujące.
-- [x] 3.6 Przegląd ręczny potwierdza brak rankingu, brak pseudonaukowych twierdzeń i brak danych użytkownika w katalogu.
-- [x] 3.7 Dashboard, auth i prywatna granica gardens nie zostały dotknięte.
+- [x] 3.5 Przegląd test outputu i przykładowych rekordów potwierdza, że ostrzeżenia są opisowe, a nie blokujące. — aa31ada
+- [x] 3.6 Przegląd ręczny potwierdza brak rankingu, brak pseudonaukowych twierdzeń i brak danych użytkownika w katalogu. — aa31ada
+- [x] 3.7 Dashboard, auth i prywatna granica gardens nie zostały dotknięte. — aa31ada
