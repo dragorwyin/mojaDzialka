@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-25
+updated: 2026-09-26
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -41,7 +41,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | --- | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
-| S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | proposed |
+| S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | ready |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | blocked |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | blocked |
@@ -106,7 +106,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Ta funkcja daje planerowi rzeczywiste wymiary do obliczeń; ograniczenie do jednej działki utrzymuje zakres zgodny z MVP.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-03: Wybór warzyw i proporcji
 
@@ -115,9 +115,9 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **PRD refs:** FR-004
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-02
-- **Blockers:** —
+- **Blockers:** Ukończenie researchu katalogu 30 kandydatów i jego źródeł (`garden-crop-catalog-research`).
 - **Unknowns:**
-  - Które warzywa obejmuje początkowy ręcznie zweryfikowany katalog i jakie źródło potwierdza ich dane? — Owner: team. Block: yes.
+  - Które pozycje z katalogu kandydackiego przechodzą do ręcznie zweryfikowanego katalogu MVP i jakie źródła są dla nich akceptacyjne? — Owner: team. Block: yes.
 - **Risk:** Katalog jest konieczny do pierwszego planu; jego rozszerzanie przed sprawdzeniem głównego przepływu zwiększyłoby zakres bez potwierdzonej wartości.
 - **Status:** blocked
 
@@ -130,7 +130,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:**
-  - Jak planer ma interpretować liczbową proporcję roślin? Wartości typu „2” i „1” nie mają jeszcze określonego przełożenia na proponowany układ. — Owner: user. Block: yes.
+  - Jak planer ma interpretować liczbową proporcję roślin? Wartości typu „2” i „1” zostaną przeliczone na podstawie katalogu, rozstawy i reguł sąsiedztwa z osobnego researchu; nie ustalono jeszcze algorytmu alokacji powierzchni. — Owner: team. Block: yes.
 - **Risk:** To główna obietnica produktu i najbardziej ryzykowna reguła; pokazanie konfliktów zamiast ukrywania ich ogranicza ryzyko wprowadzenia użytkownika w błąd.
 - **Status:** blocked
 
@@ -142,9 +142,8 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Prerequisites:** F-01, S-04
 - **Parallel with:** S-06
 - **Blockers:** —
-- **Unknowns:**
-  - Co dzieje się z poprzednim planem po przeliczeniu kolejnego sezonu: jest archiwizowany czy zastępowany? — Owner: user. Block: yes.
-- **Risk:** Pełne przeliczenie jest zgodne z przyjętym zakazem ręcznego przesuwania roślin; zasada zachowania planu z poprzedniego sezonu musi być jasna przed zmianą danych.
+- **Resolved decision:** W MVP nowe przeliczenie zastępuje poprzedni plan; archiwizacja historii sezonów jest poza obecnym zakresem.
+- **Risk:** Pełne przeliczenie jest zgodne z przyjętym zakazem ręcznego przesuwania roślin; zastępowanie poprzedniego planu utrzymuje MVP bez wersjonowania historii.
 - **Status:** blocked
 
 ### S-06: Terminy siewu i przygotowania rozsady
@@ -156,7 +155,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Parallel with:** S-05
 - **Blockers:** —
 - **Unknowns:**
-  - Jakie zweryfikowane źródło danych wyznacza orientacyjne terminy dla warunków w Polsce? — Owner: team. Block: yes.
+  - Jakie zweryfikowane źródła i okna miesięczne wyznaczają orientacyjne terminy dla warunków w Polsce? Research wskazał kandydatów, ale wymaga jeszcze adjudykacji źródeł przed zapisaniem danych produkcyjnych. — Owner: team. Block: yes.
   - W jaki sposób użytkownik otrzymuje przypomnienia o pracach? — Owner: user. Block: no.
 - **Risk:** Orientacyjne okna są zgodne z PRD i nie obiecują dokładności co do dnia; źródło danych musi być sprawdzone, zanim terminy trafią do użytkownika.
 - **Status:** blocked
@@ -167,18 +166,17 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | Minimalny prywatny zapis działki | yes | Fundament wymagany przez gwiazdę przewodnią S-04. |
 | S-01 | email-account-access | Rejestracja i logowanie e-mailem | yes | Konfiguracja produkcyjnych sekretów Supabase pozostaje zewnętrzną blokadą wdrożenia. |
-| S-02 | define-private-garden-space | Utworzenie działki i konfiguracja wymiarów | no | Wymaga F-01 i S-01. |
-| S-03 | select-crops-and-proportions | Wybór warzyw i proporcji | no | Zablokowane do ustalenia zakresu i źródła katalogu. |
-| S-04 | generate-garden-layout | Generowanie układu z konfliktami i wolnym miejscem | no | Zablokowane do ustalenia znaczenia proporcji. |
-| S-05 | update-and-recalculate-plan | Zmiana danych i pełne przeliczenie planu | no | Zablokowane do ustalenia losu planu z poprzedniego sezonu. |
-| S-06 | show-sowing-and-seedling-dates | Terminy siewu i przygotowania rozsady | no | Zablokowane do wskazania źródła zweryfikowanych terminów. |
+| S-02 | define-private-garden-space | Utworzenie działki i konfiguracja wymiarów | yes | F-01 i S-01 są ukończone; to następny krok do zaplanowania. |
+| S-03 | select-crops-and-proportions | Wybór warzyw i proporcji | no | Research kandydatów istnieje; trzeba zatwierdzić zakres i źródła katalogu MVP. |
+| S-04 | generate-garden-layout | Generowanie układu z konfliktami i wolnym miejscem | no | Wymaga katalogu, rozstawy i reguły przeliczenia proporcji na powierzchnię. |
+| S-05 | update-and-recalculate-plan | Zmiana danych i pełne przeliczenie planu | no | W MVP nowe przeliczenie zastępuje poprzedni plan; funkcja nadal zależy od S-04. |
+| S-06 | show-sowing-and-seedling-dates | Terminy siewu i przygotowania rozsady | no | Wymaga adjudykacji źródeł i zapisania okien terminów dla Polski. |
 
 ## Open Roadmap Questions
 
-1. **Jak planer ma interpretować liczbową proporcję roślin?** — Wartości typu „2” i „1” nie mają jeszcze określonego przełożenia na proponowany układ. Owner: użytkownik. Rozstrzygnąć przed ustaleniem reguł generowania planu. Block: S-04.
-2. **Co dzieje się z poprzednim planem po przeliczeniu kolejnego sezonu?** — Użytkownik podkreślił znaczenie prywatnej historii, ale nie ustalono, czy stare sezony mają być zachowane jako archiwum, czy zastępowane nowym planem. Owner: użytkownik. Block: S-05.
-3. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
-4. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
+1. **Jak planer ma interpretować liczbową proporcję roślin?** — Wartości typu „2” i „1” zostaną przeliczone na podstawie katalogu, rozstawy i reguł sąsiedztwa z osobnego researchu. Owner: team. Rozstrzygnąć przed ustaleniem reguł generowania planu. Block: S-04.
+2. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
+3. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
 
 ## Parked
 
