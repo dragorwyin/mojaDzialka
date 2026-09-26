@@ -263,25 +263,25 @@ Brak migracji bazy i brak zmiany istniejących danych. Statyczny moduł jest św
 
 #### Automated
 
-- [x] 2.1 TypeScript/ Astro check przechodzi dla repository i publicznego kontraktu.
-- [x] 2.2 Repository zwraca wszystkie 30 rekordów, wyszukuje polskie nazwy i aliasy oraz zachowuje neutralne sortowanie.
+- [x] 2.1 TypeScript/ Astro check przechodzi dla repository i publicznego kontraktu. — bfe6b5a
+- [x] 2.2 Repository zwraca wszystkie 30 rekordów, wyszukuje polskie nazwy i aliasy oraz zachowuje neutralne sortowanie. — bfe6b5a
 
 #### Manual
 
-- [x] 2.3 Odczyt pary znanej, ostrzegawczej i nieopisanej pokazuje odpowiednio supported/caution/unknown wraz z uzasadnieniem i źródłami.
-- [x] 2.4 Zmiana implementacji danych na potrzeby testu nie wymaga zmian w kontrakcie repository; consumer nie importuje tablicy bezpośrednio.
+- [x] 2.3 Odczyt pary znanej, ostrzegawczej i nieopisanej pokazuje odpowiednio supported/caution/unknown wraz z uzasadnieniem i źródłami. — bfe6b5a
+- [x] 2.4 Zmiana implementacji danych na potrzeby testu nie wymaga zmian w kontrakcie repository; consumer nie importuje tablicy bezpośrednio. — bfe6b5a
 
 ### Phase 3: Testy i bramka jakości
 
 #### Automated
 
-- [ ] 3.1 npm run test:unit przechodzi bez błędów.
-- [ ] 3.2 npm run lint przechodzi bez nowych ostrzeżeń lub błędów związanych z katalogiem.
-- [ ] 3.3 npm run build przechodzi z nowym modułem i testową zależnością.
-- [ ] 3.4 Istniejące supabase/tests/gardens.test.sql pozostaje niezmienione, a zakres diffu obejmuje tylko pliki katalogu, repository, testów i package manifestów.
+- [x] 3.1 npm run test:unit przechodzi bez błędów.
+- [x] 3.2 npm run lint przechodzi bez nowych ostrzeżeń lub błędów związanych z katalogiem.
+- [x] 3.3 npm run build przechodzi z nowym modułem i testową zależnością.
+- [x] 3.4 Istniejące supabase/tests/gardens.test.sql pozostaje niezmienione, a zakres diffu obejmuje tylko pliki katalogu, repository, testów i package manifestów.
 
 #### Manual
 
-- [ ] 3.5 Przegląd test outputu i przykładowych rekordów potwierdza, że ostrzeżenia są opisowe, a nie blokujące.
-- [ ] 3.6 Przegląd ręczny potwierdza brak rankingu, brak pseudonaukowych twierdzeń i brak danych użytkownika w katalogu.
-- [ ] 3.7 Dashboard, auth i prywatna granica gardens nie zostały dotknięte.
+- [x] 3.5 Przegląd test outputu i przykładowych rekordów potwierdza, że ostrzeżenia są opisowe, a nie blokujące.
+- [x] 3.6 Przegląd ręczny potwierdza brak rankingu, brak pseudonaukowych twierdzeń i brak danych użytkownika w katalogu.
+- [x] 3.7 Dashboard, auth i prywatna granica gardens nie zostały dotknięte.
