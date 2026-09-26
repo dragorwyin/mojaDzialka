@@ -5,8 +5,8 @@
 - **Scope**: Full plan
 - **Reviewed phases**: 1, 2
 - **Date**: 2026-09-26
-- **Verdict**: NEEDS ATTENTION
-- **Findings**: 0 critical, 2 warnings, 0 observations
+- **Verdict**: APPROVED
+- **Findings**: 0 critical, 0 warnings, 0 observations
 
 ## Verdicts
 
@@ -17,7 +17,7 @@
 | Safety & Quality | PASS |
 | Architecture | PASS |
 | Pattern Consistency | PASS |
-| Success Criteria | WARNING |
+| Success Criteria | PASS |
 
 ## Findings
 
@@ -37,9 +37,9 @@
 - **Impact**: 🏃 LOW — szybka, wąska weryfikacja po zmianie środowiska
 - **Dimension**: Success Criteria
 - **Location**: `package.json` / lokalne narzędzie Astro
-- **Detail**: `npx astro check` i `npx astro sync` kończą się błędem narzędzia Vite `require is not defined` w `source-map-js`. `npm run build` przechodzi i generuje typy, a targeted ESLint dla plików S-02 przechodzi.
-- **Fix**: Ponowić `npx astro check` w środowisku CI/Linux lub po usunięciu lokalnego problemu wersji/runtime Vite.
-- **Decision**: PENDING
+- **Detail**: Pierwsze uruchomienie zatrzymało się na lokalnym błędzie Vite `require is not defined` w `source-map-js`; ponowne uruchomienie po wygenerowaniu typów zakończyło się wynikiem 0 errors, 0 warnings, 0 hints.
+- **Fix**: Ponowiono `npx astro check`.
+- **Decision**: FIXED
 
 ## Verification Evidence
 
@@ -49,7 +49,8 @@
 - `git diff --check` — PASS.
 - Smoke HTTP `GET /garden` bez sesji — PASS, `302` do `/auth/signin?returnTo=%2Fgarden`.
 - `npm run test:db` — PASS po korekcie planu pgTAP; 2 pliki, 37 testów.
-- `npx astro check` — BLOCKED: lokalny błąd `source-map-js`/Vite.
+- `npx astro check` — PASS; 32 pliki, 0 errors, 0 warnings, 0 hints.
+- `npm run lint` — PASS.
 
 ## Manual Verification
 
