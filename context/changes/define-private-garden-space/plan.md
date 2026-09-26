@@ -165,7 +165,7 @@ Migracja jest addytywna i korzysta z istniejącej tabeli `gardens`. Usunięcie d
 
 #### Manual
 
-- [x] 1.3 SQL/RLS nie ujawnia rekordów drugiego użytkownika i nie pozwala zmienić jego przestrzeni.
+- [x] 1.3 SQL/RLS nie ujawnia rekordów drugiego użytkownika i nie pozwala zmienić jego przestrzeni. — 7e4f805
 
 ### Phase 2: Chroniony przepływ konfiguracji
 
@@ -177,5 +177,5 @@ Migracja jest addytywna i korzysta z istniejącej tabeli `gardens`. Usunięcie d
 
 #### Manual
 
-- [x] 2.4 Zalogowany użytkownik może dodać, edytować, usunąć i zapisać wiele skrzyń/sektorów, a dane utrzymują się po odświeżeniu.
-- [x] 2.5 Walidacja i ochrona `/garden` odrzucają błędne dane oraz niezalogowanego użytkownika.
+- [x] 2.4 Zalogowany użytkownik może dodać, edytować, usunąć i zapisać wiele skrzyń/sektorów, a dane utrzymują się po odświeżeniu. — 7e4f805
+- [x] 2.5 Walidacja i ochrona `/garden` odrzucają błędne dane oraz niezalogowanego użytkownika. — 7e4f805
