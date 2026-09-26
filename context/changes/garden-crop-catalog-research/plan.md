@@ -251,25 +251,25 @@ Brak migracji bazy i brak zmiany istniejących danych. Statyczny moduł jest św
 
 #### Automated
 
-- [x] 1.1 TypeScript/ Astro check przechodzi dla nowego modułu i wszystkich jego eksportów.
-- [x] 1.2 Walidacja katalogu akceptuje dokładnie 30 unikalnych rekordów i odrzuca przykładowe niepoprawne zakresy, źródła oraz relacje.
+- [x] 1.1 TypeScript/ Astro check przechodzi dla nowego modułu i wszystkich jego eksportów. — 0a59697
+- [x] 1.2 Walidacja katalogu akceptuje dokładnie 30 unikalnych rekordów i odrzuca przykładowe niepoprawne zakresy, źródła oraz relacje. — 0a59697
 
 #### Manual
 
-- [x] 1.3 Przegląd próby obejmującej roślinę ciepłolubną, korzeniową, liściową, czosnek i relację sprzeczną między źródłami potwierdza obecność źródła, kontekstu i poziomu pewności.
-- [x] 1.4 Lista nie jest sortowana według A/B, popularności, plonu ani rzekomej jakości.
+- [x] 1.3 Przegląd próby obejmującej roślinę ciepłolubną, korzeniową, liściową, czosnek i relację sprzeczną między źródłami potwierdza obecność źródła, kontekstu i poziomu pewności. — 0a59697
+- [x] 1.4 Lista nie jest sortowana według A/B, popularności, plonu ani rzekomej jakości. — 0a59697
 
 ### Phase 2: Repository odczytu katalogu
 
 #### Automated
 
-- [ ] 2.1 TypeScript/ Astro check przechodzi dla repository i publicznego kontraktu.
-- [ ] 2.2 Repository zwraca wszystkie 30 rekordów, wyszukuje polskie nazwy i aliasy oraz zachowuje neutralne sortowanie.
+- [x] 2.1 TypeScript/ Astro check przechodzi dla repository i publicznego kontraktu.
+- [x] 2.2 Repository zwraca wszystkie 30 rekordów, wyszukuje polskie nazwy i aliasy oraz zachowuje neutralne sortowanie.
 
 #### Manual
 
-- [ ] 2.3 Odczyt pary znanej, ostrzegawczej i nieopisanej pokazuje odpowiednio supported/caution/unknown wraz z uzasadnieniem i źródłami.
-- [ ] 2.4 Zmiana implementacji danych na potrzeby testu nie wymaga zmian w kontrakcie repository; consumer nie importuje tablicy bezpośrednio.
+- [x] 2.3 Odczyt pary znanej, ostrzegawczej i nieopisanej pokazuje odpowiednio supported/caution/unknown wraz z uzasadnieniem i źródłami.
+- [x] 2.4 Zmiana implementacji danych na potrzeby testu nie wymaga zmian w kontrakcie repository; consumer nie importuje tablicy bezpośrednio.
 
 ### Phase 3: Testy i bramka jakości
 
