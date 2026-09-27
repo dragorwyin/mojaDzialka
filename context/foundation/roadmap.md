@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-27
+updated: 2026-09-28
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -42,7 +42,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | done |
-| S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | in-progress |
+| S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | done |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | blocked |
 | S-06 | show-sowing-and-seedling-dates | Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac w sezonie. | F-01, S-03, S-04 | FR-008, US-01 | blocked |
@@ -118,7 +118,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Użytkownik zaakceptował 30 warzyw jako kuratorowany, nierankingowy katalog MVP na podstawie własnej obserwacji. Nie przedstawiać go jako potwierdzonego ogólnopolskiego rankingu; walidacja rozstaw należy do S-04.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-04: Wygenerowanie układu warzywnika
 
@@ -198,3 +198,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **F-01: (foundation) Można trwale zapisać minimalny rekord jednej działki i powiązać go z właścicielem konta; skrzynie, katalog upraw i reguły planowania będą dodawane w pionowych funkcjach.** — Archived 2026-09-24 → `context/archive/2026-09-23-private-garden-storage-boundary/`. Lesson: —.
 - **S-01: Użytkownik może samodzielnie założyć konto oraz logować się adresem e-mail i hasłem.** — Archived 2026-09-25 → `context/archive/2026-09-24-email-account-access/`. Lesson: —.
 - **S-02: Użytkownik może utworzyć jedną prywatną działkę i podać wymiary dowolnej liczby skrzyń lub sektorów.** — Archived 2026-09-26 → `context/archive/2026-09-26-define-private-garden-space/`. Lesson: —.
+- **S-03: Użytkownik może wyszukać i wybrać warzywa z ograniczonego katalogu oraz wpisać dla każdego liczbowe proporcje.** — Archived 2026-09-27 → `context/archive/2026-09-27-select-crops-and-proportions/`. Lesson: —.
