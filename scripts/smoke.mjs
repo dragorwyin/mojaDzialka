@@ -20,7 +20,7 @@ function storeCookies(response) {
   }
 }
 
-async function request(path, { method = "GET", form } = {}) {
+async function request(path, { method = "GET", form, json } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
@@ -28,8 +28,9 @@ async function request(path, { method = "GET", form } = {}) {
       Cookie: cookieHeader(),
       Origin: BASE_URL,
       ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+      ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
     },
-    body: form ? new URLSearchParams(form).toString() : undefined,
+    body: form ? new URLSearchParams(form).toString() : json !== undefined ? JSON.stringify(json) : undefined,
   });
   storeCookies(response);
   return {
@@ -88,6 +89,56 @@ const steps = [
   ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
   [
+    "garden renders crop selection for signed-in user",
+    () => request("/garden"),
+    { status: 200, includes: "Wybór warzyw i proporcji" },
+  ],
+  [
+    "crop selection can be saved with decimal proportions",
+    () =>
+      request("/api/garden-crops", {
+        method: "POST",
+        json: [
+          { cropId: "pomidor", proportion: 2 },
+          { cropId: "marchew", proportion: 0.75 },
+        ],
+      }),
+    { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "garden renders the saved crop selection and proportions",
+    () => request("/garden"),
+    { status: 200, includes: ["pomidor", "marchew", 'value="2"', 'value="0.75"'] },
+  ],
+  [
+    "updating garden dimensions does not remove the crop selection",
+    () =>
+      request("/api/garden", {
+        method: "POST",
+        form: { spaceName: "Skrzynia testowa", spaceType: "bed", widthCm: "120", lengthCm: "80" },
+      }),
+    { status: 302, location: "/garden?saved=1" },
+  ],
+  [
+    "garden renders crops after the space list has been replaced",
+    () => request("/garden"),
+    { status: 200, includes: ["pomidor", "marchew", 'value="2"', 'value="0.75"'] },
+  ],
+  [
+    "saving an empty crop selection clears the previous selection",
+    () => request("/api/garden-crops", { method: "POST", json: [] }),
+    { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "garden renders the empty crop selection after clearing",
+    () => request("/garden"),
+    {
+      status: 200,
+      includes: "Nie wybrano jeszcze warzyw",
+      excludes: ['id="crop-proportion-pomidor"', 'id="crop-proportion-marchew"'],
+    },
+  ],
+  [
     "signout clears session before default signin",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
@@ -133,7 +184,10 @@ for (const [name, run, expected] of steps) {
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&
     (expected.locationExcludes === undefined ||
       expected.locationExcludes.every((text) => !decodeURIComponent(actual.location).includes(text))) &&
-    (expected.includes === undefined || actual.body.includes(expected.includes)) &&
+    (expected.includes === undefined ||
+      (Array.isArray(expected.includes)
+        ? expected.includes.every((text) => actual.body.includes(text))
+        : actual.body.includes(expected.includes))) &&
     (expected.excludes === undefined ||
       (Array.isArray(expected.excludes)
         ? expected.excludes.every((text) => !actual.body.includes(text))

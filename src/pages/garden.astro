@@ -1,5 +1,6 @@
 ---
 import GardenSetupForm from "@/components/garden/GardenSetupForm";
+import CropSelectionForm from "@/components/garden/CropSelectionForm";
 import Topbar from "@/components/Topbar.astro";
 import { createClient } from "@/lib/supabase";
 import Layout from "@/layouts/Layout.astro";
@@ -13,10 +14,17 @@ interface GardenSpaceRow {
   sort_order: number;
 }
 
+interface GardenCropRow {
+  crop_id: string;
+  proportion: number | string;
+}
+
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 let initialSpaces: GardenSpaceRow[] = [];
+let initialCrops: { cropId: string; proportion: string }[] = [];
 let loadError: string | null = null;
+let cropsLoadError = false;
 
 if (supabase && user) {
   const { data, error } = await supabase
@@ -26,8 +34,22 @@ if (supabase && user) {
 
   if (error) {
     loadError = "unavailable";
-  } else if (data?.garden_spaces) {
+  } else if (data) {
     initialSpaces = (data.garden_spaces as GardenSpaceRow[]).sort((left, right) => left.sort_order - right.sort_order);
+
+    const { data: cropRows, error: cropError } = await supabase
+      .from("garden_crops")
+      .select("crop_id, proportion")
+      .eq("garden_id", data.id);
+
+    if (cropError) {
+      cropsLoadError = true;
+    } else {
+      initialCrops = (cropRows as GardenCropRow[]).map((crop) => ({
+        cropId: crop.crop_id,
+        proportion: String(crop.proportion),
+      }));
+    }
   }
 }
 
@@ -61,6 +83,10 @@ const saved = Astro.url.searchParams.get("saved") === "1";
           saved={saved}
           client:load
         />
+      </section>
+
+      <section class="mt-8 rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+        <CropSelectionForm initialSelection={initialCrops} unavailable={cropsLoadError} client:load />
       </section>
     </div>
   </main>

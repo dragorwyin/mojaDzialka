@@ -170,22 +170,22 @@ Migracja jest addytywna: nie zmienia garden_spaces ani istniejących danych. Wyb
 
 #### Automated
 
-- [x] 1.1 npm run test:db przechodzi dla migracji i pgTAP sprawdzających utworzenie działki przy pierwszym zapisie, zapis właściciela, izolację drugiego użytkownika, odmowę anon, constrainty oraz zastępowanie i czyszczenie listy.
-- [x] 1.2 npm run test:unit przechodzi dla walidacji znanych ID, duplikatów i dodatnich wartości proporcji, w tym wartości dziesiętnych.
+- [x] 1.1 npm run test:db przechodzi dla migracji i pgTAP sprawdzających utworzenie działki przy pierwszym zapisie, zapis właściciela, izolację drugiego użytkownika, odmowę anon, constrainty oraz zastępowanie i czyszczenie listy. — e33cd86
+- [x] 1.2 npm run test:unit przechodzi dla walidacji znanych ID, duplikatów i dodatnich wartości proporcji, w tym wartości dziesiętnych. — e33cd86
 
 #### Manual
 
-- [x] 1.3 Przegląd schematu potwierdza, że zapis upraw jest przypisany do działki i pozostaje nienaruszony po zastąpieniu listy garden_spaces.
+- [x] 1.3 Przegląd schematu potwierdza, że zapis upraw jest przypisany do działki i pozostaje nienaruszony po zastąpieniu listy garden_spaces. — e33cd86
 
 ### Phase 2: Wybór warzyw i proporcji w /garden
 
 #### Automated
 
-- [ ] 2.1 npx astro check, npm run lint i npm run build przechodzą po połączeniu strony, formularza i endpointu.
-- [ ] 2.2 npm run test:db i npm run test:unit przechodzą z nowym przepływem bez regresji istniejących testów.
-- [ ] 2.3 npm run smoke weryfikuje chroniony odczyt oraz zapis i ponowne wyświetlenie wybranych upraw na /garden.
+- [x] 2.1 npx astro check, npm run lint i npm run build przechodzą po połączeniu strony, formularza i endpointu.
+- [x] 2.2 npm run test:db i npm run test:unit przechodzą z nowym przepływem bez regresji istniejących testów.
+- [x] 2.3 npm run smoke weryfikuje chroniony odczyt oraz zapis i ponowne wyświetlenie wybranych upraw na /garden.
 
 #### Manual
 
-- [ ] 2.4 Zalogowany użytkownik wyszukuje warzywo po nazwie oraz aliasie (także bez polskich znaków), dodaje kilka pozycji, edytuje proporcje, zapisuje i po odświeżeniu widzi te same wartości.
-- [ ] 2.5 Użytkownik może usunąć wybrane pozycje, zapisać pustą listę i wyczyścić poprzedni wybór; zapisanie nowych wymiarów działki nie usuwa wyboru upraw. Inne konto nie widzi tych danych.
+- [x] 2.4 Zalogowany użytkownik wyszukuje warzywo po nazwie oraz aliasie (także bez polskich znaków), dodaje kilka pozycji, edytuje proporcje, zapisuje i po odświeżeniu widzi te same wartości.
+- [x] 2.5 Użytkownik może usunąć wybrane pozycje, zapisać pustą listę i wyczyścić poprzedni wybór; zapisanie nowych wymiarów działki nie usuwa wyboru upraw. Inne konto nie widzi tych danych.
