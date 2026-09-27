@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-26
+updated: 2026-09-27
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -41,7 +41,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | --- | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | (foundation) Zapis jednej prywatnej działki jest przypisany do konta użytkownika. | — | FR-001, FR-002, Access Control, Non-Functional Requirements | done |
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
-| S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | ready |
+| S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | done |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | blocked |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | blocked |
@@ -106,7 +106,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Ta funkcja daje planerowi rzeczywiste wymiary do obliczeń; ograniczenie do jednej działki utrzymuje zakres zgodny z MVP.
-- **Status:** ready
+- **Status:** done
 
 ### S-03: Wybór warzyw i proporcji
 
@@ -115,9 +115,9 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **PRD refs:** FR-004
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-02
-- **Blockers:** Ukończenie researchu katalogu 30 kandydatów i jego źródeł (`garden-crop-catalog-research`).
+- **Blockers:** Potwierdzenie, czy katalog 30 źródłowo opisanych kandydatów bez reprezentatywnego rankingu popularności jest akceptowalnym zakresem MVP; część rozstaw wymaga lokalnej walidacji.
 - **Unknowns:**
-  - Które pozycje z katalogu kandydackiego przechodzą do ręcznie zweryfikowanego katalogu MVP i jakie źródła są dla nich akceptacyjne? — Owner: team. Block: yes.
+  - Czy używamy obecnych 30 kandydatów jako kuratorowanego, nierankingowego katalogu MVP, mimo że źródła nie dowodzą, iż są to reprezentatywnie 30 najpopularniejszych warzyw w Polsce? — Owner: user. Block: yes.
 - **Risk:** Katalog jest konieczny do pierwszego planu; jego rozszerzanie przed sprawdzeniem głównego przepływu zwiększyłoby zakres bez potwierdzonej wartości.
 - **Status:** blocked
 
@@ -166,8 +166,8 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 | --- | --- | --- | --- | --- |
 | F-01 | private-garden-storage-boundary | Minimalny prywatny zapis działki | yes | Fundament wymagany przez gwiazdę przewodnią S-04. |
 | S-01 | email-account-access | Rejestracja i logowanie e-mailem | yes | Konfiguracja produkcyjnych sekretów Supabase pozostaje zewnętrzną blokadą wdrożenia. |
-| S-02 | define-private-garden-space | Utworzenie działki i konfiguracja wymiarów | yes | F-01 i S-01 są ukończone; to następny krok do zaplanowania. |
-| S-03 | select-crops-and-proportions | Wybór warzyw i proporcji | no | Research kandydatów istnieje; trzeba zatwierdzić zakres i źródła katalogu MVP. |
+| S-02 | define-private-garden-space | Utworzenie działki i konfiguracja wymiarów | yes | Ukończone i zarchiwizowane w `context/archive/2026-09-26-define-private-garden-space/`. |
+| S-03 | select-crops-and-proportions | Wybór warzyw i proporcji | no | Katalog 30 rekordów jest zaimplementowany; pozostaje decyzja o nierankingowej liście kandydatów i lokalna walidacja części danych. |
 | S-04 | generate-garden-layout | Generowanie układu z konfliktami i wolnym miejscem | no | Wymaga katalogu, rozstawy i reguły przeliczenia proporcji na powierzchnię. |
 | S-05 | update-and-recalculate-plan | Zmiana danych i pełne przeliczenie planu | no | W MVP nowe przeliczenie zastępuje poprzedni plan; funkcja nadal zależy od S-04. |
 | S-06 | show-sowing-and-seedling-dates | Terminy siewu i przygotowania rozsady | no | Wymaga adjudykacji źródeł i zapisania okien terminów dla Polski. |
@@ -196,3 +196,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 
 - **F-01: (foundation) Można trwale zapisać minimalny rekord jednej działki i powiązać go z właścicielem konta; skrzynie, katalog upraw i reguły planowania będą dodawane w pionowych funkcjach.** — Archived 2026-09-24 → `context/archive/2026-09-23-private-garden-storage-boundary/`. Lesson: —.
 - **S-01: Użytkownik może samodzielnie założyć konto oraz logować się adresem e-mail i hasłem.** — Archived 2026-09-25 → `context/archive/2026-09-24-email-account-access/`. Lesson: —.
+- **S-02: Użytkownik może utworzyć jedną prywatną działkę i podać wymiary dowolnej liczby skrzyń lub sektorów.** — Archived 2026-09-26 → `context/archive/2026-09-26-define-private-garden-space/`. Lesson: —.
