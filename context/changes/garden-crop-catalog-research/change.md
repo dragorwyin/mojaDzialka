@@ -1,9 +1,9 @@
 ---
 change_id: garden-crop-catalog-research
 title: Katalog warzyw i dane do planowania sezonu
-status: preparing
+status: implemented
 created: 2026-09-26
-updated: 2026-09-26
+updated: 2026-09-27
 archived_at: null
 ---
 
