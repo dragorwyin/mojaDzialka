@@ -34,6 +34,7 @@ if (supabase && user) {
 
   if (error) {
     loadError = "unavailable";
+    cropsLoadError = true;
   } else if (data) {
     initialSpaces = (data.garden_spaces as GardenSpaceRow[]).sort((left, right) => left.sort_order - right.sort_order);
 
