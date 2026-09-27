@@ -1,10 +1,14 @@
 ---
 change_id: garden-crop-catalog-research
 status: partial
-date: 2026-09-26T22:44:20+02:00
-git_commit: 07989d905a20eb1e513f33d162bf060bd943ad98
-branch: detached
+date: 2026-09-27T13:17:45+02:00
+git_commit: 00b5cb67d7dbfb87c5c7536c993c17f373287fd3
+branch: main
+researcher: Codex
 topic: "Katalog warzyw i dane do planowania sezonu"
+last_updated: 2026-09-27
+last_updated_by: Codex
+last_updated_note: "Zapisano decyzję użytkownika: obecne 30 warzyw akceptuje jako kuratorowany katalog MVP na podstawie własnej obserwacji, bez deklaracji ogólnopolskiego rankingu; walidacja rozstaw przechodzi do S-04."
 ---
 
 # Research: katalog warzyw, terminy, rozstawy i sąsiedztwo
@@ -21,7 +25,7 @@ Reguły sąsiedztwa należy przechowywać jako wskazówki o poziomie pewności, 
 - supabase/config.toml: seed jest włączony, ale w sprawdzonym drzewie nie znaleziono supabase/seed.sql.
 - src/pages/dashboard.astro: obecnie tylko dashboard powitalny i wylogowanie; katalog nie jest jeszcze zaimplementowany.
 - PRD wymaga katalogu, rozstaw, sąsiedztwa i przybliżonego polskiego harmonogramu, bez obietnicy dokładnych dat dziennych.
-- Roadmapa wskazuje research katalogu jako blocker S-03, alokację proporcji jako nierozstrzygnięte S-04, a adjudykację źródeł harmonogramu jako S-06.
+- Początkowo research katalogu blokował S-03. Użytkownik zaakceptował obecne 30 warzyw jako kuratorowany katalog MVP na podstawie własnej obserwacji, bez deklaracji rankingu krajowego; lokalna walidacja rozstaw pozostaje do S-04, a adjudykacja źródeł harmonogramu do S-06.
 
 Wniosek implementacyjny: katalog i dane referencyjne mogą być publiczne, natomiast notatki użytkownika i plan ogrodu powinny pozostać właścicielskie. Aktualne migracje Supabase wspierają taki podział przez FK, RLS i polityki oparte na auth.uid(); to jest kontekst techniczny, nie wynik domenowego rankingu.
 
@@ -207,4 +211,32 @@ Pozostałe luki w obecnym zakresie:
 
 ## Rekomendacja do dalszego planowania
 
-Następny plan powinien użyć 30 rekordów jako seed katalogu bez sortowania po „najlepszości”, przechowywać zakresy i kontekst rozstaw, generować terminy jako okna z warunkami pogodowymi oraz pokazywać sąsiedztwo jako wyjaśnione sugestie. Pary bez solidnego dowodu powinny pozostać unknown. Przed implementacją seedów trzeba domknąć ręczną interpretację osi S6 i osobno zdecydować, czy dołączyć lokalne źródło dla ziemniaka.
+Katalog 30 warzyw jest już dostarczony jako statyczne, nierankingowe dane referencyjne. Użytkownik zaakceptował ten zestaw dla MVP na podstawie własnej obserwacji; S-03 może wykorzystać go do wyszukiwania i wyboru, bez deklaracji reprezentatywnego rankingu krajowego. Przed obliczeniami układu w S-04 trzeba zweryfikować osie rozstaw z S6 i uzupełnić brakujące lokalne wartości, w tym dla ziemniaka. Okna terminów i ich adjudykacja pozostają osobnym zakresem S-06, a relacje sąsiedztwa należy pokazywać jako wyjaśnione, nieblokujące sugestie.
+
+## Aktualizacja: dowody dla „30 najpopularniejszych warzyw” (2026-09-27)
+
+**Pytanie:** czy publiczne źródła pozwalają nazwać konkretny zestaw „30 najpopularniejszymi warzywami uprawianymi przez polskich działkowców i ogrodników domowych”? „Popularność” oznacza tu faktyczną uprawę, a nie spożycie, produkcję komercyjną ani deklarowane zainteresowanie zbiorem.
+
+**Wynik:** w przejrzanych źródłach nie znalazłem aktualnego, reprezentatywnego dla Polski rankingu gatunków faktycznie uprawianych w ogrodach domowych. Znalezione badania terenowe potwierdzają krótkie listy częstych upraw w konkretnych lokalizacjach, ale nie podstawę do krajowego rankingu 30 pozycji. Przegląd obejmował 399 limitowanych wyników Exa z 3 niezależnych strumieni badawczych; liczba ta oznacza żądane miejsca w wynikach, nie unikalne strony.
+
+### Bezpośrednie badania upraw działkowych
+
+- [Klepacki i Kujawska, *Urban Allotment Gardens in Poland*](https://journals.sagepub.com/doi/full/10.2993/0278-0771-38.1.123): inwentaryzacja roślin, wywiady i obchody działek z 46 działkowcami w Krakowie, Katowicach i Wrocławiu w 2009 r. Autorzy wymieniają pomidora, ogórka, fasolę szparagową i pietruszkę jako najważniejsze warzywa w badanej próbie. To lokalny, historyczny wynik; nie ranking całej Polski ani 30 gatunków.
+- [Bosiacki i in., *Soil Quality as a Key Factor…*](https://www.mdpi.com/2073-4395/11/9/1836): badanie gleby i marchwi z 31 działek należących do 6 z 36 ROD w Gorzowie Wielkopolskim; próbki zebrano w 2019 r. Autorzy wskazują pomidora, ogórka, marchew i buraka jako najczęstsze warzywa na badanych działkach. Zakres badania i lokalna próba nie pozwalają przenieść tej listy na krajowy ranking.
+- Analiza [danych Powszechnego Spisu Rolnego 2010 o ogrodach przydomowych](https://bibliotekanauki.pl/articles/870751.pdf) raportuje udział szerokich grup powierzchni w gospodarstwach rolnych: warzywa, ziemniaki, truskawki i inne uprawy. Dane dotyczą 2010 r. oraz wiejskich ogrodów przy gospodarstwach; nie rozbijają grupy warzyw na gatunki i nie opisują miejskich ROD.
+
+### Źródła, które nie mierzą popularności uprawy
+
+- [GUS, *Produkcja upraw rolnych i ogrodniczych w 2025 r.*](https://stat.gov.pl/files/gfx/portalinformacyjny/pl/defaultaktualnosci/5509/9/24/1/produkcja_upraw_rolnych_i_ogrodniczych_w_2025.pdf) przedstawia produkcję warzyw gruntowych, ale jawnie wyłącza powierzchnię ogrodów przydomowych. Ranking areału lub zbiorów komercyjnych nie jest rankingiem warzyw sadzonych przez gospodarstwa domowe.
+- [GUS, *Budżety gospodarstw domowych w 2024 r.*](https://stat.gov.pl/files/gfx/portalinformacyjny/pl/defaultaktualnosci/5486/9/23/1/budzety_gospodarstw_domowych_2024.pdf) mierzy m.in. spożycie wybranych produktów. Spożycie nie identyfikuje, czy produkt został kupiony, czy wyhodowany przez gospodarstwo.
+- [Badanie Kantar/Core Team o samozbiorach z 2024 r.](https://coreteam.pl/324631-atrakcyjnosc-samozbiorow-polskich-warzyw-i-owocow-badania-kantar-polska) pyta o zainteresowanie zbieraniem warzyw na plantacjach; pomidor, ogórek, papryka i ziemniak są tam wskazane jako warzywa interesujące respondentów do samozbioru. Próba jest reprezentatywna dla deklaracji zainteresowania samozbiorem, nie dla rzeczywistych nasadzeń we własnym ogrodzie.
+- [Badanie Grupy INCO z 2025 r.](https://ladnydom.pl/41-proc-polakow-uprawia-wlasne-warzywa-glownie-dla-smaku-nie-dla-portfela) opisuje deklaracje i motywacje związane z warzywnikami w reprezentatywnej próbie online 1118 osób, ale nie publikuje rankingu gatunków sadzonych przez respondentów.
+- [Artykuł branżowy o rynku nasion](https://biznes-ogrodniczy.pl/raporty-i-analizy/handel-nasionami-w-polsce-i-na-swiecie/) podaje zagregowaną wielkość amatorskiego rynku torebek nasiennych i omawia brak krajowych danych o obrocie nasionami ogrodniczymi; nie podaje rankingu sprzedaży według gatunku. Nie można więc użyć tej publikacji do wyliczenia top 30.
+
+W przeglądzie odrzucono także strony przypisujące GUS-owi ranking upraw bez wskazania tabeli lub badania źródłowego: [GUS 2024](https://stat.gov.pl/files/gfx/portalinformacyjny/pl/defaultaktualnosci/5486/9/23/1/budzety_gospodarstw_domowych_2024.pdf) publikuje dane o budżetach i spożyciu, a nie ankietę o tym, jakie gatunki respondenci uprawiają.
+
+### Wniosek do S-03
+
+Istniejące 30 rekordów może być opisane uczciwie jako **kuratorowany, źródłowo opisany katalog popularnych kandydatów do MVP bez kolejności rankingowej**. Dowody bezpośrednie wspierają tylko wymienione wyżej krótkie listy w konkretnych próbach; nie potwierdzają, że cały zestaw jest ogólnopolskim „top 30”. Ścisły ranking wymagałby nowego, reprezentatywnego badania pytającego ogrodników, jakie gatunki rzeczywiście uprawiają, albo danych sprzedażowych według gatunku z rynku amatorskiego. Dane o spożyciu, produkcji polowej i zainteresowaniu samozbiorem mogą pomóc w doborze kandydatów, ale nie zastępują pomiaru upraw domowych.
+
+**Decyzja użytkownika (2026-09-27):** obecne 30 warzyw zostaje zaakceptowane jako kuratorowany, nierankingowy katalog MVP na podstawie obserwacji użytkownika. To decyzja o zakresie produktu, a nie nowe ustalenie badawcze: źródła nadal nie potwierdzają reprezentatywnego ogólnopolskiego rankingu 30 gatunków. W UI i dokumentacji nie należy więc nazywać zestawu „30 najpopularniejszymi warzywami w Polsce”. Akceptacja odblokowuje katalog dla S-03; lokalna walidacja osi i brakujących wartości rozstaw pozostaje do S-04, gdzie wpływa na obliczenia układu.
