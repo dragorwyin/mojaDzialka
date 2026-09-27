@@ -181,11 +181,11 @@ Migracja jest addytywna: nie zmienia garden_spaces ani istniejących danych. Wyb
 
 #### Automated
 
-- [x] 2.1 npx astro check, npm run lint i npm run build przechodzą po połączeniu strony, formularza i endpointu.
-- [x] 2.2 npm run test:db i npm run test:unit przechodzą z nowym przepływem bez regresji istniejących testów.
-- [x] 2.3 npm run smoke weryfikuje chroniony odczyt oraz zapis i ponowne wyświetlenie wybranych upraw na /garden.
+- [x] 2.1 npx astro check, npm run lint i npm run build przechodzą po połączeniu strony, formularza i endpointu. — e402bfb
+- [x] 2.2 npm run test:db i npm run test:unit przechodzą z nowym przepływem bez regresji istniejących testów. — e402bfb
+- [x] 2.3 npm run smoke weryfikuje chroniony odczyt oraz zapis i ponowne wyświetlenie wybranych upraw na /garden. — e402bfb
 
 #### Manual
 
-- [x] 2.4 Zalogowany użytkownik wyszukuje warzywo po nazwie oraz aliasie (także bez polskich znaków), dodaje kilka pozycji, edytuje proporcje, zapisuje i po odświeżeniu widzi te same wartości.
-- [x] 2.5 Użytkownik może usunąć wybrane pozycje, zapisać pustą listę i wyczyścić poprzedni wybór; zapisanie nowych wymiarów działki nie usuwa wyboru upraw. Inne konto nie widzi tych danych.
+- [x] 2.4 Zalogowany użytkownik wyszukuje warzywo po nazwie oraz aliasie (także bez polskich znaków), dodaje kilka pozycji, edytuje proporcje, zapisuje i po odświeżeniu widzi te same wartości. — e402bfb
+- [x] 2.5 Użytkownik może usunąć wybrane pozycje, zapisać pustą listę i wyczyścić poprzedni wybór; zapisanie nowych wymiarów działki nie usuwa wyboru upraw. Inne konto nie widzi tych danych. — e402bfb
