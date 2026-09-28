@@ -51,6 +51,19 @@ export function normalizeProportionsToPercentages(proportions: readonly number[]
     remainderOrder[index].hundredths += 1;
   }
 
+  if (allocations.length > TOTAL_PERCENTAGE_HUNDREDTHS) return null;
+
+  for (const allocation of allocations.filter(({ hundredths }) => hundredths === 0)) {
+    const donor = [...allocations]
+      .filter(({ hundredths }) => hundredths > 1)
+      .sort((left, right) => right.hundredths - left.hundredths || left.index - right.index)[0];
+
+    if (!donor) return null;
+
+    donor.hundredths -= 1;
+    allocation.hundredths = 1;
+  }
+
   return allocations.map(({ hundredths }) => hundredths / HUNDREDTHS_PER_PERCENT);
 }
 

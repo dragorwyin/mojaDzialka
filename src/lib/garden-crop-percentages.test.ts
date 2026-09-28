@@ -16,6 +16,13 @@ describe("crop percentage normalization", () => {
     expect(normalizeProportionsToPercentages([2, 0.75])).toEqual([72.73, 27.27]);
   });
 
+  it("keeps every positive weight at least 0.01% when the mix is highly skewed", () => {
+    const percentages = normalizeProportionsToPercentages([0.00001, 1]);
+
+    expect(percentages).toEqual([0.01, 99.99]);
+    expect(isValidCropPercentageMix(percentages?.map((percentage) => percentage.toFixed(2)) ?? [])).toBe(true);
+  });
+
   it("uses input order to break equal largest-remainder ties", () => {
     expect(normalizeProportionsToPercentages([1, 1, 1])).toEqual([33.34, 33.33, 33.33]);
   });
