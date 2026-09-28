@@ -1,0 +1,111 @@
+---
+import CropSelectionForm from "@/components/garden/CropSelectionForm";
+import Layout from "@/layouts/Layout.astro";
+
+const isProduction = import.meta.env.PROD;
+
+if (isProduction) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+}
+
+const sampleSelection = [
+  { cropId: "pomidor", proportion: "72.73" },
+  { cropId: "marchew", proportion: "27.27" },
+];
+---
+
+{!isProduction && (
+  <Layout title="Podgląd stanów wyboru upraw">
+    <main class="bg-cosmic min-h-screen p-4 text-white md:p-8">
+      <div class="mx-auto max-w-6xl space-y-6">
+        <header class="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+          <p class="mb-2 text-sm font-semibold tracking-[0.2em] text-purple-200 uppercase">Widok deweloperski</p>
+          <h1 class="text-3xl font-bold">Stany formularza wyboru upraw</h1>
+          <p class="mt-3 max-w-3xl text-blue-100/75">
+            Przykładowe dane są lokalne, a zapis formularzy demonstracyjnych nie wysyła żądań do API. Widok służy do
+            sprawdzenia stanów wizualnych na komputerze i telefonie.
+          </p>
+        </header>
+
+        <div class="grid gap-6 xl:grid-cols-2">
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Default</h2>
+            <CropSelectionForm
+              idPrefix="default"
+              initialSelection={sampleSelection}
+              unavailable={false}
+              demoMode={true}
+              client:load
+            />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Hover</h2>
+            <CropSelectionForm
+              idPrefix="hover"
+              initialSelection={sampleSelection}
+              unavailable={false}
+              demoMode={true}
+              demoInteraction="hover"
+              client:load
+            />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Focus</h2>
+            <CropSelectionForm
+              idPrefix="focus"
+              initialSelection={sampleSelection}
+              unavailable={false}
+              demoMode={true}
+              demoInteraction="focus"
+              client:load
+            />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Disabled · błąd odczytu</h2>
+            <CropSelectionForm
+              idPrefix="unavailable"
+              initialSelection={sampleSelection}
+              unavailable={true}
+              demoMode={true}
+              client:load
+            />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Error · błąd zapisu</h2>
+            <CropSelectionForm
+              idPrefix="error"
+              initialSelection={sampleSelection}
+              unavailable={false}
+              demoMode={true}
+              demoStatus="error"
+              demoMessage="Nie udało się zapisać wyboru. Spróbuj ponownie."
+              client:load
+            />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Empty</h2>
+            <CropSelectionForm idPrefix="empty" initialSelection={[]} unavailable={false} demoMode={true} client:load />
+          </section>
+
+          <section class="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-xl md:p-7">
+            <h2 class="mb-4 text-xl font-semibold">Loading</h2>
+            <CropSelectionForm
+              idPrefix="loading"
+              initialSelection={sampleSelection}
+              unavailable={false}
+              demoMode={true}
+              demoStatus="saving"
+              client:load
+            />
+          </section>
+        </div>
+      </div>
+    </main>
+  </Layout>
+)}

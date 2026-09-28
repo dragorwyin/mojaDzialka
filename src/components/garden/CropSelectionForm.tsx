@@ -2,6 +2,12 @@ import { useMemo, useState, type SyntheticEvent } from "react";
 
 import { getCropById, searchCrops } from "../../lib/crop-catalog.js";
 import { validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
+import {
+  isValidCropPercentageMix,
+  normalizeProportionsToPercentages,
+  parseCropPercentageToHundredths,
+  sumCropPercentageHundredths,
+} from "../../lib/garden-crop-percentages.js";
 
 interface CropSelection {
   cropId: string;
@@ -11,15 +17,42 @@ interface CropSelection {
 interface Props {
   initialSelection: CropSelection[];
   unavailable: boolean;
+  idPrefix?: string;
+  demoMode?: boolean;
+  demoStatus?: "idle" | "saving" | "error";
+  demoMessage?: string;
+  demoInteraction?: "hover" | "focus";
 }
 
 const MAX_SEARCH_RESULTS = 8;
+const percentageFormatter = new Intl.NumberFormat("pl-PL", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
-export default function CropSelectionForm({ initialSelection, unavailable }: Props) {
-  const [selection, setSelection] = useState<CropSelection[]>(initialSelection);
+function normalizeInitialSelection(initialSelection: CropSelection[]): CropSelection[] {
+  const percentages = normalizeProportionsToPercentages(initialSelection.map((crop) => Number(crop.proportion)));
+  if (percentages === null) return initialSelection;
+
+  return initialSelection.map((crop, index) => ({
+    ...crop,
+    proportion: percentages[index]?.toFixed(2) ?? crop.proportion,
+  }));
+}
+
+export default function CropSelectionForm({
+  initialSelection,
+  unavailable,
+  idPrefix = "crop",
+  demoMode = false,
+  demoStatus = "idle",
+  demoMessage = "",
+  demoInteraction,
+}: Props) {
+  const [selection, setSelection] = useState<CropSelection[]>(() => normalizeInitialSelection(initialSelection));
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(demoStatus);
+  const [message, setMessage] = useState(demoMessage);
 
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim();
@@ -31,6 +64,19 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
       .slice(0, MAX_SEARCH_RESULTS);
   }, [query, selection]);
 
+  const selectedPercentages = selection.map((crop) => crop.proportion);
+  const totalPercentageHundredths = sumCropPercentageHundredths(selectedPercentages);
+  const selectionIsValid = isValidCropPercentageMix(selectedPercentages);
+  const searchId = `${idPrefix}-search`;
+  const titleId = `${idPrefix}-selection-title`;
+  const mixGuidanceId = `${idPrefix}-mix-guidance`;
+  const demoInteractionClass =
+    demoInteraction === "hover"
+      ? "!bg-purple-300"
+      : demoInteraction === "focus"
+        ? "outline outline-2 outline-purple-200 outline-offset-2"
+        : "";
+
   function updateSelection(updater: (current: CropSelection[]) => CropSelection[]) {
     setSelection(updater);
     setStatus("idle");
@@ -41,12 +87,24 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
     event.preventDefault();
     setMessage("");
 
+    if (!isValidCropPercentageMix(selection.map((crop) => crop.proportion))) {
+      setStatus("error");
+      setMessage("Udziały muszą być dodatnie i sumować się do dokładnie 100,00%.");
+      return;
+    }
+
     const validated = validateGardenCropSelection(
       selection.map((crop) => ({ cropId: crop.cropId, proportion: Number(crop.proportion) })),
     );
     if (validated === null) {
       setStatus("error");
-      setMessage("Każda proporcja musi być dodatnią, skończoną liczbą.");
+      setMessage("Każdy udział musi być dodatnią, skończoną liczbą.");
+      return;
+    }
+
+    if (demoMode) {
+      setStatus("saved");
+      setMessage("Podgląd demonstracyjny — zapis nie jest wykonywany.");
       return;
     }
 
@@ -82,15 +140,15 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
   }
 
   return (
-    <section aria-labelledby="crop-selection-title" className="space-y-6">
+    <section aria-labelledby={titleId} className="space-y-6">
       <header className="max-w-2xl">
         <p className="mb-2 text-sm font-semibold tracking-[0.2em] text-purple-200 uppercase">S-03 · Planowanie upraw</p>
-        <h2 id="crop-selection-title" className="text-2xl font-bold text-white">
-          Wybór warzyw i proporcji
+        <h2 id={titleId} className="text-2xl font-bold text-white">
+          Wybór warzyw i udziałów procentowych
         </h2>
         <p className="mt-3 text-blue-100/75">
-          Wybierz warzywa dla całej działki i określ ich proporcje. Algorytm później dobierze dla nich grządki; tutaj
-          nie przypisujesz upraw do konkretnych skrzyń.
+          Określ, jaki procent planowanej liczby roślin na całej działce ma przypadać na każdą uprawę. Algorytm później
+          dobierze dla nich grządki; tutaj nie przypisujesz upraw do konkretnych skrzyń.
         </p>
       </header>
 
@@ -102,10 +160,10 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
       )}
 
       <div className="max-w-2xl space-y-3">
-        <label htmlFor="crop-search" className="block space-y-2 text-sm text-blue-100/80">
+        <label htmlFor={searchId} className="block space-y-2 text-sm text-blue-100/80">
           <span>Wyszukaj warzywo po nazwie lub aliasie</span>
           <input
-            id="crop-search"
+            id={searchId}
             type="search"
             value={query}
             onChange={(event) => {
@@ -127,10 +185,10 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
                 <button
                   type="button"
                   onClick={() => {
-                    updateSelection((current) => [...current, { cropId: crop.id, proportion: "1" }]);
+                    updateSelection((current) => [...current, { cropId: crop.id, proportion: "1.00" }]);
                   }}
                   disabled={unavailable || status === "saving"}
-                  className="shrink-0 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+                  className="shrink-0 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
                   aria-label={`Dodaj ${crop.commonNamePl}`}
                 >
                   Dodaj
@@ -159,7 +217,8 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
               {selection.map((crop, index) => {
                 const catalogCrop = getCropById(crop.cropId);
                 const cropName = catalogCrop?.commonNamePl ?? crop.cropId;
-                const proportionId = `crop-proportion-${crop.cropId}`;
+                const proportionId = `${idPrefix}-proportion-${crop.cropId}`;
+                const proportionHundredths = parseCropPercentageToHundredths(crop.proportion);
 
                 return (
                   <li
@@ -170,13 +229,15 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
                       <p className="font-medium text-white">{cropName}</p>
                     </div>
                     <label htmlFor={proportionId} className="space-y-2 text-sm text-blue-100/80">
-                      <span>Proporcja</span>
+                      <span>Udział (%)</span>
                       <input
                         id={proportionId}
                         type="number"
-                        min="0"
-                        step="any"
+                        min="0.01"
+                        max="100"
+                        step="0.01"
                         required
+                        inputMode="decimal"
                         value={crop.proportion}
                         onChange={(event) => {
                           const proportion = event.target.value;
@@ -185,7 +246,9 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
                           );
                         }}
                         disabled={unavailable || status === "saving"}
-                        className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300 disabled:opacity-50"
+                        aria-invalid={proportionHundredths === null || proportionHundredths <= 0}
+                        aria-describedby={mixGuidanceId}
+                        className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
                       />
                     </label>
                     <button
@@ -194,7 +257,7 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
                         updateSelection((current) => current.filter((item) => item.cropId !== crop.cropId));
                       }}
                       disabled={unavailable || status === "saving"}
-                      className="rounded-lg px-3 py-2 text-sm text-rose-200 transition-colors hover:bg-rose-400/10 hover:text-rose-100 disabled:opacity-50"
+                      className="rounded-lg px-3 py-2 text-sm text-rose-200 transition-colors hover:bg-rose-400/10 hover:text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
                       aria-label={`Usuń ${cropName}`}
                     >
                       Usuń
@@ -204,6 +267,21 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
               })}
             </ul>
           )}
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-white" role="status" aria-live="polite">
+            Suma udziałów:{" "}
+            {totalPercentageHundredths === null
+              ? "—"
+              : `${percentageFormatter.format(totalPercentageHundredths / 100)}%`}
+          </p>
+          <p
+            id={mixGuidanceId}
+            className={selection.length > 0 && !selectionIsValid ? "text-sm text-amber-100" : "sr-only"}
+          >
+            Udziały muszą być dodatnie i sumować się do dokładnie 100,00%.
+          </p>
         </div>
 
         {status === "error" && (
@@ -225,8 +303,8 @@ export default function CropSelectionForm({ initialSelection, unavailable }: Pro
 
         <button
           type="submit"
-          disabled={unavailable || status === "saving"}
-          className="rounded-lg bg-purple-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-purple-300 disabled:cursor-wait disabled:opacity-60"
+          disabled={unavailable || status === "saving" || !selectionIsValid}
+          className={`rounded-lg bg-purple-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:cursor-not-allowed disabled:opacity-60 ${status === "saving" ? "cursor-wait" : ""} ${demoInteractionClass}`}
         >
           {status === "saving" ? "Zapisywanie…" : "Zapisz wybór upraw"}
         </button>

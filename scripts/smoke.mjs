@@ -91,7 +91,7 @@ const steps = [
   [
     "garden renders crop selection for signed-in user",
     () => request("/garden"),
-    { status: 200, includes: "Wybór warzyw i proporcji" },
+    { status: 200, includes: "Wybór warzyw i udziałów procentowych" },
   ],
   [
     "crop selection can be saved with decimal proportions",
@@ -106,9 +106,9 @@ const steps = [
     { status: 200, includes: '"saved":true' },
   ],
   [
-    "garden renders the saved crop selection and proportions",
+    "garden renders the saved crop selection as normalized percentages",
     () => request("/garden"),
-    { status: 200, includes: ["pomidor", "marchew", 'value="2"', 'value="0.75"'] },
+    { status: 200, includes: ["pomidor", "marchew", 'value="72.73"', 'value="27.27"', "100,00%"] },
   ],
   [
     "updating garden dimensions does not remove the crop selection",
@@ -122,7 +122,7 @@ const steps = [
   [
     "garden renders crops after the space list has been replaced",
     () => request("/garden"),
-    { status: 200, includes: ["pomidor", "marchew", 'value="2"', 'value="0.75"'] },
+    { status: 200, includes: ["pomidor", "marchew", 'value="72.73"', 'value="27.27"', "100,00%"] },
   ],
   [
     "saving an empty crop selection clears the previous selection",
