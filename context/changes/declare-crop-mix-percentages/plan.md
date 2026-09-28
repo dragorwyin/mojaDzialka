@@ -153,13 +153,13 @@ Nie ma migracji. Dotychczasowe dodatnie wagi są normalizowane przy wczytaniu do
 
 #### Automated
 
-- [x] 1.1 Testy jednostkowe przechodzą: `npm run test:unit`.
-- [x] 1.2 Build produkcyjny przechodzi: `npm run build`.
-- [x] 1.3 Smoke test projektu przechodzi: `npm run smoke`, z oczekiwaniami na znormalizowane procenty; zapis, ponowny odczyt, zachowanie po zmianie wymiarów i czyszczenie pozostają poprawne.
+- [x] 1.1 Testy jednostkowe przechodzą: `npm run test:unit`. — bee764e
+- [x] 1.2 Build produkcyjny przechodzi: `npm run build`. — bee764e
+- [x] 1.3 Smoke test projektu przechodzi: `npm run smoke`, z oczekiwaniami na znormalizowane procenty; zapis, ponowny odczyt, zachowanie po zmianie wymiarów i czyszczenie pozostają poprawne. — bee764e
 
 #### Manual
 
-- [x] 1.4 W formularzu edycja jednej uprawy nie zmienia innych; suma aktualizuje się na żywo, zapis jest zablokowany poza 100,00% lub przy niedodatnim udziale, a usunięcie nie równoważy pozostałych wartości.
-- [x] 1.5 Po udanym odczycie można zapisać pustą listę, natomiast po błędzie odczytu edycja i zapis nadal są zablokowane oraz widoczny jest błąd.
-- [x] 1.6 Zrzuty widoku kontrolnego obejmują wszystkie wymagane stany na desktopie i telefonie; pola, suma, błędy i przyciski pozostają czytelne w istniejącym motywie.
-- [x] 1.7 Po uruchomieniu produkcyjnego preview lokalny widok kontrolny odpowiada statusem 404.
+- [x] 1.4 W formularzu edycja jednej uprawy nie zmienia innych; suma aktualizuje się na żywo, zapis jest zablokowany poza 100,00% lub przy niedodatnim udziale, a usunięcie nie równoważy pozostałych wartości. — bee764e
+- [x] 1.5 Po udanym odczycie można zapisać pustą listę, natomiast po błędzie odczytu edycja i zapis nadal są zablokowane oraz widoczny jest błąd. — bee764e
+- [x] 1.6 Zrzuty widoku kontrolnego obejmują wszystkie wymagane stany na desktopie i telefonie; pola, suma, błędy i przyciski pozostają czytelne w istniejącym motywie. — bee764e
+- [x] 1.7 Po uruchomieniu produkcyjnego preview lokalny widok kontrolny odpowiada statusem 404. — bee764e
