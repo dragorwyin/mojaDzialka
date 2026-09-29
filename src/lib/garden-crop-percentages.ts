@@ -58,8 +58,8 @@ export function normalizeProportionsToPercentages(proportions: readonly number[]
       .filter(({ hundredths }) => hundredths > 1)
       .sort((left, right) => right.hundredths - left.hundredths || left.index - right.index)[0];
 
-    if (!donor) return null;
-
+    // With at most 10,000 positive shares summing to 10,000 hundredths,
+    // any zero allocation guarantees at least one share above one hundredth.
     donor.hundredths -= 1;
     allocation.hundredths = 1;
   }

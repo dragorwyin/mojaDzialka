@@ -15,7 +15,7 @@ export interface CompanionRelationResult {
   rationale: string;
   sourceIds: readonly SourceId[];
   relation: CompanionRelation | null;
-  hardBlock: false;
+  hardBlock: boolean;
 }
 
 const relationByPair = new Map(
@@ -76,6 +76,6 @@ export function getCompanionRelation(firstCropId: string, secondCropId: string):
     rationale: relation.rationale,
     sourceIds: relation.sourceIds,
     relation,
-    hardBlock: false,
+    hardBlock: relation.hardBlock,
   };
 }

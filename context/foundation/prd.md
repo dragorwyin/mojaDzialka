@@ -72,13 +72,13 @@ Planer łączy wybrane uprawy i ich orientacyjne proporcje z wymiarami skrzyń/s
 
 ### Plant selection and plan generation
 
-- FR-004: Użytkownik może wyszukiwać i wybierać warzywa z ograniczonego, ręcznie zweryfikowanego katalogu oraz podać liczbową proporcję dla każdego wybranego warzywa. Priority: must-have
-  > Socrates: Rozważono, że sama liczba (np. „2”) może nie wyjaśniać, co proporcja oznacza w praktyce. Rozstrzygnięcie: wymaganie pozostaje, ponieważ użytkownik nie ma obecnie lepszego sposobu; znaczenie proporcji wymaga doprecyzowania.
+- FR-004: Użytkownik może wyszukiwać i wybierać warzywa z ograniczonego katalogu oraz podać docelowy procentowy udział każdego wybranego warzywa w łącznej liczbie roślin na całej działce. Udziały sumują się do 100%. Priority: must-have
+  > Socrates: Rozważono, że sama liczba (np. „2”) może nie wyjaśniać, co proporcja oznacza w praktyce. Rozstrzygnięcie: procent określa docelowy udział liczby roślin danego gatunku w globalnym miksie działki, a nie udział powierzchni; planer pokazuje cel oddzielnie od osiągniętego wyniku.
 - FR-005: Użytkownik może zmieniać wymiary skrzyń lub sektorów, wybór warzyw i ich proporcje; po zmianie danych otrzymuje ostrzeżenie, że układ wymaga ponownego przeliczenia; wynik aktualizuje się po kliknięciu „Przelicz”. Użytkownik nie może ręcznie zmieniać rozmieszczenia roślin w MVP. Priority: must-have
   > Socrates: Rozważono argument, że użytkownik może chcieć ręcznie poprawiać wygenerowany układ ze względu na własne warunki lub preferencje. Rozstrzygnięcie: ręczna edycja jest zbyt dużym zakresem na przyjęty termin; w MVP zostaje automatyczny układ, a zmiana danych ostrzega o konieczności ponownego przeliczenia.
-- FR-006: Planer może wygenerować graficzną propozycję rozmieszczenia warzyw w skrzyniach lub sektorach, uwzględniając proporcje, wymagane odstępy, dobre i złe sąsiedztwo oraz dostępną powierzchnię. Gdy ograniczenia odstępów lub powierzchni uniemożliwią osiągnięcie proporcji, planer pokazuje tę rozbieżność jako konflikt. Priority: must-have
-  > Socrates: Rozważono, że wymagania odstępów i dostępna powierzchnia mogą uniemożliwić realizację proporcji. Rozstrzygnięcie: wymaganie pozostaje z doprecyzowaniem, że planer ujawnia takie konflikty zamiast sugerować, że proporcje zostały w pełni spełnione.
-- FR-007: Planer może informacyjnie pokazać konflikty oraz niewykorzystane miejsca w proponowanym układzie, bez konieczności podawania sposobu naprawy. Priority: must-have
+- FR-006: Planer może wygenerować graficzną propozycję rozmieszczenia warzyw w skrzyniach lub sektorach na podstawie procentowych celów liczby roślin dla całej działki, wymaganych odstępów, sąsiedztwa i dostępnej powierzchni. Użytkownik nie przypisuje upraw ręcznie do skrzyń. Dobre sąsiedztwa są priorytetem przed dokładnością procentów; nieznane relacje są neutralne, `caution` jest miękkim kosztem, a tylko potwierdzona źródłowo relacja negatywna wyklucza sąsiadujące pozycje. Planer pokazuje cel i osiągnięty udział osobno, a gdy geometria uniemożliwia realizację celów — ujawnia rozbieżność jako konflikt. Priority: must-have
+  > Socrates: Rozważono, że wymagania odstępów, sąsiedztwa i dostępna powierzchnia mogą uniemożliwić idealny miks. Rozstrzygnięcie: planer automatycznie wybiera najlepsze wykonalne rozmieszczenie, priorytetyzuje dobre sąsiedztwa względem dokładności procentów i jawnie raportuje osiągnięty wynik oraz ograniczenia.
+- FR-007: Planer może informacyjnie pokazać konflikty oraz niewykorzystane miejsca w proponowanym układzie, bez konieczności podawania sposobu naprawy. Niewykorzystane miejsce jest konfliktem tylko wtedy, gdy geometria uniemożliwia realizację celów miksu; brak użytecznych danych o rozstawie jest osobnym, jawnym powodem częściowego wyniku. Priority: must-have
   > Socrates: Rozważono, że same ostrzeżenia mogą frustrować, jeśli nie podają sposobu poprawy. Rozstrzygnięcie: użytkownik chce, aby planer wskazywał problem informacyjnie; sugestie naprawy nie są wymagane.
 
 ### Sowing and seasonal schedule
@@ -104,7 +104,7 @@ Planer łączy wybrane uprawy i ich orientacyjne proporcje z wymiarami skrzyń/s
 
 Planer podejmuje decyzję o rozmieszczeniu warzyw na cały sezon, również dając przypomnienia o terminach.
 
-Wejściem są wymiary skrzyń lub sektorów oraz wybrane warzywa z ich liczbowymi proporcjami. Wynikiem jest propozycja rozmieszczenia i harmonogram prac na sezon, obejmujący przypomnienia o terminach.
+Wejściem są wymiary skrzyń lub sektorów oraz wybrane warzywa z docelowymi procentami liczby roślin, które opisują globalny miks całej działki. Planer maksymalizuje wykonalną obsadę, automatycznie wybiera pozycje na wszystkich skrzyniach/sektorach i preferuje potwierdzone dobre sąsiedztwa przed dokładnością udziałów. `unknown` pozostaje neutralne, `caution` jest miękkim kosztem, a tylko źródłowo potwierdzona negatywna relacja może wykluczyć sąsiadujące pozycje. Wynik pokazuje procenty docelowe i osiągnięte osobno, zachowuje pewność i etap roboczych rozstaw oraz jawnie wymienia uprawy bez użytecznych danych zamiast pomijać je po cichu. Wynikiem jest propozycja rozmieszczenia i harmonogram prac na sezon, obejmujący przypomnienia o terminach.
 
 Bieżący plan pozostaje przypisany do konta. Przy kolejnym sezonie użytkownik sam decyduje, kiedy ponownie go przeliczyć.
 
@@ -126,7 +126,6 @@ Bieżący plan pozostaje przypisany do konta. Przy kolejnym sezonie użytkownik 
 
 ## Open Questions
 
-1. **Jak planer ma interpretować liczbową proporcję roślin?** — Wartości typu „2” i „1” nie mają jeszcze określonego przełożenia na proponowany układ. Owner: użytkownik. Rozstrzygnąć przed ustaleniem reguł generowania planu.
-2. **Co dzieje się z poprzednim planem po przeliczeniu kolejnego sezonu?** — Użytkownik podkreślił znaczenie prywatnej historii, ale nie ustalono, czy stare sezony mają być zachowane jako archiwum, czy zastępowane nowym planem. Owner: użytkownik.
-3. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik.
-4. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik.
+1. **Co dzieje się z poprzednim planem po przeliczeniu kolejnego sezonu?** — Użytkownik podkreślił znaczenie prywatnej historii, ale nie ustalono, czy stare sezony mają być zachowane jako archiwum, czy zastępowane nowym planem. Owner: użytkownik.
+2. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik.
+3. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik.

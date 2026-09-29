@@ -29,6 +29,7 @@ describe("crop catalog repository", () => {
     expect(supported.relation).not.toBeNull();
     expect(supported.sourceIds.length).toBeGreaterThan(0);
     expect(supported.rationale.length).toBeGreaterThan(0);
+    expect(supported.hardBlock).toBe(supported.relation?.hardBlock);
     expect(caution.status).toBe("caution");
     expect(caution.hardBlock).toBe(false);
   });

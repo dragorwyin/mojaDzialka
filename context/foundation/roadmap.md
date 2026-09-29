@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-28
+updated: 2026-09-29
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -43,7 +43,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | done |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | done |
-| S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | blocked |
+| S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | in-progress |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | blocked |
 | S-06 | show-sowing-and-seedling-dates | Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac w sezonie. | F-01, S-03, S-04 | FR-008, US-01 | blocked |
 
@@ -128,11 +128,10 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Prerequisites:** F-01, S-02, S-03
 - **Parallel with:** —
 - **Blockers:** —
-- **Unknowns:**
-  - Jak planer ma interpretować liczbową proporcję roślin? Wartości typu „2” i „1” zostaną przeliczone na podstawie katalogu, rozstawy i reguł sąsiedztwa z osobnego researchu; nie ustalono jeszcze algorytmu alokacji powierzchni. — Owner: team. Block: yes.
-  - Jak zweryfikować i nazwać osie rozstaw w źródle S6 oraz uzupełnić lokalne wartości dla warzyw bez potwierdzonych danych, w szczególności ziemniaka? — Owner: team. Block: yes.
-- **Risk:** To główna obietnica produktu i najbardziej ryzykowna reguła; obliczenia zależą od lokalnie zweryfikowanych rozstaw, a pokazanie konfliktów zamiast ukrywania ich ogranicza ryzyko wprowadzenia użytkownika w błąd.
-- **Status:** blocked
+- **Resolved decisions:** Procenty są celem udziału liczby roślin dla całej działki; planer maksymalizuje wykonalną obsadę, preferuje dobre sąsiedztwo przed dokładnością udziałów i pokazuje cel oraz wynik osobno. Użytkownik nie przypisuje upraw ręcznie do grządek. Potwierdzona relacja negatywna wyklucza sąsiedztwo; `caution` pozostaje miękkim kosztem, a `unknown` jest neutralne. Dla 30 upraw używany jest jeden roboczy wariant z widoczną pewnością; brak danych daje jawny plan częściowy.
+- **Unknowns:** —
+- **Risk:** Research ma roboczy wariant dla 30/30 upraw, ale część źródeł opisuje siew/stanowisko, a nie pewną końcową obsadę. Wynik musi ujawniać pewność i ograniczenia danych, a search optymalizujący układ musi być ograniczony kosztowo.
+- **Status:** in-progress
 
 ### S-05: Zmiana danych i ponowne przeliczenie
 
@@ -168,16 +167,14 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 | S-01 | email-account-access | Rejestracja i logowanie e-mailem | yes | Konfiguracja produkcyjnych sekretów Supabase pozostaje zewnętrzną blokadą wdrożenia. |
 | S-02 | define-private-garden-space | Utworzenie działki i konfiguracja wymiarów | yes | Ukończone i zarchiwizowane w `context/archive/2026-09-26-define-private-garden-space/`. |
 | S-03 | select-crops-and-proportions | Wybór warzyw i proporcji | yes | Użytkownik zaakceptował 30 warzyw jako kuratorowany, nierankingowy katalog MVP na podstawie własnej obserwacji; walidacja rozstaw należy do S-04. |
-| S-04 | generate-garden-layout | Generowanie układu z konfliktami i wolnym miejscem | no | Wymaga lokalnej walidacji rozstaw oraz reguły przeliczenia proporcji na powierzchnię. |
+| S-04 | generate-garden-layout | Generowanie układu z konfliktami i wolnym miejscem | yes | Research i decyzje planistyczne są gotowe; część rozstaw pozostaje robocza i musi być pokazywana z poziomem pewności. |
 | S-05 | update-and-recalculate-plan | Zmiana danych i pełne przeliczenie planu | no | W MVP nowe przeliczenie zastępuje poprzedni plan; funkcja nadal zależy od S-04. |
 | S-06 | show-sowing-and-seedling-dates | Terminy siewu i przygotowania rozsady | no | Wymaga adjudykacji źródeł i zapisania okien terminów dla Polski. |
 
 ## Open Roadmap Questions
 
-1. **Jak planer ma interpretować liczbową proporcję roślin?** — Wartości typu „2” i „1” zostaną przeliczone na podstawie katalogu, rozstawy i reguł sąsiedztwa z osobnego researchu. Owner: team. Rozstrzygnąć przed ustaleniem reguł generowania planu. Block: S-04.
-2. **Jak zweryfikować osie rozstaw i brakujące lokalne wartości?** — Sprawdzić opis osi w źródle S6 i uzupełnić polską wartość dla warzyw bez potwierdzonych danych, w szczególności ziemniaka. Owner: team. Rozstrzygnąć przed obliczeniami układu. Block: S-04.
-3. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
-4. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
+1. **Jaki jest oczekiwany ruch szczytowy (QPS)?** — Nie określono orientacyjnej liczby zapytań na sekundę. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
+2. **Jaka jest przewidywana wielkość danych?** — Nie określono orientacyjnej ilości przechowywanych danych. Owner: użytkownik. Block: —; nie blokuje pierwszego MVP przy obecnym celu dostarczenia.
 
 ## Parked
 

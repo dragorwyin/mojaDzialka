@@ -55,6 +55,15 @@ Przed `/10x-plan` należy ustalić interakcję edycji procentów (np. czy wszyst
 
 Plan powinien traktować procent jako udział docelowej liczby roślin w całej działce, zachowując możliwość przeliczenia istniejących wag bez zmiany schematu bazy. Układ ma raportować odstępstwo od celu i wolne miejsce tylko wtedy, gdy ograniczenia geometrii uniemożliwiają jego realizację; samo zastąpienie etykiety `Proporcja` przez `%` nie wystarcza.
 
+## Planning Clarifications (2026-09-29)
+
+The earlier “UI only” narrowing described the first percentage-display change. For S-04, the user clarified that the planner itself must automatically place crops across the whole garden. Percentages are target shares of plant counts across all beds/sectors; the algorithm chooses positions and beds without asking the user to assign crops manually.
+
+- Maximize feasible occupancy; prefer supported good-neighbor placements over exact percentage matching, then report target and achieved shares separately.
+- Treat `supported` relations as preferred, `unknown` as neutral, and `caution` as a soft cost. Only a source-confirmed negative relation is a hard exclusion; the current `caution` records are not prohibitions.
+- Use one working spacing variant per catalog crop and surface its confidence and planting-stage context. If a selected crop has no usable spacing, return a clearly partial plan and name the omitted crop.
+- Compute companionship from generated plant positions inside each bed/sector. Do not infer physical adjacency from the order of spaces in the form.
+
 ## References
 
 - `src/components/garden/CropSelectionForm.tsx:44,130,172`

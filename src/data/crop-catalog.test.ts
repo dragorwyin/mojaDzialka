@@ -9,6 +9,31 @@ describe("crop catalog", () => {
     expect(CROP_CATALOG.every((crop) => crop.commonNamePl.length > 0 && crop.sourceIds.length > 0)).toBe(true);
   });
 
+  it("gives all 30 crops sourced working spacing with explicitly named axes and planning metadata", () => {
+    expect(CROP_CATALOG.every((crop) => crop.spacing !== null)).toBe(true);
+    expect(
+      CROP_CATALOG.every(
+        (crop) =>
+          crop.spacing !== null &&
+          crop.spacing.axisVerified &&
+          crop.spacing.inRowCm !== null &&
+          crop.spacing.betweenRowsCm !== null &&
+          crop.spacing.publishedPairCm === null &&
+          crop.spacing.sourceIds.length > 0 &&
+          crop.spacing.context.length > 0 &&
+          crop.spacing.stage.length > 0 &&
+          typeof crop.spacing.isFinalPlanting === "boolean",
+      ),
+    ).toBe(true);
+    expect(CROP_CATALOG.find((crop) => crop.id === "pomidor")?.spacing).toMatchObject({
+      inRowCm: { min: 50, max: 60 },
+      betweenRowsCm: { min: 100, max: 150 },
+      sourceIds: ["S15"],
+      stage: "planting",
+      isFinalPlanting: true,
+    });
+  });
+
   it("keeps local validation and non-blocking relation semantics explicit", () => {
     expect(CROP_CATALOG.find((crop) => crop.id === "ziemniak")).toMatchObject({
       needsLocalValidation: true,
@@ -54,5 +79,24 @@ describe("crop catalog", () => {
     expect(() => {
       validateCropCatalog(CROP_CATALOG, invalidRelations);
     }).toThrow(/unknown crop/);
+  });
+
+  it("allows only an explicitly negative relation to be a hard block", () => {
+    const negativeRelation = {
+      cropIds: ["marchew", "cebula"] as const,
+      status: "negative" as const,
+      relationshipType: "disease_risk" as const,
+      confidence: "high" as const,
+      rationale: "Testowa, jawnie potwierdzona relacja negatywna.",
+      sourceIds: ["S2"] as const,
+      hardBlock: true,
+    };
+
+    expect(() => {
+      validateCropCatalog(CROP_CATALOG, [negativeRelation]);
+    }).not.toThrow();
+    expect(() => {
+      validateCropCatalog(CROP_CATALOG, [{ ...negativeRelation, status: "caution", hardBlock: true }]);
+    }).toThrow(/only be a hard block/);
   });
 });

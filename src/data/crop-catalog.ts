@@ -1,11 +1,55 @@
 export type CatalogTier = "core" | "extended";
 export type Confidence = "high" | "medium" | "low";
-export type CompanionStatus = "supported" | "caution";
+export type CompanionStatus = "supported" | "caution" | "negative";
+export type SpacingStage = "sowing" | "thinning" | "planting" | "final_planting" | "mixed";
 export type RelationshipType =
   "space_saving" | "pest_management" | "habitat" | "rotation" | "disease_risk" | "folklore";
 export type SowingMethod = "direct_sow" | "seedling" | "plant_out" | "overwintering";
 
-export type SourceId = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S9" | "S10" | "S11" | "S12" | "S14";
+export type SourceId =
+  | "S1"
+  | "S2"
+  | "S3"
+  | "S4"
+  | "S5"
+  | "S6"
+  | "S7"
+  | "S8"
+  | "S9"
+  | "S10"
+  | "S11"
+  | "S12"
+  | "S14"
+  | "S15"
+  | "S16"
+  | "S17"
+  | "S18"
+  | "S19"
+  | "S20"
+  | "S21"
+  | "S22"
+  | "S23"
+  | "S24"
+  | "S25"
+  | "S26"
+  | "S27"
+  | "S28"
+  | "S29"
+  | "S30"
+  | "S31"
+  | "S32"
+  | "S33"
+  | "S34"
+  | "S35"
+  | "S36"
+  | "S37"
+  | "S38"
+  | "S39"
+  | "S40"
+  | "S41"
+  | "S42"
+  | "S43"
+  | "S44";
 
 export interface SourceReference {
   id: SourceId;
@@ -27,6 +71,8 @@ export interface SpacingData {
   sourceIds: readonly SourceId[];
   confidence: Confidence;
   axisVerified: boolean;
+  stage: SpacingStage;
+  isFinalPlanting: boolean;
 }
 
 export interface SeasonWindow {
@@ -140,23 +186,187 @@ export const CROP_SOURCES: readonly SourceReference[] = [
     url: "https://coboru.gov.pl/Publikacje_COBORU/Wyniki_PDO/WPDO_222_rosliny_warzywne_2024.pdf",
     context: "Obecność gatunków w badaniach odmianowych; nie ranking popularności.",
   },
+  {
+    id: "S15",
+    title: "PIORiN: Metodyka integrowanej produkcji pomidora polowego",
+    url: "https://www.gov.pl/attachment/6b05bf5f-f4d0-47cd-92a7-2cf9128569d6",
+    context: "Wysoka odmiana przy podporze: odstęp w rzędzie i między rzędami.",
+  },
+  {
+    id: "S16",
+    title: "PIORiN/IO-PIB: Metodyka integrowanej produkcji ogórka polowego (2023)",
+    url: "https://www.gov.pl/attachment/6a7f4f25-0ec4-4692-a494-b5813bc06984",
+    context: "Końcowa obsada po wschodach i polowa rozstawa między rzędami.",
+  },
+  {
+    id: "S17",
+    title: "Działkowiec: Uprawa grochu i fasoli",
+    url: "https://dzialkowiec.app/porady/uprawa-grochu-fasoli-straczkowe",
+    context: "Krzaczasta fasola szparagowa; pojedyncze nasiona w rzędzie i międzyrzędzia.",
+  },
+  {
+    id: "S18",
+    title: "Poradnik Ogrodniczy: Pietruszka korzeniowa",
+    url: "https://poradnikogrodniczy.pl/pietruszka-korzeniowa.php",
+    context: "Późna pietruszka korzeniowa po przerywce; siew i końcowy odstęp rozdzielone.",
+  },
+  {
+    id: "S19",
+    title: "Małopolski ODR: Zalecane odmiany marchwi do upraw ekologicznych",
+    url: "https://www.modr.pl/sites/default/files/brochures/zalecane_odmiany_marchwi_do_upraw_ekologicznych_w_wojewodztwie_malopolskim_2020.pdf",
+    context: "Odstępy roślin w rzędzie i między rzędami dla korzenia na zbiór główny.",
+  },
+  {
+    id: "S20",
+    title: "Świat Kwiatów: Cebula zwyczajna — uprawa, odmiany i siew nasion",
+    url: "https://www.swiatkwiatow.pl/poradnik-ogrodniczy/cebula-zwyczajna--uprawa-odmiany-i-siew-nasion-id1249.html?more=",
+    context: "Wiosenna dymka na główki do zbioru i przechowania.",
+  },
+  {
+    id: "S21",
+    title: "Małopolski ODR: Ekologiczna uprawa buraka ćwikłowego",
+    url: "https://sww.modr.pl/sites/default/files/brochures/ekologiczna_uprawa_buraka_cwiklowego_2020.pdf",
+    context: "Siew bezpośredni i końcowe odstępy po przerzedzeniu dla korzeni do przechowania.",
+  },
+  {
+    id: "S22",
+    title: "Poradnik Ogrodniczy: Rzodkiewka — właściwości, uprawa, odmiany",
+    url: "https://poradnikogrodniczy.pl/rzodkiewka-wlasciwosci-uprawa-odmiany.php",
+    context: "Standardowa rzodkiewka wiosenna; siew w docelowej siatce lub późniejsze przerzedzenie.",
+  },
+  {
+    id: "S23",
+    title: "Rutgers NJAES: FS129 — Lettuce",
+    url: "https://njaes.rutgers.edu/FS129/",
+    context: "Odstępy dojrzałych główek sałaty typu Bibb/masłowej w ogrodzie domowym.",
+  },
+  {
+    id: "S24",
+    title: "Uniwersytet Przyrodniczy we Wrocławiu: badanie odmiany kapusty białej Kalorama F1",
+    url: "https://bibliotekanauki.pl/articles/11543105",
+    context: "Rozstawa rozsady odmiany Kalorama F1 dla średnich główek.",
+  },
+  {
+    id: "S25",
+    title: "DIONP: Jak uprawiać kalafiory — podstawowe informacje",
+    url: "https://www.dionp.pl/jak-uprawiac-kalafiory-podstawowe-informacje/",
+    context: "Standardowa rozsada kalafiora w gruncie.",
+  },
+  {
+    id: "S26",
+    title: "Poradnik Ogrodniczy: Jak sadzić warzywa na działce",
+    url: "https://poradnikogrodniczy.pl/jak-sadzic-warzywa-na-dzialce.php",
+    context: "Rozstaw dojrzałego brokułu w rzędzie i między rzędami w ogrodzie działkowym.",
+  },
+  {
+    id: "S27",
+    title: "DIONP: Jak uprawiać kalarepę — podstawowe informacje",
+    url: "https://www.dionp.pl/jak-uprawiac-kalarepe-podstawowe-informacje/",
+    context: "Standardowa rozsada kalarepy do zbioru zgrubień.",
+  },
+  {
+    id: "S28",
+    title: "Utah State University Extension: Kale in the Garden",
+    url: "https://extension.usu.edu/yardandgarden/research/kale-in-the-garden",
+    context: "Końcowa siatka dojrzałego jarmużu; zagraniczny fallback dla ogrodu domowego.",
+  },
+  {
+    id: "S29",
+    title: "Poradnik Ogrodniczy: Groszek zielony",
+    url: "https://poradnikogrodniczy.pl/groszek-zielony.php",
+    context: "Niskie odmiany grochu bez podpory; odstęp dotyczy siewu nasion.",
+  },
+  {
+    id: "S30",
+    title: "Deccoria: Siew bobu na przedplon",
+    url: "https://deccoria.pl/artykuly/porady-ogrodnicze/news-siew-bobu-na-przedplon-uprawa-wspolrzedna-bobu,nId,22439921",
+    context: "Wiosenny siew rzędowy pojedynczych nasion; końcowa obsada niepotwierdzona.",
+  },
+  {
+    id: "S31",
+    title: "University of Maryland Extension: Growing Summer Squash and Zucchini",
+    url: "https://www.extension.umd.edu/resource/growing-summer-squash-zucchini-home-garden",
+    context: "Cukinia krzaczasta w ogrodzie domowym, przerzedzana do jednej rośliny na stanowisko.",
+  },
+  {
+    id: "S32",
+    title: "CDR: Normatywy Produkcji Rolniczej — dynia",
+    url: "https://poznan.cdr.gov.pl/normatywy/public/pdf/5_1.pdf",
+    context: "Pojedyncza obsada dyni w siatce polowej; źródło starsze i produkcyjne.",
+  },
+  {
+    id: "S33",
+    title: "Poradnik Ogrodniczy: Sadzenie papryki",
+    url: "https://poradnikogrodniczy.pl/sadzenie-papryki.php",
+    context: "Papryka słodka z rozsady w gruncie; osobne wartości dla tunelu.",
+  },
+  {
+    id: "S34",
+    title: "Atlas Roślin: Por (Allium porrum)",
+    url: "https://atlas-roslin.pl/gatunki/Allium_porrum.htm",
+    context: "Rozsada pora na zbiór jesienny; wczesny i przezimowujący wariant są inne.",
+  },
+  {
+    id: "S35",
+    title: "University of Kentucky Extension: Spinach Home Garden",
+    url: "https://publications.ca.uky.edu/sites/publications.ca.uky.edu/files/NEP240.pdf",
+    context: "Dojrzały zbiór liści szpinaku po przerzedzeniu; zagraniczny fallback.",
+  },
+  {
+    id: "S36",
+    title: "DIONP: Jak uprawiać seler korzeniowy — podstawowe informacje",
+    url: "https://www.dionp.pl/jak-uprawiac-seler-korzeniowy-podstawowe-informacje/",
+    context: "Rozsada selera korzeniowego na jesienny zbiór i przechowanie.",
+  },
+  {
+    id: "S37",
+    title: "Melinda Myers: Corn",
+    url: "https://www.melindamyers.com/plants/fruits-vegetables/corn",
+    context: "Kukurydza cukrowa po przerzedzeniu; zalecany blok co najmniej czterech rzędów.",
+  },
+  {
+    id: "S38",
+    title: "DIONP: Jak uprawiać pasternak — podstawowe informacje",
+    url: "https://www.dionp.pl/jak-uprawiac-pasternak-podstawowe-informacje/",
+    context: "Końcowa rozstawa pasternaku korzeniowego po przerzedzeniu siewek.",
+  },
+  {
+    id: "S39",
+    title: "Na Grządce: Jak uprawiać rukolę przez cały sezon",
+    url: "https://nagrzadce.pl/warzywa/jak-uprawiac-rukole-przez-caly-sezon-siew-ciecie-i-zapobieganie-gorzknieniu-lisci/",
+    context: "Gęsty zbiór liści po przerzedzeniu; polski poradnik bez podanego autora.",
+  },
+  {
+    id: "S40",
+    title: "Poradnik Ogrodniczy: Roszponka",
+    url: "https://poradnikogrodniczy.pl/roszponka.php",
+    context: "Standardowy zbiór kęp/rozet po przerzedzeniu.",
+  },
+  {
+    id: "S41",
+    title: "DIONP: Jak uprawiać bakłażany (oberżyny) — podstawowe informacje",
+    url: "https://www.dionp.pl/jak-uprawiac-baklazany-oberzyny-podstawowe-informacje/",
+    context: "Bujnie rosnący bakłażan z rozsady; odmiany niskie mają ciaśniejszą siatkę.",
+  },
+  {
+    id: "S42",
+    title: "Wikibooks: Ekoogrodnictwo — rzepa",
+    url: "https://pl.wikibooks.org/wiki/Ekoogrodnictwo/Ro%C5%9Bliny_u%C5%BCytkowe/Rzepa",
+    context: "Wczesna rzepa po przerwaniu wschodów; szeroki zakres i niska pewność.",
+  },
+  {
+    id: "S43",
+    title: "Atlas Roślin: Ziemniak (Solanum tuberosum)",
+    url: "https://atlas-roslin.pl/gatunki/Solanum_tuberosum.htm",
+    context: "Ziemniak odmiany głównej sadzony z bulwy sadzeniaka.",
+  },
+  {
+    id: "S44",
+    title: "PSOR: Uprawa ogórków od A do Z",
+    url: "https://www.ior.poznan.pl/plik,4701,e-book-psor-uprawa-ogorkow-od-a-do-z-pdf.pdf",
+    context: "Alternatywa bliższa ogródkowi: rozstawa siewu 10–20 cm w rzędzie i 80–120 cm między rzędami.",
+  },
 ];
-
-const publishedSpacing = (
-  firstCm: number,
-  secondCm: number,
-  context: string,
-  sourceIds: readonly SourceId[],
-  confidence: Confidence = "medium",
-): SpacingData => ({
-  publishedPairCm: [firstCm, secondCm],
-  inRowCm: null,
-  betweenRowsCm: null,
-  context,
-  sourceIds,
-  confidence,
-  axisVerified: false,
-});
 
 const verifiedSpacing = (
   inRowCm: NumericRange,
@@ -164,6 +374,8 @@ const verifiedSpacing = (
   context: string,
   sourceIds: readonly SourceId[],
   confidence: Confidence = "medium",
+  stage: SpacingStage = "final_planting",
+  isFinalPlanting = stage === "thinning" || stage === "planting" || stage === "final_planting",
 ): SpacingData => ({
   publishedPairCm: null,
   inRowCm,
@@ -172,6 +384,8 @@ const verifiedSpacing = (
   sourceIds,
   confidence,
   axisVerified: true,
+  stage,
+  isFinalPlanting,
 });
 
 const season = (
@@ -197,12 +411,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["pomidory", "tomato"],
     catalogTier: "core",
     sourceIds: ["S1", "S4", "S5", "S6", "S7", "S9"],
-    spacing: publishedSpacing(
-      80,
-      50,
-      "Odmiana wysoka; para S6 wymaga kontroli osi i zależy od podpory.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 50, max: 60 },
+      { min: 100, max: 150 },
+      "Wysoka odmiana gruntowa prowadzona przy podporze; źródło podaje osobno odstęp w rzędzie i między rzędami.",
+      ["S15"],
       "medium",
+      "planting",
     ),
     seasonWindows: [
       season(3, 5, "seedling", "Wysiew rozsady pod osłoną; kwietniowego wysiewu nie traktować jako terminu gruntu.", [
@@ -219,20 +434,22 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
       ),
     ],
     needsLocalValidation: true,
-    validationNotes: "Zweryfikować oś rozstawy S6 i wariant prowadzenia przed użyciem w układzie.",
+    validationNotes:
+      "Default dotyczy wysokiej odmiany gruntowej przy podporze; karłowe i szklarniowe wymagają osobnych wariantów.",
   },
   {
     id: "ogorek",
     commonNamePl: "ogórek",
     aliases: ["ogórki", "cucumber"],
     catalogTier: "core",
-    sourceIds: ["S1", "S2", "S4", "S5", "S6", "S7", "S9"],
-    spacing: publishedSpacing(
-      10,
-      135,
-      "Rozstaw silnie zależy od prowadzenia; para S6 bez zweryfikowanych osi.",
-      ["S6"],
+    sourceIds: ["S1", "S2", "S4", "S5", "S6", "S7", "S9", "S44"],
+    spacing: verifiedSpacing(
+      { min: 15, max: 20 },
+      { min: 120, max: 150 },
+      "Końcowa obsada po wschodach w polowym układzie rzędowym; PSOR podaje odrębny, ciaśniejszy wariant siewu 10–20 × 80–120 cm.",
+      ["S16"],
       "medium",
+      "thinning",
     ),
     seasonWindows: [
       season(4, 4, "seedling", "Rozsada w cieple; nie przenosić terminu bezpośrednio na grunt.", ["S6", "S9"]),
@@ -244,7 +461,8 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
       ]),
     ],
     needsLocalValidation: true,
-    validationNotes: "Zweryfikować oś rozstawy S6 i sposób prowadzenia.",
+    validationNotes:
+      "Roboczy default jest polowy; zachować osobno działkowy wariant siewu PSOR i zweryfikować lokalnie sposób prowadzenia.",
   },
   {
     id: "fasola-zwykla",
@@ -252,12 +470,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["fasola", "fasola szparagowa", "common bean"],
     catalogTier: "core",
     sourceIds: ["S1", "S2", "S4", "S6", "S7", "S9"],
-    spacing: publishedSpacing(
-      10,
-      40,
-      "Para S6 dla formy podstawowej; forma karłowa i pnąca wymagają osobnych wariantów.",
-      ["S6"],
-      "low",
+    spacing: verifiedSpacing(
+      { min: 7, max: 10 },
+      { min: 40, max: 50 },
+      "Krzaczasta fasola szparagowa; pojedyncze nasiona w rzędzie. Nie stosować jako siatki fasoli tycznej.",
+      ["S17"],
+      "medium",
+      "sowing",
+      false,
     ),
     seasonWindows: [
       season(5, 7, "direct_sow", "Siew po ryzyku przymrozków i po ogrzaniu gleby.", ["S2", "S6", "S7", "S9"]),
@@ -271,18 +491,19 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["pietruszka", "parsley"],
     catalogTier: "core",
     sourceIds: ["S1", "S4", "S6", "S7"],
-    spacing: publishedSpacing(
-      4,
-      30,
-      "Tabela S6 łączy warianty korzeniowy i naciowy; para nie ma zweryfikowanych osi.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 4, max: 6 },
+      { min: 30, max: 30 },
+      "Pietruszka korzeniowa odmiany późnej do zbioru korzeni; odstęp w rzędzie dotyczy roślin po przerywce.",
+      ["S18"],
       "medium",
+      "thinning",
     ),
     seasonWindows: [
       season(3, 6, "direct_sow", "Siew bezpośredni; wolne wschody i potrzeba utrzymania wilgotności.", ["S6", "S7"]),
     ],
     needsLocalValidation: true,
-    validationNotes: "Rozdzielić wariant korzeniowy i naciowy po potwierdzeniu odmiany oraz osi rozstawy.",
+    validationNotes: "Default dotyczy późnej pietruszki korzeniowej; wariant naciowy wymaga osobnej rozstawy.",
   },
   {
     id: "marchew",
@@ -290,7 +511,15 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["carrot"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S5", "S6", "S7", "S10"],
-    spacing: publishedSpacing(5, 25, "Siew rzędowy z przerywką; para S6 wymaga kontroli osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 10, max: 15 },
+      { min: 30, max: 35 },
+      "Standardowy korzeń na zbiór główny; źródło nazywa obie osie, ale nie opisuje odrębnego zabiegu przerzedzania.",
+      ["S19"],
+      "medium",
+      "sowing",
+      false,
+    ),
     seasonWindows: [
       season(3, 6, "direct_sow", "Siew bezpośredni; po wschodach konieczna przerywka.", ["S6", "S7", "S9"]),
     ],
@@ -303,12 +532,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["onion"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S5", "S6", "S7"],
-    spacing: publishedSpacing(
-      5,
-      30,
-      "S6; typ uprawy (siew, dymka, rozsada) zmienia praktyczny rozstaw.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 5, max: 8 },
+      { min: 30, max: 30 },
+      "Wiosenna dymka sadzona pojedynczo na główki do zbioru i przechowania; nie wariant na szczypior.",
+      ["S20"],
       "medium",
+      "planting",
     ),
     seasonWindows: [
       season(3, 4, "direct_sow", "Siew lub dymka; wariant zależy od materiału sadzeniowego.", ["S6", "S7"]),
@@ -322,7 +552,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["burak", "beetroot", "beet"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7"],
-    spacing: publishedSpacing(5, 30, "Rozstaw S6 zależy od zbioru młodego lub dojrzałego.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 6, max: 10 },
+      { min: 25, max: 50 },
+      "Burak na korzeń do przechowywania; odstęp w rzędzie po przerzedzeniu zależy od docelowej wielkości korzenia.",
+      ["S21"],
+      "medium",
+      "thinning",
+    ),
     seasonWindows: [season(4, 6, "direct_sow", "Siew po ogrzaniu gleby; możliwe kolejne siewy.", ["S6", "S7"])],
     needsLocalValidation: true,
     validationNotes: "Dodać osobny kontekst dla botwiny i korzeni do przechowania.",
@@ -333,12 +570,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["rzodkiew", "radish"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7", "S10"],
-    spacing: publishedSpacing(
-      10,
-      15,
-      "S6; siew gęsty i rzodkiew na przechowanie wymagają różnych interpretacji.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 2, max: 4 },
+      { min: 10, max: 20 },
+      "Standardowa rzodkiewka wiosenna; można siać w docelowych odstępach albo przerzedzić gęstsze wschody.",
+      ["S22"],
       "medium",
+      "mixed",
+      false,
     ),
     seasonWindows: [
       season(3, 7, "direct_sow", "Siewy sukcesywne w chłodniejszych oknach; zakres zależy od odmiany.", [
@@ -357,7 +596,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["lettuce"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7", "S9"],
-    spacing: publishedSpacing(20, 15, "S6; zbiór główek i baby leaf mają różny cel rozstawy.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 15, max: 15 },
+      { min: 38, max: 38 },
+      "Dojrzałe główki sałaty typu Bibb/masłowej; liściowe i rzymskie mają inny odstęp w rzędzie.",
+      ["S23"],
+      "medium",
+      "final_planting",
+    ),
     seasonWindows: [
       season(3, 7, "direct_sow", "Wczesne i kolejne siewy; odmiana wyznacza tolerancję temperatury.", [
         "S6",
@@ -374,12 +620,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["kapusta", "white cabbage"],
     catalogTier: "core",
     sourceIds: ["S4", "S5", "S6", "S7"],
-    spacing: publishedSpacing(
-      40,
-      40,
-      "Para S6 dla grupy kapusty; odmiana i termin zmieniają pokrój.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 40, max: 40 },
+      { min: 45, max: 45 },
+      "Rozsada kapusty białej Kalorama F1 o średniej główce; źródło odmianowe, nie norma dla wszystkich odmian.",
+      ["S24"],
       "medium",
+      "planting",
     ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada wczesna lub późna; termin zależny od odmiany.", ["S6", "S7"]),
@@ -394,7 +641,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["cauliflower"],
     catalogTier: "core",
     sourceIds: ["S4", "S5", "S6", "S7"],
-    spacing: publishedSpacing(40, 40, "Para S6; termin i odmiana mają znaczenie.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 45, max: 60 },
+      { min: 50, max: 60 },
+      "Standardowa rozsada kalafiora do gruntu; polski poradnik nie specyfikuje odmiany ani wielkości róży.",
+      ["S25"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada dla wariantu wczesnego lub późnego.", ["S6", "S7"]),
       season(4, 6, "plant_out", "Sadzenie wiosenne zależne od odporności na chłód.", ["S6", "S7"]),
@@ -408,19 +662,20 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["broccoli"],
     catalogTier: "core",
     sourceIds: ["S4", "S5", "S6", "S7", "S10"],
-    spacing: publishedSpacing(
-      50,
-      50,
-      "S6; S10 daje niezależny zakres sanity check, ale bez polskiej normy.",
-      ["S6", "S10"],
+    spacing: verifiedSpacing(
+      { min: 40, max: 40 },
+      { min: 50, max: 50 },
+      "Dojrzały brokuł w ogrodzie działkowym; polskie źródło jawnie nazywa obie osie.",
+      ["S26"],
       "medium",
+      "final_planting",
     ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada; wariant wczesny lub późny.", ["S6", "S7"]),
       season(4, 7, "plant_out", "Sadzenie wiosenne i późniejsze okna produkcyjne.", ["S7"]),
     ],
     needsLocalValidation: true,
-    validationNotes: "Zachować konflikt zakresów S6/S10 zamiast wybierać jedną fałszywie dokładną wartość.",
+    validationNotes: "Default opisuje dojrzałą roślinę w ogrodzie działkowym; lokalnie zweryfikować rozmiar odmiany.",
   },
   {
     id: "kalarepa",
@@ -428,7 +683,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["kohlrabi"],
     catalogTier: "core",
     sourceIds: ["S4", "S6", "S7"],
-    spacing: publishedSpacing(20, 30, "Para S6; zależy od terminu i wielkości zbioru.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 20, max: 30 },
+      { min: 30, max: 30 },
+      "Standardowa rozsada kalarepy do zbioru zgrubień; ich wielkość może zmienić docelową gęstość.",
+      ["S27"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada lub siew w chłodniejszym oknie.", ["S6", "S7"]),
       season(4, 6, "plant_out", "Sadzenie wiosenne; możliwe kolejne terminy.", ["S6", "S7"]),
@@ -442,19 +704,20 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["kale"],
     catalogTier: "core",
     sourceIds: ["S4", "S6", "S7"],
-    spacing: publishedSpacing(
-      50,
-      45,
-      "Duży pokrój dojrzałej rośliny; para S6 bez zweryfikowanych osi.",
-      ["S6"],
-      "medium",
+    spacing: verifiedSpacing(
+      { min: 30, max: 30 },
+      { min: 61, max: 61 },
+      "Siatka dojrzałych roślin na zbiór liści; zagraniczny fallback o niskiej pewności dla polskiego ogrodu.",
+      ["S28"],
+      "low",
+      "final_planting",
     ),
     seasonWindows: [
       season(4, 6, "seedling", "Rozsada lub siew zależnie od odmiany.", ["S6", "S7"]),
       season(5, 7, "plant_out", "Sadzenie po przygotowaniu rozsady; toleruje chłód.", ["S7", "S9"]),
     ],
     needsLocalValidation: true,
-    validationNotes: "Zweryfikować oś rozstawy i wariant zbioru liści.",
+    validationNotes: "Zachować niską pewność zagranicznego fallbacku i sprawdzić dopasowanie odmiany do grządki.",
   },
   {
     id: "groch",
@@ -462,10 +725,18 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["pea"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7", "S10"],
-    spacing: publishedSpacing(25, 50, "Podpora i odmiana zmieniają układ; para S6 bez kontroli osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 4, max: 5 },
+      { min: 20, max: 30 },
+      "Niska odmiana grochu bez podpory; rozstaw dotyczy siewu nasion, niepotwierdzonego końcowego stanu roślin.",
+      ["S29"],
+      "low",
+      "sowing",
+      false,
+    ),
     seasonWindows: [season(3, 4, "direct_sow", "Wczesny siew bezpośredni.", ["S2", "S6", "S7"])],
     needsLocalValidation: true,
-    validationNotes: "Rozdzielić odmiany karłowe i wymagające podpory.",
+    validationNotes: "Rozdzielić odmiany karłowe i wymagające podpory; podana siatka dotyczy siewu nasion.",
   },
   {
     id: "bob",
@@ -473,10 +744,18 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["broad bean", "fava bean"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7"],
-    spacing: publishedSpacing(40, 20, "Para S6; wariant wczesny i późny może różnić się pokrojem.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 10, max: 15 },
+      { min: 40, max: 60 },
+      "Wiosenny siew rzędowy pojedynczych nasion; źródło nie potwierdza końcowej obsady po wschodach.",
+      ["S30"],
+      "low",
+      "sowing",
+      false,
+    ),
     seasonWindows: [season(3, 4, "direct_sow", "Siew wczesny; bób toleruje chłód.", ["S2", "S6", "S7"])],
     needsLocalValidation: true,
-    validationNotes: "Zweryfikować oś rozstawy przed alokacją powierzchni.",
+    validationNotes: "Zachować niską pewność końcowej obsady; źródło podaje odstęp siewu pojedynczych nasion.",
   },
   {
     id: "cukinia",
@@ -484,7 +763,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["zucchini", "courgette"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S5", "S6", "S7", "S9"],
-    spacing: publishedSpacing(80, 80, "Duża powierzchnia; para S6 bez zweryfikowanych osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 61, max: 91 },
+      { min: 91, max: 152 },
+      "Cukinia krzaczasta w ogrodzie domowym, przerzedzana do jednej rośliny na stanowisko.",
+      ["S31"],
+      "medium",
+      "thinning",
+    ),
     seasonWindows: [
       season(4, 4, "seedling", "Rozsada w cieple.", ["S6", "S9"]),
       season(5, 5, "direct_sow", "Siew po ogrzaniu gleby i ryzyku przymrozków.", ["S6", "S7", "S9"]),
@@ -499,7 +785,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["pumpkin", "winter squash"],
     catalogTier: "core",
     sourceIds: ["S4", "S6", "S7", "S9"],
-    spacing: publishedSpacing(100, 150, "Bardzo duża przestrzeń; para S6 bez zweryfikowanych osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 100, max: 120 },
+      { min: 100, max: 200 },
+      "Pojedyncza obsada dyni w siatce polowej; starszy wariant produkcyjny, nie uniwersalna rozstawa wszystkich typów.",
+      ["S32"],
+      "low",
+      "final_planting",
+    ),
     seasonWindows: [
       season(4, 4, "seedling", "Rozsada w cieple.", ["S6", "S9"]),
       season(5, 5, "direct_sow", "Siew po ogrzaniu gleby i ryzyku przymrozków.", ["S6", "S7", "S9"]),
@@ -514,7 +807,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["pepper", "sweet pepper"],
     catalogTier: "core",
     sourceIds: ["S4", "S5", "S6", "S7", "S9"],
-    spacing: publishedSpacing(40, 50, "Uprawa z rozsady; para S6 bez zweryfikowanych osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 30, max: 40 },
+      { min: 50, max: 60 },
+      "Papryka słodka z rozsady w gruncie; uprawa pod osłoną ma osobne wartości.",
+      ["S33"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [
       season(3, 4, "seedling", "Wysiew rozsady w ogrzewanym miejscu.", ["S5", "S6", "S9"]),
       season(5, 6, "plant_out", "Sadzenie do gruntu po połowie maja, lokalnie później.", ["S5", "S6", "S7"]),
@@ -528,12 +828,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["leek"],
     catalogTier: "core",
     sourceIds: ["S4", "S6", "S7"],
-    spacing: publishedSpacing(
-      5,
-      40,
-      "Głębokość sadzenia jest osobną cechą; para S6 bez zweryfikowanych osi.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 12, max: 15 },
+      { min: 30, max: 45 },
+      "Rozsada pora na zbiór jesienny; nie wariant wczesny pęczkowy ani przezimowujący.",
+      ["S34"],
       "medium",
+      "planting",
     ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada wiosenna.", ["S6", "S7"]),
@@ -548,12 +849,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["spinach"],
     catalogTier: "core",
     sourceIds: ["S4", "S6", "S7", "S10"],
-    spacing: publishedSpacing(
-      3,
-      15,
-      "S6 podaje gęsty siew; S10 opisuje liczbę nasion, więc wartości nie są równoważne.",
-      ["S6", "S10"],
-      "low",
+    spacing: verifiedSpacing(
+      { min: 10, max: 15 },
+      { min: 30, max: 36 },
+      "Dojrzały zbiór liści po przerzedzeniu; zagraniczny fallback, nie lokalna polska norma.",
+      ["S35"],
+      "medium",
+      "thinning",
     ),
     seasonWindows: [
       season(3, 6, "direct_sow", "Siew w chłodniejszych oknach; odmiana wpływa na termin.", ["S6", "S7", "S10"]),
@@ -568,7 +870,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["celery"],
     catalogTier: "extended",
     sourceIds: ["S4", "S6", "S7"],
-    spacing: publishedSpacing(50, 35, "Długa uprawa z rozsady; para S6 bez zweryfikowanych osi.", ["S6"], "medium"),
+    spacing: verifiedSpacing(
+      { min: 30, max: 40 },
+      { min: 40, max: 40 },
+      "Seler korzeniowy z rozsady na jesienny zbiór i przechowanie; nie seler naciowy ani zbiór wczesny.",
+      ["S36"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [
       season(3, 5, "seedling", "Rozsada wymaga długiego sezonu.", ["S6", "S7"]),
       season(5, 6, "plant_out", "Sadzenie późną wiosną po przygotowaniu rozsady.", ["S7"]),
@@ -582,12 +891,13 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["kukurydza", "sweet corn"],
     catalogTier: "extended",
     sourceIds: ["S4", "S5", "S6", "S9"],
-    spacing: publishedSpacing(
-      50,
-      28,
-      "Układ blokowy pomaga w zapyleniu; para S6 bez zweryfikowanych osi.",
-      ["S6"],
+    spacing: verifiedSpacing(
+      { min: 20, max: 30 },
+      { min: 76, max: 91 },
+      "Rośliny po przerzedzeniu; źródło zaleca blok co najmniej czterech rzędów, bo pojedynczy rząd gorzej się zapyla.",
+      ["S37"],
       "medium",
+      "thinning",
     ),
     seasonWindows: [
       season(5, 6, "direct_sow", "Siew od połowy maja na ciepłą glebę; lepszy układ blokowy.", ["S5", "S6", "S9"]),
@@ -607,6 +917,7 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
       "Źródło S8 podaje odstęp w rzędzie i między rzędami.",
       ["S8"],
       "high",
+      "planting",
     ),
     seasonWindows: [
       season(
@@ -627,10 +938,17 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["parsnip"],
     catalogTier: "extended",
     sourceIds: ["S4", "S6", "S7"],
-    spacing: publishedSpacing(20, 30, "Tabela S6; brak niezależnej polskiej kontroli osi.", ["S6"], "low"),
+    spacing: verifiedSpacing(
+      { min: 7, max: 10 },
+      { min: 40, max: 50 },
+      "Pasternak korzeniowy po przerwaniu wschodów; rozstawa odpowiada siewowi na płask, redliny wymagają innego układu.",
+      ["S38"],
+      "medium",
+      "thinning",
+    ),
     seasonWindows: [season(3, 6, "direct_sow", "Siew bezpośredni; wolne wschody.", ["S6", "S7"], "medium")],
     needsLocalValidation: true,
-    validationNotes: "Potwierdzić oś rozstawy oraz aktualne okno dla odmiany.",
+    validationNotes: "Sprawdzić wpływ uprawy na redlinach i lokalne okno dla odmiany.",
   },
   {
     id: "rukola",
@@ -638,7 +956,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["arugula", "rocket"],
     catalogTier: "extended",
     sourceIds: ["S4", "S6", "S9"],
-    spacing: publishedSpacing(15, 15, "S6; szybki zbiór liści może zmieniać praktyczną gęstość.", ["S6"], "low"),
+    spacing: verifiedSpacing(
+      { min: 4, max: 5 },
+      { min: 15, max: 20 },
+      "Gęsty zbiór liści po przerzedzeniu; nie wariant dużych pojedynczych rozet.",
+      ["S39"],
+      "low",
+      "thinning",
+    ),
     seasonWindows: [season(3, 8, "direct_sow", "Siewy sukcesywne w chłodniejszych oknach.", ["S6", "S9"], "low")],
     needsLocalValidation: true,
     validationNotes: "Brak wystarczających danych o popularności i wariantach zbioru.",
@@ -649,12 +974,20 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["lambs lettuce", "lamb's lettuce"],
     catalogTier: "extended",
     sourceIds: ["S4", "S7", "S9"],
-    spacing: null,
+    spacing: verifiedSpacing(
+      { min: 10, max: 15 },
+      { min: 15, max: 20 },
+      "Standardowy zbiór kęp/rozet po przerzedzeniu; alternatywy zależą od odmiany.",
+      ["S40"],
+      "medium",
+      "thinning",
+    ),
     seasonWindows: [
       season(8, 10, "direct_sow", "Chłodne późne lato i jesień; termin zależy od odmiany.", ["S7", "S9"], "low"),
     ],
     needsLocalValidation: true,
-    validationNotes: "Brak zweryfikowanej polskiej rozstawy w zebranych źródłach.",
+    validationNotes:
+      "Źródło jest poradnikiem hobbystycznym; zweryfikować dopasowanie do lokalnej odmiany i celu zbioru.",
   },
   {
     id: "baklazan",
@@ -662,7 +995,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["eggplant", "aubergine"],
     catalogTier: "extended",
     sourceIds: ["S4", "S6", "S9"],
-    spacing: publishedSpacing(50, 45, "Uprawa z rozsady; para S6 bez zweryfikowanych osi.", ["S6"], "low"),
+    spacing: verifiedSpacing(
+      { min: 50, max: 60 },
+      { min: 60, max: 80 },
+      "Bujnie rosnący bakłażan z rozsady; odmiany niskie mają ciaśniejszą siatkę, a osłony mogą wymagać osobnego wariantu.",
+      ["S41"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [
       season(3, 4, "seedling", "Wysiew rozsady w cieple.", ["S6", "S9"]),
       season(5, 6, "plant_out", "Sadzenie po połowie maja i po ustąpieniu ryzyka przymrozków.", ["S6", "S9"]),
@@ -676,7 +1016,14 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["turnip"],
     catalogTier: "extended",
     sourceIds: ["S4"],
-    spacing: null,
+    spacing: verifiedSpacing(
+      { min: 8, max: 20 },
+      { min: 20, max: 25 },
+      "Wczesna rzepa po przerwaniu wschodów; szeroki zakres, niska pewność i osobne siatki dla odmian późnych.",
+      ["S42"],
+      "low",
+      "thinning",
+    ),
     seasonWindows: [
       season(4, 7, "direct_sow", "Okno orientacyjne z grupy korzeniowych; wymaga lokalnej walidacji.", ["S4"], "low"),
     ],
@@ -689,10 +1036,17 @@ export const CROP_CATALOG: readonly CropCatalogEntry[] = [
     aliases: ["potato"],
     catalogTier: "extended",
     sourceIds: ["S4", "S5", "S10"],
-    spacing: null,
+    spacing: verifiedSpacing(
+      { min: 40, max: 50 },
+      { min: 50, max: 60 },
+      "Odmiana główna sadzona z bulwy sadzeniaka; odmiany wczesne mogą być sadzone ciaśniej.",
+      ["S43"],
+      "medium",
+      "planting",
+    ),
     seasonWindows: [],
     needsLocalValidation: true,
-    validationNotes: "Brak polskiej zweryfikowanej rozstawy i finalnego okna w obecnym researchu.",
+    validationNotes: "Roboczy rozstaw pochodzi z polskiego atlasu; lokalne okno sadzenia pozostaje do walidacji.",
   },
 ];
 
@@ -854,9 +1208,24 @@ export function validateCropCatalog(
       if (crop.spacing.axisVerified) {
         assertCondition(crop.spacing.inRowCm !== null, crop.id + " verified spacing needs in-row values");
         assertCondition(crop.spacing.betweenRowsCm !== null, crop.id + " verified spacing needs between-row values");
+        assertCondition(
+          crop.spacing.publishedPairCm === null,
+          crop.id + " verified spacing cannot also have an unlabeled pair",
+        );
       } else {
         assertCondition(crop.spacing.publishedPairCm !== null, crop.id + " unverified spacing needs published pair");
+        assertCondition(crop.spacing.inRowCm === null, crop.id + " unverified spacing cannot have an in-row axis");
+        assertCondition(
+          crop.spacing.betweenRowsCm === null,
+          crop.id + " unverified spacing cannot have a between-row axis",
+        );
       }
+      assertCondition(crop.spacing.context.trim().length > 0, crop.id + " spacing has no context");
+      assertCondition(crop.spacing.stage.length > 0, crop.id + " spacing has no stage");
+      assertCondition(
+        typeof crop.spacing.isFinalPlanting === "boolean",
+        crop.id + " spacing has no planting-stage flag",
+      );
     }
 
     for (const window of crop.seasonWindows) {
@@ -880,7 +1249,13 @@ export function validateCropCatalog(
     relationPairs.add(pair);
     assertCondition(relation.rationale.trim().length > 0, pair + " has no rationale");
     assertSourceIds(relation.sourceIds, pair + " relation");
-    assertCondition(!relation.hardBlock, pair + " cannot be a hard block");
+    assertCondition(
+      !relation.hardBlock || relation.status === "negative",
+      pair + " may only be a hard block when status is negative",
+    );
+    if (relation.status === "negative") {
+      assertCondition(relation.hardBlock, pair + " negative relation must be a hard block");
+    }
   }
 }
 
