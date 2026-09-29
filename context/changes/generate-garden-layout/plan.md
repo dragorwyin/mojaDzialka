@@ -248,9 +248,9 @@ Dodać prostą akcję generowania oraz widok układu wszystkich przestrzeni, wyn
 
 #### Automated
 
-- [ ] 2.1 Migracja i testy DB potwierdzają jednowierszowy, prywatny zapis planu.
-- [ ] 2.2 Endpoint autoryzuje użytkownika, używa jego wejść i atomowo zastępuje wynik.
-- [ ] 2.3 Testy DB, endpointu i unit przechodzą.
+- [x] 2.1 Migracja i testy DB potwierdzają jednowierszowy, prywatny zapis planu.
+- [x] 2.2 Endpoint autoryzuje użytkownika, używa jego wejść i atomowo zastępuje wynik.
+- [x] 2.3 Testy DB, endpointu i unit przechodzą.
 
 ### Phase 3: Graficzny plan na stronie działki
 

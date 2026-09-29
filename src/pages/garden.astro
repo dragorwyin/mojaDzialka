@@ -19,12 +19,23 @@ interface GardenCropRow {
   proportion: number | string;
 }
 
+interface GardenPlanRow {
+  input_fingerprint: string;
+  generated_at: string;
+  plan: {
+    spaces?: { positions?: unknown[] }[];
+  };
+}
+
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 let initialSpaces: GardenSpaceRow[] = [];
 let initialCrops: { cropId: string; proportion: string }[] = [];
 let loadError: string | null = null;
 let cropsLoadError = false;
+let currentPlan: GardenPlanRow | null = null;
+let currentPlanLoadError = false;
+let currentPlanPositionCount = 0;
 
 if (supabase && user) {
   const { data, error } = await supabase
@@ -50,6 +61,22 @@ if (supabase && user) {
         cropId: crop.crop_id,
         proportion: String(crop.proportion),
       }));
+    }
+
+    const { data: planRow, error: planError } = await supabase
+      .from("garden_plans")
+      .select("input_fingerprint, generated_at, plan")
+      .eq("garden_id", data.id)
+      .maybeSingle();
+
+    if (planError) {
+      currentPlanLoadError = true;
+    } else if (planRow) {
+      currentPlan = planRow;
+      currentPlanPositionCount = (currentPlan.plan.spaces ?? []).reduce(
+        (total, space) => total + (space.positions?.length ?? 0),
+        0,
+      );
     }
   }
 }
@@ -88,6 +115,20 @@ const saved = Astro.url.searchParams.get("saved") === "1";
 
       <section class="mt-8 rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
         <CropSelectionForm initialSelection={initialCrops} unavailable={cropsLoadError} client:load />
+      </section>
+
+      <section
+        id="garden-plan-ssr"
+        class="mt-8 rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8"
+        data-plan-fingerprint={currentPlan?.input_fingerprint ?? ""}
+        data-plan-generated-at={currentPlan?.generated_at ?? ""}
+        data-plan-position-count={currentPlan ? String(currentPlanPositionCount) : ""}
+      >
+        {currentPlanLoadError
+          ? "Nie udało się odczytać zapisanego planu działki."
+          : currentPlan
+            ? "Zapisany plan działki."
+            : "Nie wygenerowano jeszcze planu działki."}
       </section>
     </div>
   </main>

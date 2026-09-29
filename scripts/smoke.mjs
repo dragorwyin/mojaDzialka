@@ -1,3 +1,6 @@
+/* global AbortController */
+import { clearTimeout, setTimeout } from "node:timers";
+
 // Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
 
@@ -5,6 +8,11 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
+// POSTs opt into retries only when repeating them preserves the same resource state.
+const MAX_RETRIES = 2;
+const RETRY_DELAYS_MS = [500, 1_000];
+const REQUEST_TIMEOUT_MS = 20_000;
+const RETRYABLE_SERVER_STATUSES = new Set([500, 502, 503, 504]);
 
 function cookieHeader() {
   return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
@@ -20,24 +28,60 @@ function storeCookies(response) {
   }
 }
 
-async function request(path, { method = "GET", form, json } = {}) {
-  const response = await fetch(BASE_URL + path, {
-    method,
-    redirect: "manual",
-    headers: {
-      Cookie: cookieHeader(),
-      Origin: BASE_URL,
-      ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
-      ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
-    body: form ? new URLSearchParams(form).toString() : json !== undefined ? JSON.stringify(json) : undefined,
-  });
-  storeCookies(response);
-  return {
-    status: response.status,
-    location: response.headers.get("location") ?? "",
-    body: await response.text(),
-  };
+async function request(path, { method = "GET", form, json, idempotent = method === "GET" || method === "HEAD" } = {}) {
+  let retries = 0;
+
+  for (let attempt = 0; attempt <= (idempotent ? MAX_RETRIES : 0); attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(BASE_URL + path, {
+        method,
+        redirect: "manual",
+        headers: {
+          Cookie: cookieHeader(),
+          Origin: BASE_URL,
+          ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+          ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
+        },
+        body: form ? new URLSearchParams(form).toString() : json !== undefined ? JSON.stringify(json) : undefined,
+        signal: controller.signal,
+      });
+      storeCookies(response);
+      const result = {
+        status: response.status,
+        location: response.headers.get("location") ?? "",
+        body: await response.text(),
+        retries,
+      };
+
+      if (!idempotent || !RETRYABLE_SERVER_STATUSES.has(result.status) || attempt === MAX_RETRIES) return result;
+
+      retries++;
+      const delay = RETRY_DELAYS_MS[attempt];
+      console.warn(`RETRY  ${method} ${path} after HTTP ${result.status} (${retries}/${MAX_RETRIES}, ${delay}ms)`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    } catch (error) {
+      if (!idempotent || attempt === MAX_RETRIES) {
+        return {
+          status: 0,
+          location: "",
+          body: `Transport error: ${error instanceof Error ? error.message : String(error)}`,
+          retries,
+        };
+      }
+
+      retries++;
+      const delay = RETRY_DELAYS_MS[attempt];
+      console.warn(`RETRY  ${method} ${path} after a transport error (${retries}/${MAX_RETRIES}, ${delay}ms)`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw new Error(`Request retry loop ended unexpectedly for ${method} ${path}`);
 }
 
 const steps = [
@@ -48,8 +92,18 @@ const steps = [
     { status: 302, location: "/auth/signin?returnTo=%2Fdashboard" },
   ],
   [
+    "garden plan rejects an anonymous request",
+    () => request("/api/garden-plan", { method: "POST", json: {} }),
+    { status: 401, includes: '"error":"unauthorized"' },
+  ],
+  [
     "signup rejects passwords shorter than eight characters",
-    () => request("/api/auth/signup", { method: "POST", form: { email, password: "short", confirmPassword: "short" } }),
+    () =>
+      request("/api/auth/signup", {
+        method: "POST",
+        form: { email, password: "short", confirmPassword: "short" },
+        idempotent: true,
+      }),
     { status: 302, location: "/auth/signup?error=password_too_short" },
   ],
   [
@@ -58,7 +112,11 @@ const steps = [
     { status: 302, location: "/dashboard" },
   ],
   ["signup establishes dashboard session", () => request("/dashboard"), { status: 200 }],
-  ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
+  [
+    "signout clears session",
+    () => request("/api/auth/signout", { method: "POST", idempotent: true }),
+    { status: 302, location: "/" },
+  ],
   [
     "dashboard redirects after signout and preserves target",
     () => request("/dashboard"),
@@ -89,6 +147,11 @@ const steps = [
   ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
   [
+    "garden plan reports the missing garden explicitly",
+    () => request("/api/garden-plan", { method: "POST", json: { ownerId: "foreign-owner", spaces: [] } }),
+    { status: 422, includes: '"error":"missing_garden"' },
+  ],
+  [
     "garden renders crop selection for signed-in user",
     () => request("/garden"),
     { status: 200, includes: "Wybór warzyw i udziałów procentowych" },
@@ -102,8 +165,14 @@ const steps = [
           { cropId: "pomidor", proportion: 2 },
           { cropId: "marchew", proportion: 0.75 },
         ],
+        idempotent: true,
       }),
     { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "garden plan reports missing spaces instead of saving an empty plan",
+    () => request("/api/garden-plan", { method: "POST", json: { spaces: [{ widthCm: 1, lengthCm: 1 }] } }),
+    { status: 422, includes: '"error":"missing_spaces"' },
   ],
   [
     "garden renders the saved crop selection as normalized percentages",
@@ -125,6 +194,50 @@ const steps = [
     { status: 200, includes: ["pomidor", "marchew", 'value="72.73"', 'value="27.27"', "100,00%"] },
   ],
   [
+    "crop selection can be cleared before checking missing garden-plan crops",
+    () => request("/api/garden-crops", { method: "POST", json: [], idempotent: true }),
+    { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "garden plan reports missing crops instead of saving an empty plan",
+    () => request("/api/garden-plan", { method: "POST", json: { cropIds: ["foreign-crop"] } }),
+    { status: 422, includes: '"error":"missing_crops"' },
+  ],
+  [
+    "crop selection can be restored after checking missing garden-plan crops",
+    () =>
+      request("/api/garden-crops", {
+        method: "POST",
+        json: [
+          { cropId: "pomidor", proportion: 2 },
+          { cropId: "marchew", proportion: 0.75 },
+        ],
+        idempotent: true,
+      }),
+    { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "garden plan generates from private database input",
+    () =>
+      request("/api/garden-plan", {
+        method: "POST",
+        json: { gardenId: "foreign-garden", widthCm: 1, spaces: [] },
+        idempotent: true,
+      }),
+    { status: 200, includes: ['"saved":true', '"inputFingerprint"', '"plan"'] },
+  ],
+  [
+    "regenerating garden plan remains a single current result",
+    () =>
+      request("/api/garden-plan", { method: "POST", json: { gardenId: "another-foreign-garden" }, idempotent: true }),
+    { status: 200, includes: ['"saved":true', '"inputFingerprint"'] },
+  ],
+  [
+    "garden SSR reads the saved current plan",
+    () => request("/garden"),
+    { status: 200, includes: ["garden-plan-ssr", "Zapisany plan działki."] },
+  ],
+  [
     "saving an empty crop selection clears the previous selection",
     () => request("/api/garden-crops", { method: "POST", json: [] }),
     { status: 200, includes: '"saved":true' },
@@ -139,8 +252,17 @@ const steps = [
     },
   ],
   [
+    "garden plan reports missing crops instead of saving an empty plan",
+    () =>
+      request("/api/garden-plan", {
+        method: "POST",
+        json: { crops: [{ cropId: "pomidor", proportion: 100 }] },
+      }),
+    { status: 422, includes: '"error":"missing_crops"' },
+  ],
+  [
     "signout clears session before default signin",
-    () => request("/api/auth/signout", { method: "POST" }),
+    () => request("/api/auth/signout", { method: "POST", idempotent: true }),
     { status: 302, location: "/" },
   ],
   [
@@ -192,10 +314,19 @@ for (const [name, run, expected] of steps) {
       (Array.isArray(expected.excludes)
         ? expected.excludes.every((text) => !actual.body.includes(text))
         : !actual.body.includes(expected.excludes)));
-  console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
+  const retryNote = actual.retries > 0 ? ` (${actual.retries} retries)` : "";
+  console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}${retryNote}`);
   if (!ok) {
     failed++;
     console.log(`      expected ${expected.status} ${expected.location ?? ""}`);
+    let diagnostic = actual.body.replace(/\s+/g, " ").slice(0, 180);
+    try {
+      const responseBody = JSON.parse(actual.body);
+      if (typeof responseBody.error === "string") diagnostic = responseBody.error;
+    } catch {
+      // Keep a short response excerpt for non-JSON failures.
+    }
+    if (diagnostic) console.log(`      response ${diagnostic}`);
   }
 }
 
