@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "test:db": "supabase db reset --local --no-seed && supabase test db",
     "astro": "astro",
-    "lint": "eslint .",
+    "lint": "node scripts/check-garden-ui-tokens.mjs && eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",

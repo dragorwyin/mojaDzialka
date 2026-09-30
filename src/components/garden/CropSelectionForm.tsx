@@ -1,4 +1,5 @@
 import { useMemo, useState, type SyntheticEvent } from "react";
+import { Button } from "@/components/ui/button";
 
 import { getCropById, searchCrops } from "../../lib/crop-catalog.js";
 import { validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
@@ -72,9 +73,9 @@ export default function CropSelectionForm({
   const mixGuidanceId = `${idPrefix}-mix-guidance`;
   const demoInteractionClass =
     demoInteraction === "hover"
-      ? "!bg-purple-300"
+      ? "!bg-garden-accent-hover"
       : demoInteraction === "focus"
-        ? "outline outline-2 outline-purple-200 outline-offset-2"
+        ? "outline outline-2 outline-garden-focus outline-offset-2"
         : "";
 
   function updateSelection(updater: (current: CropSelection[]) => CropSelection[]) {
@@ -142,25 +143,30 @@ export default function CropSelectionForm({
   return (
     <section aria-labelledby={titleId} className="space-y-6">
       <header className="max-w-2xl">
-        <p className="mb-2 text-sm font-semibold tracking-[0.2em] text-purple-200 uppercase">S-03 · Planowanie upraw</p>
-        <h2 id={titleId} className="text-2xl font-bold text-white">
+        <p className="text-garden-accent mb-2 text-sm font-semibold tracking-[0.2em] uppercase">
+          S-03 · Planowanie upraw
+        </p>
+        <h2 id={titleId} className="text-garden-foreground text-2xl font-bold">
           Wybór warzyw i udziałów procentowych
         </h2>
-        <p className="mt-3 text-blue-100/75">
+        <p className="text-garden-muted/75 mt-3">
           Określ, jaki procent planowanej liczby roślin na całej działce ma przypadać na każdą uprawę. Algorytm później
           dobierze dla nich grządki; tutaj nie przypisujesz upraw do konkretnych skrzyń.
         </p>
       </header>
 
       {unavailable && (
-        <p className="rounded-lg border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100" role="alert">
+        <p
+          className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+          role="alert"
+        >
           Nie udało się odczytać zapisanego wyboru upraw. Odśwież stronę później; formularz jest tymczasowo wyłączony,
           żeby nie nadpisać danych.
         </p>
       )}
 
       <div className="max-w-2xl space-y-3">
-        <label htmlFor={searchId} className="block space-y-2 text-sm text-blue-100/80">
+        <label htmlFor={searchId} className="text-garden-muted/80 block space-y-2 text-sm">
           <span>Wyszukaj warzywo po nazwie lub aliasie</span>
           <input
             id={searchId}
@@ -172,34 +178,38 @@ export default function CropSelectionForm({
             placeholder="Np. pomidor, ogórek albo rocket"
             autoComplete="off"
             disabled={unavailable || status === "saving"}
-            className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none placeholder:text-blue-100/40 focus:border-purple-300 disabled:opacity-50"
+            className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground placeholder:text-garden-muted/40 focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
           />
         </label>
-        <p className="text-xs text-blue-100/60">Wyszukiwanie uwzględnia aliasy i nie wymaga polskich znaków.</p>
+        <p className="text-garden-muted/60 text-xs">Wyszukiwanie uwzględnia aliasy i nie wymaga polskich znaków.</p>
 
         {query.trim() && searchResults.length > 0 && (
-          <ul aria-label="Wyniki wyszukiwania" className="divide-y divide-white/10 rounded-xl border border-white/10">
+          <ul
+            aria-label="Wyniki wyszukiwania"
+            className="divide-garden-surface/10 border-garden-surface/10 divide-y rounded-xl border"
+          >
             {searchResults.map((crop) => (
               <li key={crop.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                <span className="text-sm text-white">{crop.commonNamePl}</span>
-                <button
+                <span className="text-garden-foreground text-sm">{crop.commonNamePl}</span>
+                <Button
                   type="button"
                   onClick={() => {
                     updateSelection((current) => [...current, { cropId: crop.id, proportion: "1.00" }]);
                   }}
                   disabled={unavailable || status === "saving"}
-                  className="shrink-0 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
+                  variant="outline"
+                  className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium shadow-none transition-colors"
                   aria-label={`Dodaj ${crop.commonNamePl}`}
                 >
                   Dodaj
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
         )}
 
         {query.trim() && searchResults.length === 0 && (
-          <p className="text-sm text-blue-100/70" role="status">
+          <p className="text-garden-muted/70 text-sm" role="status">
             Nie znaleziono nowych warzyw dla tej frazy.
           </p>
         )}
@@ -207,9 +217,9 @@ export default function CropSelectionForm({
 
       <form onSubmit={saveSelection} className="space-y-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">Wybrane warzywa</h3>
+          <h3 className="text-garden-foreground text-lg font-semibold">Wybrane warzywa</h3>
           {selection.length === 0 ? (
-            <p className="mt-2 text-sm text-blue-100/70">
+            <p className="text-garden-muted/70 mt-2 text-sm">
               Nie wybrano jeszcze warzyw. Zapis pustej listy wyczyści wybór.
             </p>
           ) : (
@@ -223,12 +233,12 @@ export default function CropSelectionForm({
                 return (
                   <li
                     key={crop.cropId}
-                    className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-[1fr_10rem_auto] sm:items-end"
+                    className="border-garden-surface/10 bg-garden-surface/5 grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_10rem_auto] sm:items-end"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-white">{cropName}</p>
+                      <p className="text-garden-foreground font-medium">{cropName}</p>
                     </div>
-                    <label htmlFor={proportionId} className="space-y-2 text-sm text-blue-100/80">
+                    <label htmlFor={proportionId} className="text-garden-muted/80 space-y-2 text-sm">
                       <span>Udział (%)</span>
                       <input
                         id={proportionId}
@@ -248,20 +258,21 @@ export default function CropSelectionForm({
                         disabled={unavailable || status === "saving"}
                         aria-invalid={proportionHundredths === null || proportionHundredths <= 0}
                         aria-describedby={mixGuidanceId}
-                        className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
+                        className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
                       />
                     </label>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         updateSelection((current) => current.filter((item) => item.cropId !== crop.cropId));
                       }}
                       disabled={unavailable || status === "saving"}
-                      className="rounded-lg px-3 py-2 text-sm text-rose-200 transition-colors hover:bg-rose-400/10 hover:text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:opacity-50"
+                      variant="ghost"
+                      className="text-garden-danger-muted hover:bg-garden-danger-surface/10 hover:text-garden-danger focus-visible:ring-garden-focus rounded-lg px-3 py-2 text-sm transition-colors"
                       aria-label={`Usuń ${cropName}`}
                     >
                       Usuń
-                    </button>
+                    </Button>
                   </li>
                 );
               })}
@@ -270,7 +281,7 @@ export default function CropSelectionForm({
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-white" role="status" aria-live="polite">
+          <p className="text-garden-foreground text-sm font-semibold" role="status" aria-live="polite">
             Suma udziałów:{" "}
             {totalPercentageHundredths === null
               ? "—"
@@ -278,7 +289,7 @@ export default function CropSelectionForm({
           </p>
           <p
             id={mixGuidanceId}
-            className={selection.length > 0 && !selectionIsValid ? "text-sm text-amber-100" : "sr-only"}
+            className={selection.length > 0 && !selectionIsValid ? "text-garden-warning text-sm" : "sr-only"}
           >
             Udziały muszą być dodatnie i sumować się do dokładnie 100,00%.
           </p>
@@ -286,7 +297,7 @@ export default function CropSelectionForm({
 
         {status === "error" && (
           <p
-            className="rounded-lg border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100"
+            className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
             role="alert"
           >
             {message}
@@ -294,20 +305,20 @@ export default function CropSelectionForm({
         )}
         {status === "saved" && (
           <p
-            className="rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100"
+            className="border-garden-success-border/30 bg-garden-success-surface/10 text-garden-success rounded-lg border px-4 py-3 text-sm"
             role="status"
           >
             {message}
           </p>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={unavailable || status === "saving" || !selectionIsValid}
-          className={`rounded-lg bg-purple-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200 disabled:cursor-not-allowed disabled:opacity-60 ${status === "saving" ? "cursor-wait" : ""} ${demoInteractionClass}`}
+          className={`bg-garden-accent-strong text-garden-accent-foreground hover:bg-garden-accent-hover focus-visible:ring-garden-focus rounded-lg px-4 py-2 text-sm font-semibold shadow-none transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${status === "saving" ? "cursor-wait" : ""} ${demoInteractionClass}`}
         >
           {status === "saving" ? "Zapisywanie…" : "Zapisz wybór upraw"}
-        </button>
+        </Button>
       </form>
     </section>
   );

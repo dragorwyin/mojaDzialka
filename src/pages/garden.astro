@@ -85,17 +85,17 @@ const error = Astro.url.searchParams.get("error") ?? loadError;
 const saved = Astro.url.searchParams.get("saved") === "1";
 ---
 
-<Layout title="Moja działka">
-  <main class="bg-cosmic min-h-screen p-4 text-white md:p-8">
+<Layout title="Moja działka" lang="pl">
+  <main class="bg-cosmic min-h-screen p-4 text-garden-foreground md:p-8">
     <div class="mx-auto max-w-4xl">
       <Topbar />
-      <section class="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+      <section class="rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
         <div class="mb-8 max-w-2xl">
-          <p class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+          <p class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-garden-accent">
             S-02 · Prywatna konfiguracja
           </p>
-          <h1 class="text-3xl font-bold text-white">Zdefiniuj swoją działkę</h1>
-          <p class="mt-3 text-blue-100/75">
+          <h1 class="text-3xl font-bold text-garden-foreground">Zdefiniuj swoją działkę</h1>
+          <p class="mt-3 text-garden-muted/75">
             Dodaj skrzynie lub sektory i podaj ich wymiary. Te dane zostaną użyte jako wejście do planowania upraw.
           </p>
         </div>
@@ -113,13 +113,13 @@ const saved = Astro.url.searchParams.get("saved") === "1";
         />
       </section>
 
-      <section class="mt-8 rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+      <section class="mt-8 rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
         <CropSelectionForm initialSelection={initialCrops} unavailable={cropsLoadError} client:load />
       </section>
 
       <section
         id="garden-plan-ssr"
-        class="mt-8 rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8"
+        class="mt-8 rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8"
         data-plan-fingerprint={currentPlan?.input_fingerprint ?? ""}
         data-plan-generated-at={currentPlan?.generated_at ?? ""}
         data-plan-position-count={currentPlan ? String(currentPlanPositionCount) : ""}

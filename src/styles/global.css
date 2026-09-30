@@ -5,6 +5,26 @@
 
 :root {
   --radius: 0.625rem;
+  /* Garden roles preserve the existing cosmic palette while keeping view classes semantic. */
+  --garden-page-start: #0a0e1a;
+  --garden-page-middle: #0f1529;
+  --garden-surface: var(--color-white);
+  --garden-input: var(--color-slate-950);
+  --garden-foreground: var(--color-white);
+  --garden-muted: var(--color-blue-100);
+  --garden-accent: var(--color-purple-200);
+  --garden-accent-strong: var(--color-purple-400);
+  --garden-accent-hover: var(--color-purple-300);
+  --garden-accent-foreground: var(--color-slate-950);
+  --garden-focus: var(--color-purple-200);
+  --garden-danger: var(--color-rose-100);
+  --garden-danger-muted: var(--color-rose-200);
+  --garden-danger-surface: var(--color-rose-400);
+  --garden-danger-border: var(--color-rose-300);
+  --garden-success: var(--color-emerald-100);
+  --garden-success-surface: var(--color-emerald-400);
+  --garden-success-border: var(--color-emerald-300);
+  --garden-warning: var(--color-amber-100);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -73,6 +93,23 @@
 }
 
 @theme inline {
+  --color-garden-surface: var(--garden-surface);
+  --color-garden-input: var(--garden-input);
+  --color-garden-foreground: var(--garden-foreground);
+  --color-garden-muted: var(--garden-muted);
+  --color-garden-accent: var(--garden-accent);
+  --color-garden-accent-strong: var(--garden-accent-strong);
+  --color-garden-accent-hover: var(--garden-accent-hover);
+  --color-garden-accent-foreground: var(--garden-accent-foreground);
+  --color-garden-focus: var(--garden-focus);
+  --color-garden-danger: var(--garden-danger);
+  --color-garden-danger-muted: var(--garden-danger-muted);
+  --color-garden-danger-surface: var(--garden-danger-surface);
+  --color-garden-danger-border: var(--garden-danger-border);
+  --color-garden-success: var(--garden-success);
+  --color-garden-success-surface: var(--garden-success-surface);
+  --color-garden-success-border: var(--garden-success-border);
+  --color-garden-warning: var(--garden-warning);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -111,7 +148,12 @@
 }
 
 @utility bg-cosmic {
-  background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
+  background-image: linear-gradient(
+    to bottom,
+    var(--garden-page-start),
+    var(--garden-page-middle),
+    var(--garden-page-start)
+  );
 }
 
 @layer base {

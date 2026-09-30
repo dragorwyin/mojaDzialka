@@ -129,8 +129,9 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Parallel with:** —
 - **Blockers:** —
 - **Resolved decisions:** Procenty są celem udziału liczby roślin dla całej działki; planer maksymalizuje wykonalną obsadę, preferuje dobre sąsiedztwo przed dokładnością udziałów i pokazuje cel oraz wynik osobno. Użytkownik nie przypisuje upraw ręcznie do grządek. Potwierdzona relacja negatywna wyklucza sąsiedztwo; `caution` pozostaje miękkim kosztem, a `unknown` jest neutralne. Dla 30 upraw używany jest jeden roboczy wariant z widoczną pewnością; brak danych daje jawny plan częściowy.
+- **Resolved UI decisions:** Cały `/garden`, wraz z formularzem działki i formularzem wyboru upraw, przechodzi na semantyczne tokeny i współdzielony `Button`. Po zmianie snapshotu poprzedni diagram pozostaje widoczny, ale ma wyraźny status nieaktualności, ostrzeżenie i CTA do ponownego generowania.
 - **Unknowns:** —
-- **Risk:** Research ma roboczy wariant dla 30/30 upraw, ale część źródeł opisuje siew/stanowisko, a nie pewną końcową obsadę. Wynik musi ujawniać pewność i ograniczenia danych, a search optymalizujący układ musi być ograniczony kosztowo.
+- **Risk:** Research ma roboczy wariant dla 30/30 upraw, ale część źródeł opisuje siew/stanowisko, a nie pewną końcową obsadę. Wynik musi ujawniać pewność i ograniczenia danych, a search optymalizujący układ musi być ograniczony kosztowo. Nieaktualny diagram musi być wizualnie odróżniony od bieżącego, żeby zachowanie poprzedniego wyniku nie wprowadzało użytkownika w błąd.
 - **Status:** in-progress
 
 ### S-05: Zmiana danych i ponowne przeliczenie

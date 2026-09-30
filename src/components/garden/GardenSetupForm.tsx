@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type SpaceType = "bed" | "sector";
 
@@ -51,24 +52,27 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
     <form method="POST" action="/api/garden" className="space-y-6">
       {saved && (
         <p
-          className="rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100"
+          className="border-garden-success-border/30 bg-garden-success-surface/10 text-garden-success rounded-lg border px-4 py-3 text-sm"
           role="status"
         >
           Działka została zapisana.
         </p>
       )}
       {error && (
-        <p className="rounded-lg border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100" role="alert">
+        <p
+          className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+          role="alert"
+        >
           {ERROR_MESSAGES[error] ?? "Nie udało się zapisać danych. Sprawdź formularz i spróbuj ponownie."}
         </p>
       )}
 
       <div className="space-y-4">
         {spaces.map((space, index) => (
-          <fieldset key={space.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <legend className="px-2 text-sm font-semibold text-blue-100">Przestrzeń {index + 1}</legend>
+          <fieldset key={space.id} className="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4">
+            <legend className="text-garden-muted px-2 text-sm font-semibold">Przestrzeń {index + 1}</legend>
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2 text-sm text-blue-100/80">
+              <label className="text-garden-muted/80 space-y-2 text-sm">
                 <span>Nazwa</span>
                 <input
                   name="spaceName"
@@ -78,10 +82,10 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
                   }}
                   maxLength={80}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300"
+                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
-              <label className="space-y-2 text-sm text-blue-100/80">
+              <label className="text-garden-muted/80 space-y-2 text-sm">
                 <span>Typ</span>
                 <select
                   name="spaceType"
@@ -89,13 +93,13 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
                   onChange={(event) => {
                     updateSpace(index, { spaceType: event.target.value as SpaceType });
                   }}
-                  className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300"
+                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 >
                   <option value="bed">Skrzynia</option>
                   <option value="sector">Sektor</option>
                 </select>
               </label>
-              <label className="space-y-2 text-sm text-blue-100/80">
+              <label className="text-garden-muted/80 space-y-2 text-sm">
                 <span>Szerokość (cm)</span>
                 <input
                   name="widthCm"
@@ -108,10 +112,10 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
                     updateSpace(index, { widthCm: event.target.value });
                   }}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300"
+                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
-              <label className="space-y-2 text-sm text-blue-100/80">
+              <label className="text-garden-muted/80 space-y-2 text-sm">
                 <span>Długość (cm)</span>
                 <input
                   name="lengthCm"
@@ -124,38 +128,40 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
                     updateSpace(index, { lengthCm: event.target.value });
                   }}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-slate-950/40 px-3 py-2 text-white outline-none focus:border-purple-300"
+                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => {
                 removeSpace(index);
               }}
               disabled={spaces.length === 1}
-              className="mt-4 text-sm text-rose-200 transition-colors hover:text-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+              variant="ghost"
+              className="text-garden-danger-muted hover:text-garden-danger focus-visible:ring-garden-focus mt-4 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             >
               Usuń tę przestrzeń
-            </button>
+            </Button>
           </fieldset>
         ))}
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button
+        <Button
           type="button"
           onClick={addSpace}
-          className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+          variant="outline"
+          className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus rounded-lg px-4 py-2 text-sm font-medium shadow-none transition-colors"
         >
           + Dodaj skrzynię lub sektor
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          className="rounded-lg bg-purple-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-purple-300"
+          className="bg-garden-accent-strong text-garden-accent-foreground hover:bg-garden-accent-hover focus-visible:ring-garden-focus rounded-lg px-4 py-2 text-sm font-semibold shadow-none transition-colors"
         >
           Zapisz działkę
-        </button>
+        </Button>
       </div>
     </form>
   );
