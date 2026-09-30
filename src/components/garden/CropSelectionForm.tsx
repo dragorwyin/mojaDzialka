@@ -1,8 +1,8 @@
 import { useMemo, useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 
-import { getCropById, searchCrops } from "../../lib/crop-catalog.js";
-import { validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
+import { searchCrops } from "../../lib/crop-catalog.js";
+import { resolveGardenCropSelection, validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
 import {
   isValidCropPercentageMix,
   normalizeProportionsToPercentages,
@@ -67,7 +67,9 @@ export default function CropSelectionForm({
 
   const selectedPercentages = selection.map((crop) => crop.proportion);
   const totalPercentageHundredths = sumCropPercentageHundredths(selectedPercentages);
-  const selectionIsValid = isValidCropPercentageMix(selectedPercentages);
+  const percentageMixIsValid = isValidCropPercentageMix(selectedPercentages);
+  const unresolvedSelections = selection.filter((crop) => resolveGardenCropSelection(crop.cropId).status !== "active");
+  const selectionIsValid = percentageMixIsValid && unresolvedSelections.length === 0;
   const searchId = `${idPrefix}-search`;
   const titleId = `${idPrefix}-selection-title`;
   const mixGuidanceId = `${idPrefix}-mix-guidance`;
@@ -87,6 +89,18 @@ export default function CropSelectionForm({
   async function saveSelection(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+
+    const unresolved = selection.map((crop) => resolveGardenCropSelection(crop.cropId));
+    if (unresolved.some((crop) => crop.status === "retired")) {
+      setStatus("error");
+      setMessage("Usuń lub zamień wycofaną uprawę przed zapisem. Rozwiąż ją również przed generowaniem układu.");
+      return;
+    }
+    if (unresolved.some((crop) => crop.status === "unknown")) {
+      setStatus("error");
+      setMessage("Usuń lub zamień nierozpoznaną uprawę przed zapisem. Nieznane ID nie są pomijane.");
+      return;
+    }
 
     if (!isValidCropPercentageMix(selection.map((crop) => crop.proportion))) {
       setStatus("error");
@@ -218,6 +232,15 @@ export default function CropSelectionForm({
       <form onSubmit={saveSelection} className="space-y-5">
         <div>
           <h3 className="text-garden-foreground text-lg font-semibold">Wybrane warzywa</h3>
+          {unresolvedSelections.length > 0 && (
+            <p
+              className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger mt-3 rounded-lg border px-4 py-3 text-sm"
+              role="alert"
+            >
+              Zapis zawiera wycofaną lub nierozpoznaną pozycję. Usuń ją albo dodaj aktywny zamiennik przed zapisem i
+              generowaniem układu.
+            </p>
+          )}
           {selection.length === 0 ? (
             <p className="text-garden-muted/70 mt-2 text-sm">
               Nie wybrano jeszcze warzyw. Zapis pustej listy wyczyści wybór.
@@ -225,8 +248,8 @@ export default function CropSelectionForm({
           ) : (
             <ul className="mt-3 space-y-3">
               {selection.map((crop, index) => {
-                const catalogCrop = getCropById(crop.cropId);
-                const cropName = catalogCrop?.commonNamePl ?? crop.cropId;
+                const resolution = resolveGardenCropSelection(crop.cropId);
+                const cropName = resolution.displayName;
                 const proportionId = `${idPrefix}-proportion-${crop.cropId}`;
                 const proportionHundredths = parseCropPercentageToHundredths(crop.proportion);
 
@@ -237,6 +260,16 @@ export default function CropSelectionForm({
                   >
                     <div className="min-w-0">
                       <p className="text-garden-foreground font-medium">{cropName}</p>
+                      {resolution.status === "retired" && (
+                        <p className="text-garden-danger mt-1 text-sm">
+                          Wycofana uprawa — usuń ją lub wybierz aktywny zamiennik w wyszukiwarce.
+                        </p>
+                      )}
+                      {resolution.status === "unknown" && (
+                        <p className="text-garden-danger mt-1 text-sm">
+                          Nieznane ID „{crop.cropId}” — pozycja została zachowana. Usuń ją lub zastąp aktywną uprawą.
+                        </p>
+                      )}
                     </div>
                     <label htmlFor={proportionId} className="text-garden-muted/80 space-y-2 text-sm">
                       <span>Udział (%)</span>
@@ -256,7 +289,9 @@ export default function CropSelectionForm({
                           );
                         }}
                         disabled={unavailable || status === "saving"}
-                        aria-invalid={proportionHundredths === null || proportionHundredths <= 0}
+                        aria-invalid={
+                          resolution.status !== "active" || proportionHundredths === null || proportionHundredths <= 0
+                        }
                         aria-describedby={mixGuidanceId}
                         className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
                       />
@@ -289,7 +324,7 @@ export default function CropSelectionForm({
           </p>
           <p
             id={mixGuidanceId}
-            className={selection.length > 0 && !selectionIsValid ? "text-garden-warning text-sm" : "sr-only"}
+            className={selection.length > 0 && !percentageMixIsValid ? "text-garden-warning text-sm" : "sr-only"}
           >
             Udziały muszą być dodatnie i sumować się do dokładnie 100,00%.
           </p>

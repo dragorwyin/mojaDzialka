@@ -106,6 +106,8 @@ Planer podejmuje decyzję o rozmieszczeniu warzyw na cały sezon, również daj�
 
 Wejściem są wymiary skrzyń lub sektorów oraz wybrane warzywa z docelowymi procentami liczby roślin, które opisują globalny miks całej działki. Planer maksymalizuje wykonalną obsadę, automatycznie wybiera pozycje na wszystkich skrzyniach/sektorach i preferuje potwierdzone dobre sąsiedztwa przed dokładnością udziałów. `unknown` pozostaje neutralne, `caution` jest miękkim kosztem, a tylko źródłowo potwierdzona negatywna relacja może wykluczyć sąsiadujące pozycje. Wynik pokazuje procenty docelowe i osiągnięte osobno, zachowuje pewność i etap roboczych rozstaw oraz jawnie wymienia uprawy bez użytecznych danych zamiast pomijać je po cichu. Wynikiem jest propozycja rozmieszczenia i harmonogram prac na sezon, obejmujący przypomnienia o terminach.
 
+Katalog ma 31 uzgodnionych aktywnych pozycji; zachowuje ID `pomidor` dla Faworyta i osobne ID dla palikowanego pomidora koktajlowego, a fasola szparagowa i bób pozostają rozpoznawane wyłącznie jako stare zapisane wybory do jawnego usunięcia lub zamiany. Nieznane zapisane ID również nie mogą być po cichu pominięte. Dane końcowej obsady po przerywce lub sadzeniu są oddzielone od gęstości siewu i kalendarza; brak potwierdzonej końcowej rozstawy pozostaje brakiem danych, nigdy wartością zastępczą z siewu. Każda wartość zachowuje źródło, kontekst i pewność, a katalog nie jest rankingiem popularności. Procent opisuje udział jednostek końcowej obsady na całej działce (dla szczypiorku jednostką jest kępa), nie powierzchnię ani prognozowany plon.
+
 Bieżący plan pozostaje przypisany do konta. Przy kolejnym sezonie użytkownik sam decyduje, kiedy ponownie go przeliczyć.
 
 ## Access Control

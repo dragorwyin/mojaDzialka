@@ -3,17 +3,61 @@ import { describe, expect, it } from "vitest";
 import { COMPANION_RELATIONS, CROP_CATALOG, validateCropCatalog, type SourceId } from "./crop-catalog.js";
 
 describe("crop catalog", () => {
-  it("contains exactly 30 uniquely identified records", () => {
-    expect(CROP_CATALOG).toHaveLength(30);
-    expect(new Set(CROP_CATALOG.map((crop) => crop.id)).size).toBe(30);
+  it("contains exactly the 31 agreed active IDs and no retired bean records", () => {
+    const expectedIds = [
+      "pomidor",
+      "pomidor-koktajlowy-palikowany",
+      "ogorek",
+      "pietruszka",
+      "marchew",
+      "cebula",
+      "burak-cwiklowy",
+      "rzodkiewka",
+      "salata",
+      "kapusta-biala",
+      "kalafior",
+      "brokul",
+      "kalarepa",
+      "jarmuz",
+      "cukinia",
+      "dynia",
+      "papryka",
+      "por",
+      "szpinak",
+      "seler",
+      "kukurydza-cukrowa",
+      "czosnek",
+      "pasternak",
+      "rukola",
+      "roszponka",
+      "baklazan",
+      "rzepa",
+      "ziemniak",
+      "groch",
+      "koper",
+      "szczypiorek",
+    ];
+
+    expect(CROP_CATALOG).toHaveLength(31);
+    expect(new Set(CROP_CATALOG.map((crop) => crop.id)).size).toBe(31);
+    expect(CROP_CATALOG.map((crop) => crop.id).sort()).toEqual(expectedIds.sort());
     expect(CROP_CATALOG.every((crop) => crop.commonNamePl.length > 0 && crop.sourceIds.length > 0)).toBe(true);
+    expect(COMPANION_RELATIONS.flatMap((relation) => relation.cropIds)).not.toContain("fasola-zwykla");
+    expect(COMPANION_RELATIONS.flatMap((relation) => relation.cropIds)).not.toContain("bob");
   });
 
-  it("gives all 30 crops sourced working spacing with explicitly named axes and planning metadata", () => {
-    expect(CROP_CATALOG.every((crop) => crop.spacing !== null)).toBe(true);
+  it("keeps final spacing separate from sowing density and preserves missing final data", () => {
+    const cropsWithFinalSpacing = CROP_CATALOG.filter((crop) => crop.finalSpacing !== null);
+    expect(cropsWithFinalSpacing).toHaveLength(28);
     expect(
-      CROP_CATALOG.every(
+      cropsWithFinalSpacing.every(
         (crop) =>
+          crop.catalogConfidence.length > 0 &&
+          crop.finalSpacing !== null &&
+          crop.finalSpacing.inRowCm.min > 0 &&
+          crop.finalSpacing.betweenRowsCm.min > 0 &&
+          crop.finalSpacing.sourceIds.length > 0 &&
+          crop.finalSpacing.context.length > 0 &&
           crop.spacing !== null &&
           crop.spacing.axisVerified &&
           crop.spacing.inRowCm !== null &&
@@ -21,16 +65,29 @@ describe("crop catalog", () => {
           crop.spacing.publishedPairCm === null &&
           crop.spacing.sourceIds.length > 0 &&
           crop.spacing.context.length > 0 &&
-          crop.spacing.stage.length > 0 &&
-          typeof crop.spacing.isFinalPlanting === "boolean",
+          crop.spacing.isFinalPlanting,
       ),
     ).toBe(true);
-    expect(CROP_CATALOG.find((crop) => crop.id === "pomidor")?.spacing).toMatchObject({
-      inRowCm: { min: 50, max: 60 },
-      betweenRowsCm: { min: 100, max: 150 },
-      sourceIds: ["S15"],
-      stage: "planting",
-      isFinalPlanting: true,
+    expect(CROP_CATALOG.find((crop) => crop.id === "pomidor")).toMatchObject({
+      commonNamePl: "pomidor Faworyt",
+      finalSpacing: {
+        inRowCm: { min: 50, max: 50 },
+        betweenRowsCm: { min: 100, max: 100 },
+        sourceIds: ["S45", "S15"],
+      },
+    });
+    expect(CROP_CATALOG.find((crop) => crop.id === "pomidor-koktajlowy-palikowany")?.id).toBe(
+      "pomidor-koktajlowy-palikowany",
+    );
+    expect(CROP_CATALOG.find((crop) => crop.id === "szczypiorek")?.finalSpacing?.unit).toBe("clump");
+
+    const corn = CROP_CATALOG.find((crop) => crop.id === "kukurydza-cukrowa");
+    expect(corn?.finalSpacing).toBeNull();
+    expect(corn?.spacing).toBeNull();
+    expect(corn?.sowingDensity?.inRowCm).toEqual({ min: 20, max: 30 });
+    expect(CROP_CATALOG.find((crop) => crop.id === "marchew")).toMatchObject({
+      finalSpacing: { inRowCm: { min: 3, max: 5 }, betweenRowsCm: { min: 20, max: 30 } },
+      sowingDensity: { inRowCm: { min: 2, max: 3 } },
     });
   });
 
@@ -46,14 +103,14 @@ describe("crop catalog", () => {
 
   it("rejects invalid spacing, source references, and relations", () => {
     const invalidSpacingCatalog = CROP_CATALOG.map((crop) => {
-      if (crop.id !== "marchew" || crop.spacing === null) {
+      if (crop.id !== "marchew" || crop.finalSpacing === null) {
         return crop;
       }
 
       return {
         ...crop,
-        spacing: {
-          ...crop.spacing,
+        finalSpacing: {
+          ...crop.finalSpacing,
           inRowCm: { min: 0, max: 2 },
         },
       };

@@ -5,6 +5,26 @@ export interface GardenCropSelection {
   proportion: number;
 }
 
+export type GardenCropSelectionResolution =
+  | { status: "active"; displayName: string }
+  | { status: "retired"; displayName: string }
+  | { status: "unknown"; displayName: string };
+
+const RETIRED_CROP_NAMES = new Map<string, string>([
+  ["fasola-zwykla", "fasola szparagowa"],
+  ["bob", "bób"],
+]);
+
+export function resolveGardenCropSelection(cropId: string): GardenCropSelectionResolution {
+  const crop = getCropById(cropId);
+  if (crop) return { status: "active", displayName: crop.commonNamePl };
+
+  const retiredName = RETIRED_CROP_NAMES.get(cropId);
+  if (retiredName) return { status: "retired", displayName: retiredName };
+
+  return { status: "unknown", displayName: cropId };
+}
+
 export function validateGardenCropSelection(input: unknown): GardenCropSelection[] | null {
   if (!Array.isArray(input)) return null;
 
