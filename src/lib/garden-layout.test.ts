@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { CROP_CATALOG, type CompanionRelation, type CropCatalogEntry } from "../data/crop-catalog.js";
-import { generateGardenLayout } from "./garden-layout.js";
+import { generateGardenLayout, readGardenLayoutResult } from "./garden-layout.js";
 
 function crop(id: string): CropCatalogEntry {
   const entry = CROP_CATALOG.find((candidate) => candidate.id === id);
@@ -33,6 +33,36 @@ const spaces = [
 ] as const;
 
 describe("garden layout engine", () => {
+  it("uses the production carrot's final post-thinning spacing in the generated layout", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "carrot-bed", widthCm: 200, lengthCm: 100 }],
+      crops: [{ crop: crop("marchew"), proportion: 100 }],
+      relations: [],
+    });
+    const positions = result.spaces.flatMap((space) => space.positions);
+    const positionsByRow = new Map<number, typeof positions>();
+
+    for (const position of positions) {
+      const rowPositions = positionsByRow.get(position.row) ?? [];
+      rowPositions.push(position);
+      positionsByRow.set(position.row, rowPositions);
+    }
+
+    expect(positions.length).toBeGreaterThan(1);
+    expect(positions.every((position) => position.spacing.inRowCm === 7)).toBe(true);
+    for (const rowPositions of positionsByRow.values()) {
+      const orderedPositions = [...rowPositions].sort((left, right) => left.xCm - right.xCm);
+      const spacingCheck = orderedPositions.reduce<{ previousX: number | null; isValid: boolean }>(
+        (state, position) => ({
+          previousX: position.xCm,
+          isValid: state.isValid && (state.previousX === null || position.xCm - state.previousX >= 7),
+        }),
+        { previousX: null, isValid: true },
+      );
+      expect(spacingCheck.isValid).toBe(true);
+    }
+  });
+
   it("lays out the whole mix across two 200x100 cm spaces and reports target versus actual", () => {
     const input = {
       spaces,
@@ -100,6 +130,82 @@ describe("garden layout engine", () => {
       actualPercentage: 50,
       actualCount: 1,
     });
+  });
+
+  it("keeps crops in different spaces out of each other's neighbor lists", () => {
+    const supportedRelation: CompanionRelation = {
+      cropIds: ["marchew", "cebula"],
+      status: "supported",
+      relationshipType: "pest_management",
+      confidence: "high",
+      rationale: "Testowa relacja między przestrzeniami.",
+      sourceIds: ["S2"],
+      hardBlock: false,
+    };
+    const result = generateGardenLayout({
+      spaces: [
+        { id: "first", widthCm: 30, lengthCm: 30 },
+        { id: "second", widthCm: 30, lengthCm: 30 },
+      ],
+      crops: [
+        { crop: compactCrop("marchew"), proportion: 50 },
+        { crop: compactCrop("cebula"), proportion: 50 },
+      ],
+      relations: [supportedRelation],
+    });
+
+    expect(result.spaces.map((space) => space.positions.length)).toEqual([1, 1]);
+    expect(
+      result.spaces.flatMap((space) => space.positions).every((position) => position.neighbors?.length === 0),
+    ).toBe(true);
+    expect(result.metrics.supportedNeighbors).toBe(0);
+  });
+
+  it("applies hard negative relations only within one normalized spacing step", () => {
+    const negativeRelation: CompanionRelation = {
+      cropIds: ["marchew", "cebula"],
+      status: "negative",
+      relationshipType: "disease_risk",
+      confidence: "high",
+      rationale: "Testowa relacja ujemna.",
+      sourceIds: ["S2"],
+      hardBlock: true,
+    };
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
+      crops: [
+        { crop: compactCrop("marchew", 20, 100), proportion: 99 },
+        { crop: compactCrop("cebula", 20, 100), proportion: 1 },
+      ],
+      relations: [negativeRelation],
+    });
+    const positions = result.spaces[0]?.positions ?? [];
+    const carrot = positions.find((position) => position.cropId === "marchew");
+    const onion = positions.find((position) => position.cropId === "cebula");
+
+    expect(carrot).toBeDefined();
+    expect(onion).toBeDefined();
+    expect(onion?.xCm).toBeGreaterThan((carrot?.xCm ?? 0) + 20);
+    expect(carrot?.neighbors).not.toContainEqual(expect.objectContaining({ cropId: "cebula" }));
+    expect(onion?.neighbors).not.toContainEqual(expect.objectContaining({ cropId: "marchew" }));
+  });
+
+  it("uses compactness to choose a closer position among equally scored candidates", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 120, lengthCm: 120 }],
+      crops: [
+        { crop: compactCrop("cebula", 60, 60), proportion: 99 },
+        { crop: compactCrop("marchew", 20, 20), proportion: 1 },
+      ],
+      relations: [],
+    });
+    const positions = result.spaces[0]?.positions ?? [];
+    const onion = positions.find((position) => position.cropId === "cebula");
+    const carrot = positions.find((position) => position.cropId === "marchew");
+
+    expect(onion).toMatchObject({ xCm: 30, yCm: 30 });
+    expect(carrot).toMatchObject({ xCm: 90, yCm: 30 });
+    expect(carrot?.placementReason).toMatchObject({ category: "compactness" });
   });
 
   it("reports the exact number of positions omitted by the per-crop grid limit", () => {
@@ -198,6 +304,10 @@ describe("garden layout engine", () => {
     expect(cautionResult.metrics.cautionNeighbors).toBe(1);
     expect(unknownResult.spaces[0]?.positions).toHaveLength(2);
     expect(unknownResult.metrics.cautionNeighbors).toBe(0);
+    expect(unknownResult.spaces[0]?.positions[0]?.neighbors).toContainEqual(
+      expect.objectContaining({ cropId: "marchew", status: "unknown", rationale: null, sourceIds: [] }),
+    );
+    expect(unknownResult.spaces[0]?.positions.every((position) => position.placementReason !== undefined)).toBe(true);
   });
 
   it("keeps a confirmed negative relation out of neighboring positions", () => {
@@ -313,5 +423,23 @@ describe("garden layout engine", () => {
     expect(result.spaces[0]?.positions).toEqual([]);
     expect(result.conflicts).toContainEqual(expect.objectContaining({ type: "geometry", spaceId: "too-small" }));
     expect(result.omissions).toContainEqual(expect.objectContaining({ cropId: "marchew", reason: "no_fit" }));
+  });
+
+  it("reads persisted plans from before neighbor and placement explanations existed", () => {
+    const generated = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 30, lengthCm: 30 }],
+      crops: [{ crop: compactCrop("marchew"), proportion: 100 }],
+      relations: [],
+    });
+    const legacy = structuredClone(generated);
+    for (const space of legacy.spaces) {
+      for (const position of space.positions) {
+        delete position.neighbors;
+        delete position.placementReason;
+      }
+    }
+
+    expect(readGardenLayoutResult(legacy)).toEqual(legacy);
+    expect(readGardenLayoutResult({ spaces: [], cropSummaries: [] })).toBeNull();
   });
 });

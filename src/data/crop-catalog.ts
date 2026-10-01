@@ -1419,13 +1419,13 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
   marchew: {
     catalogConfidence: "medium",
     finalSpacing: finalSpacing(
-      cm(3, 5),
+      cm(7, 8),
       cm(20, 30),
       "plant",
       "after_thinning",
       ["S54", "S55"],
       "medium",
-      "Jedna pozostawiona roślina korzeniowa po przerywce; oddzielić od gęstszego siewu.",
+      "Roboczy, zachowawczy profil późnej marchwi na większy korzeń; końcowa rozstawa po przerywce, nie gęstość siewu ani uniwersalna norma dla wszystkich odmian.",
     ),
     sowingDensity: sowingDensity(
       cm(2, 3),
@@ -1433,7 +1433,7 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
       null,
       ["S64"],
       "medium",
-      "Gęsty siew nasion przed przerywką: 2–3 cm w rzędzie; końcowy odstęp roślin wynosi 3–5 cm.",
+      "Gęsty siew nasion przed przerywką: 2–3 cm w rzędzie; to osobny parametr siewu, nie końcowa obsada roślin.",
     ),
   },
   cebula: {

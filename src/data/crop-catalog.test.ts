@@ -85,10 +85,23 @@ describe("crop catalog", () => {
     expect(corn?.finalSpacing).toBeNull();
     expect(corn?.spacing).toBeNull();
     expect(corn?.sowingDensity?.inRowCm).toEqual({ min: 20, max: 30 });
-    expect(CROP_CATALOG.find((crop) => crop.id === "marchew")).toMatchObject({
-      finalSpacing: { inRowCm: { min: 3, max: 5 }, betweenRowsCm: { min: 20, max: 30 } },
-      sowingDensity: { inRowCm: { min: 2, max: 3 } },
+    const carrot = CROP_CATALOG.find((crop) => crop.id === "marchew");
+    expect(carrot).toMatchObject({
+      id: "marchew",
+      finalSpacing: {
+        inRowCm: { min: 7, max: 8 },
+        betweenRowsCm: { min: 20, max: 30 },
+        stage: "after_thinning",
+        sourceIds: ["S54", "S55"],
+      },
+      sowingDensity: {
+        inRowCm: { min: 2, max: 3 },
+        betweenRowsCm: { min: 20, max: 30 },
+        sourceIds: ["S64"],
+      },
     });
+    expect(carrot?.finalSpacing?.context).toMatch(/późnej marchwi.*po przerywce.*nie gęstość siewu/i);
+    expect(carrot?.sowingDensity?.context).toMatch(/siew.*osobny parametr.*nie końcowa obsada/i);
   });
 
   it("keeps local validation and non-blocking relation semantics explicit", () => {
