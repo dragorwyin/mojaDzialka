@@ -217,20 +217,20 @@ Nie ma migracji schematu Supabase ani przepisywania wierszy `garden_crops`. Zach
 
 #### Automated
 
-- [x] 2.1 Testy diagramu potwierdzają równą skalę, zachowane współrzędne i komplet miniaturek z fallbackiem.
+- [x] 2.1 Testy diagramu potwierdzają równą skalę, zachowane współrzędne i komplet miniaturek z fallbackiem. — d8546b8
 
 #### Manual
 
-- [x] 2.2 Diagram desktop/mobile pokazuje delikatną siatkę i czytelne symbole bez przycinania ani przesuwania pozycji.
-- [x] 2.3 Miniatury, legenda i szczegóły są zrozumiałe i dostępne także bez obrazków.
+- [x] 2.2 Diagram desktop/mobile pokazuje delikatną siatkę i czytelne symbole bez przycinania ani przesuwania pozycji. — d8546b8
+- [x] 2.3 Miniatury, legenda i szczegóły są zrozumiałe i dostępne także bez obrazków. — d8546b8
 
 ### Phase 3: Weryfikacja przepływu i odbiór
 
 #### Automated
 
-- [ ] 3.1 Testy jednostkowe, Astro check, lint, build i skonfigurowany smoke test przechodzą.
+- [x] 3.1 Testy jednostkowe, Astro check, lint, build i skonfigurowany smoke test przechodzą.
 
 #### Manual
 
-- [ ] 3.2 Końcowy przepływ zachowuje wybory, przelicza marchwie z nowym minimum i przechodzi kontrolę desktop/mobile.
-- [ ] 3.3 Szczegóły pozycji nie sugerują niepotwierdzonego sąsiedztwa ani nie zmieniają algorytmu S-04.
+- [x] 3.2 Końcowy przepływ zachowuje wybory, przelicza marchwie z nowym minimum i przechodzi kontrolę desktop/mobile.
+- [x] 3.3 Szczegóły pozycji nie sugerują niepotwierdzonego sąsiedztwa ani nie zmieniają algorytmu S-04.
