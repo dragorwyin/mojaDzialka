@@ -1,6 +1,12 @@
 import type { APIRoute } from "astro";
 
 import { getCropById } from "@/lib/crop-catalog";
+import {
+  createGardenInputSnapshot,
+  fingerprintGardenInputSnapshot,
+  type GardenSnapshotCrop,
+  type GardenSnapshotSpace,
+} from "@/lib/garden-plan-snapshot";
 import { createClient } from "@/lib/supabase";
 import { generateGardenLayout, type GardenLayoutResult } from "@/lib/garden-layout";
 
@@ -18,19 +24,6 @@ interface GardenSpaceRow {
 interface GardenCropRow {
   crop_id: string;
   proportion: number | string;
-}
-
-interface GardenInputSnapshot {
-  version: 1;
-  spaces: {
-    id: string;
-    name: string;
-    spaceType: "bed" | "sector";
-    widthCm: number;
-    lengthCm: number;
-    sortOrder: number;
-  }[];
-  crops: { cropId: string; proportion: string }[];
 }
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
@@ -51,15 +44,6 @@ function parsePositiveDimension(value: unknown): number | null {
 function parsePositiveProportion(value: unknown): number | null {
   const proportion = typeof value === "number" ? value : Number(value);
   return Number.isFinite(proportion) && proportion > 0 ? proportion : null;
-}
-
-function canonicalSnapshot(snapshot: GardenInputSnapshot): string {
-  return JSON.stringify(snapshot);
-}
-
-async function fingerprint(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export const POST: APIRoute = async (context) => {
@@ -88,7 +72,7 @@ export const POST: APIRoute = async (context) => {
   if (spaceRows.length === 0) return jsonResponse({ error: "missing_spaces" }, 422);
   if (cropRows.length === 0) return jsonResponse({ error: "missing_crops" }, 422);
 
-  const spaces: GardenInputSnapshot["spaces"] = [];
+  const spaces: GardenSnapshotSpace[] = [];
   for (const row of spaceRows as GardenSpaceRow[]) {
     const widthCm = parsePositiveDimension(row.width_cm);
     const lengthCm = parsePositiveDimension(row.length_cm);
@@ -105,7 +89,7 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  const crops: GardenInputSnapshot["crops"] = [];
+  const crops: GardenSnapshotCrop[] = [];
   const selections = [];
   for (const row of cropRows as GardenCropRow[]) {
     const crop = getCropById(row.crop_id);
@@ -117,12 +101,8 @@ export const POST: APIRoute = async (context) => {
     selections.push({ crop, proportion });
   }
 
-  const snapshot: GardenInputSnapshot = {
-    version: 1,
-    spaces,
-    crops,
-  };
-  const inputFingerprint = await fingerprint(canonicalSnapshot(snapshot));
+  const snapshot = createGardenInputSnapshot(spaces, crops);
+  const inputFingerprint = await fingerprintGardenInputSnapshot(snapshot);
   const plan: GardenLayoutResult = generateGardenLayout({
     spaces: spaces.map(({ spaceType: _spaceType, sortOrder: _sortOrder, ...space }) => space),
     crops: selections,

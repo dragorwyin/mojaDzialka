@@ -148,6 +148,11 @@ export default function CropSelectionForm({
 
       setStatus("saved");
       setMessage("Wybór upraw został zapisany.");
+      window.dispatchEvent(
+        new CustomEvent("garden:inputs-saved", {
+          detail: { hasCrops: validated.length > 0 },
+        }),
+      );
     } catch {
       setStatus("error");
       setMessage("Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.");

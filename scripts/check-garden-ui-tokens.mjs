@@ -5,6 +5,8 @@ const files = [
   "src/pages/garden.astro",
   "src/components/garden/GardenSetupForm.tsx",
   "src/components/garden/CropSelectionForm.tsx",
+  "src/components/garden/GardenPlanner.tsx",
+  "src/components/garden/GardenLayoutView.tsx",
 ];
 
 const hardcodedUiValuePattern =

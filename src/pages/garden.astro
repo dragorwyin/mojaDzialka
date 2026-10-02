@@ -1,7 +1,15 @@
 ---
 import GardenSetupForm from "@/components/garden/GardenSetupForm";
 import CropSelectionForm from "@/components/garden/CropSelectionForm";
+import GardenPlanner from "@/components/garden/GardenPlanner";
 import Topbar from "@/components/Topbar.astro";
+import { CROP_CATALOG } from "@/data/crop-catalog";
+import { readGardenLayoutResult, type GardenLayoutResult } from "@/lib/garden-layout";
+import {
+  createGardenInputSnapshot,
+  fingerprintGardenInputSnapshot,
+  getGardenPlanFreshness,
+} from "@/lib/garden-plan-snapshot";
 import { createClient } from "@/lib/supabase";
 import Layout from "@/layouts/Layout.astro";
 
@@ -22,9 +30,7 @@ interface GardenCropRow {
 interface GardenPlanRow {
   input_fingerprint: string;
   generated_at: string;
-  plan: {
-    spaces?: { positions?: unknown[] }[];
-  };
+  plan: GardenLayoutResult;
 }
 
 const { user } = Astro.locals;
@@ -36,6 +42,7 @@ let cropsLoadError = false;
 let currentPlan: GardenPlanRow | null = null;
 let currentPlanLoadError = false;
 let currentPlanPositionCount = 0;
+let currentInputFingerprint: string | null = null;
 
 if (supabase && user) {
   const { data, error } = await supabase
@@ -46,13 +53,15 @@ if (supabase && user) {
   if (error) {
     loadError = "unavailable";
     cropsLoadError = true;
+    currentPlanLoadError = true;
   } else if (data) {
     initialSpaces = (data.garden_spaces as GardenSpaceRow[]).sort((left, right) => left.sort_order - right.sort_order);
 
     const { data: cropRows, error: cropError } = await supabase
       .from("garden_crops")
       .select("crop_id, proportion")
-      .eq("garden_id", data.id);
+      .eq("garden_id", data.id)
+      .order("crop_id", { ascending: true });
 
     if (cropError) {
       cropsLoadError = true;
@@ -61,6 +70,22 @@ if (supabase && user) {
         cropId: crop.crop_id,
         proportion: String(crop.proportion),
       }));
+
+      const snapshot = createGardenInputSnapshot(
+        initialSpaces.map((space) => ({
+          id: space.id,
+          name: space.name,
+          spaceType: space.space_type,
+          widthCm: space.width_cm,
+          lengthCm: space.length_cm,
+          sortOrder: space.sort_order,
+        })),
+        (cropRows as GardenCropRow[]).map((crop) => ({
+          cropId: crop.crop_id,
+          proportion: String(crop.proportion),
+        })),
+      );
+      currentInputFingerprint = await fingerprintGardenInputSnapshot(snapshot);
     }
 
     const { data: planRow, error: planError } = await supabase
@@ -72,17 +97,33 @@ if (supabase && user) {
     if (planError) {
       currentPlanLoadError = true;
     } else if (planRow) {
-      currentPlan = planRow;
-      currentPlanPositionCount = (currentPlan.plan.spaces ?? []).reduce(
-        (total, space) => total + (space.positions?.length ?? 0),
-        0,
-      );
+      const plan = readGardenLayoutResult(planRow.plan);
+      if (plan === null) {
+        currentPlanLoadError = true;
+      } else {
+        currentPlan = { ...planRow, plan };
+        currentPlanPositionCount = plan.spaces.reduce((total, space) => total + space.positions.length, 0);
+      }
     }
   }
+} else {
+  loadError = "unavailable";
+  cropsLoadError = true;
+  currentPlanLoadError = true;
 }
 
 const error = Astro.url.searchParams.get("error") ?? loadError;
 const saved = Astro.url.searchParams.get("saved") === "1";
+const inputsUnavailable = !supabase || !user || Boolean(loadError) || cropsLoadError;
+const initialPlanStatus =
+  inputsUnavailable || currentPlanLoadError
+    ? "unavailable"
+    : currentPlan === null
+      ? "empty"
+      : getGardenPlanFreshness(currentPlan.input_fingerprint, currentInputFingerprint);
+const cropNames: Record<string, string> = Object.fromEntries(
+  CROP_CATALOG.map((crop): [string, string] => [crop.id, crop.commonNamePl]),
+);
 ---
 
 <Layout title="Moja działka" lang="pl">
@@ -123,12 +164,18 @@ const saved = Astro.url.searchParams.get("saved") === "1";
         data-plan-fingerprint={currentPlan?.input_fingerprint ?? ""}
         data-plan-generated-at={currentPlan?.generated_at ?? ""}
         data-plan-position-count={currentPlan ? String(currentPlanPositionCount) : ""}
+        data-plan-status={initialPlanStatus}
       >
-        {currentPlanLoadError
-          ? "Nie udało się odczytać zapisanego planu działki."
-          : currentPlan
-            ? "Zapisany plan działki."
-            : "Nie wygenerowano jeszcze planu działki."}
+        <GardenPlanner
+          initialPlan={currentPlan?.plan ?? null}
+          initialStatus={initialPlanStatus}
+          initialGeneratedAt={currentPlan?.generated_at ?? null}
+          cropNames={cropNames}
+          hasSpaces={initialSpaces.length > 0}
+          hasCrops={initialCrops.length > 0}
+          inputsUnavailable={inputsUnavailable}
+          client:load
+        />
       </section>
     </div>
   </main>

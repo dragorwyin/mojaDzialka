@@ -6,29 +6,34 @@ import { clearTimeout, setTimeout } from "node:timers";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
+const secondEmail = `smoke-secondary-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
+const secondJar = new Map();
 // POSTs opt into retries only when repeating them preserves the same resource state.
 const MAX_RETRIES = 2;
 const RETRY_DELAYS_MS = [500, 1_000];
 const REQUEST_TIMEOUT_MS = 20_000;
 const RETRYABLE_SERVER_STATUSES = new Set([500, 502, 503, 504]);
 
-function cookieHeader() {
-  return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
+function cookieHeader(cookieJar = jar) {
+  return [...cookieJar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
 }
 
-function storeCookies(response) {
+function storeCookies(response, cookieJar = jar) {
   for (const raw of response.headers.getSetCookie()) {
     const [pair, ...attrs] = raw.split(";");
     const [name, ...rest] = pair.split("=");
     const expired = attrs.some((a) => /max-age=0/i.test(a.trim()));
-    if (expired) jar.delete(name.trim());
-    else jar.set(name.trim(), rest.join("="));
+    if (expired) cookieJar.delete(name.trim());
+    else cookieJar.set(name.trim(), rest.join("="));
   }
 }
 
-async function request(path, { method = "GET", form, json, idempotent = method === "GET" || method === "HEAD" } = {}) {
+async function request(
+  path,
+  { method = "GET", form, json, cookieJar = jar, idempotent = method === "GET" || method === "HEAD" } = {},
+) {
   let retries = 0;
 
   for (let attempt = 0; attempt <= (idempotent ? MAX_RETRIES : 0); attempt++) {
@@ -40,7 +45,7 @@ async function request(path, { method = "GET", form, json, idempotent = method =
         method,
         redirect: "manual",
         headers: {
-          Cookie: cookieHeader(),
+          Cookie: cookieHeader(cookieJar),
           Origin: BASE_URL,
           ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
           ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
@@ -48,7 +53,7 @@ async function request(path, { method = "GET", form, json, idempotent = method =
         body: form ? new URLSearchParams(form).toString() : json !== undefined ? JSON.stringify(json) : undefined,
         signal: controller.signal,
       });
-      storeCookies(response);
+      storeCookies(response, cookieJar);
       const result = {
         status: response.status,
         location: response.headers.get("location") ?? "",
@@ -90,6 +95,11 @@ const steps = [
     "dashboard preserves requested path for anonymous user",
     () => request("/dashboard"),
     { status: 302, location: "/auth/signin?returnTo=%2Fdashboard" },
+  ],
+  [
+    "garden plan is not rendered for an anonymous user",
+    () => request("/garden"),
+    { status: 302, location: "/auth/signin?returnTo=%2Fgarden" },
   ],
   [
     "garden plan rejects an anonymous request",
@@ -235,7 +245,22 @@ const steps = [
   [
     "garden SSR reads the saved current plan",
     () => request("/garden"),
-    { status: 200, includes: ["garden-plan-ssr", "Zapisany plan działki."] },
+    { status: 200, includes: ["garden-plan-ssr", 'data-plan-status="current"', "Układ działki"] },
+  ],
+  [
+    "a separate signed-in account can be created for private plan isolation",
+    () =>
+      request("/api/auth/signup", {
+        method: "POST",
+        form: { email: secondEmail, password, confirmPassword: password },
+        cookieJar: secondJar,
+      }),
+    { status: 302, location: "/dashboard" },
+  ],
+  [
+    "second account does not read the first account's garden plan",
+    () => request("/garden", { cookieJar: secondJar }),
+    { status: 200, includes: 'data-plan-status="empty"', excludes: "Skrzynia testowa" },
   ],
   [
     "saving an empty crop selection clears the previous selection",
@@ -247,7 +272,7 @@ const steps = [
     () => request("/garden"),
     {
       status: 200,
-      includes: "Nie wybrano jeszcze warzyw",
+      includes: ["Nie wybrano jeszcze warzyw", 'data-plan-status="stale"', "Plan nieaktualny", "Skrzynia testowa"],
       excludes: ['id="crop-proportion-pomidor"', 'id="crop-proportion-marchew"'],
     },
   ],
