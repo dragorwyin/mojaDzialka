@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
-    "test:unit": "vitest run src/data/crop-catalog.test.ts src/lib/crop-catalog.test.ts src/lib/garden-crop-selection.test.ts src/lib/garden-crop-percentages.test.ts src/lib/garden-layout.test.ts"
+    "test:unit": "vitest run src/data/crop-catalog.test.ts src/lib/crop-catalog.test.ts src/lib/garden-crop-selection.test.ts src/lib/garden-crop-percentages.test.ts src/lib/garden-layout.test.ts src/lib/garden-plan-snapshot.test.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
