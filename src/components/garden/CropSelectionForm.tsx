@@ -1,6 +1,7 @@
 import { useMemo, useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 
+import { CROP_CATALOG, CROP_SOURCES, type CropCatalogEntry, type SourceId } from "../../data/crop-catalog.js";
 import { searchCrops } from "../../lib/crop-catalog.js";
 import { resolveGardenCropSelection, validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
 import {
@@ -30,6 +31,169 @@ const percentageFormatter = new Intl.NumberFormat("pl-PL", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+const spacingFormatter = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 });
+const cropById = new Map(CROP_CATALOG.map((crop) => [crop.id, crop] as const));
+const sourceById = new Map(CROP_SOURCES.map((source) => [source.id, source] as const));
+
+const CONFIDENCE_LABELS = {
+  high: "wysoka",
+  medium: "średnia",
+  low: "niska",
+} as const;
+
+const FINAL_SPACING_STAGE_LABELS = {
+  after_thinning: "po przerywce",
+  after_planting: "po posadzeniu",
+} as const;
+
+const SOWING_METHOD_LABELS = {
+  direct_sow: "Siew bezpośredni",
+  seedling: "Siew na rozsadę",
+  plant_out: "Sadzenie na miejsce",
+  overwintering: "Siew ozimy / przezimowanie",
+} as const;
+
+const MONTH_NAMES = [
+  "styczeń",
+  "luty",
+  "marzec",
+  "kwiecień",
+  "maj",
+  "czerwiec",
+  "lipiec",
+  "sierpień",
+  "wrzesień",
+  "październik",
+  "listopad",
+  "grudzień",
+] as const;
+
+function formatRange(range: { min: number; max: number }, unit = "cm"): string {
+  const formatNumber = (value: number) => spacingFormatter.format(value);
+  const value =
+    range.min === range.max ? formatNumber(range.min) : `${formatNumber(range.min)}–${formatNumber(range.max)}`;
+  return unit ? `${value} ${unit}` : value;
+}
+
+function CropSourceLinks({ sourceIds }: { sourceIds: readonly SourceId[] }) {
+  if (sourceIds.length === 0) return <span>Brak wskazanego źródła.</span>;
+
+  return (
+    <ul className="mt-1 list-disc space-y-1 pl-5">
+      {sourceIds.map((sourceId) => {
+        const source = sourceById.get(sourceId);
+        return (
+          <li key={sourceId}>
+            {source ? (
+              <a className="text-garden-accent underline underline-offset-2" href={source.url}>
+                {source.title}
+              </a>
+            ) : (
+              `Nieznane źródło ${sourceId}`
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function formatSowingDensity(crop: CropCatalogEntry): string {
+  const density = crop.sowingDensity;
+  if (density === null) return crop.sowingDensityNote ?? "Brak dostępnych danych liczbowych o gęstości siewu.";
+
+  const dimensions = [
+    density.inRowCm === null ? null : `w rzędzie: ${formatRange(density.inRowCm)}`,
+    density.betweenRowsCm === null ? null : `między rzędami: ${formatRange(density.betweenRowsCm)}`,
+    density.seedsPerPosition === null ? null : `nasion na stanowisko: ${formatRange(density.seedsPerPosition, "")}`,
+  ].filter((value): value is string => value !== null);
+
+  return dimensions.length > 0 ? dimensions.join(" · ") : "Nie podano wartości liczbowej.";
+}
+
+function formatSeasonWindow(startMonth: number, endMonth: number): string {
+  const start = MONTH_NAMES[startMonth - 1] ?? "nieznany miesiąc";
+  const end = MONTH_NAMES[endMonth - 1] ?? "nieznany miesiąc";
+  return startMonth === endMonth ? start : `${start}–${end}`;
+}
+
+function CropDetails({ crop }: { crop: CropCatalogEntry }) {
+  const finalSpacing = crop.finalSpacing;
+
+  return (
+    <details className="border-garden-surface/10 mt-2 rounded-lg border px-3 py-2">
+      <summary className="text-garden-accent focus-visible:outline-garden-focus cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2">
+        Informacje o rozstawie, siewie i terminach
+      </summary>
+      <div className="text-garden-muted/80 mt-3 space-y-4 text-xs leading-relaxed">
+        <p>Pewność danych katalogowych: {CONFIDENCE_LABELS[crop.catalogConfidence]}.</p>
+        <section aria-label={`Końcowa rozstawa: ${crop.commonNamePl}`}>
+          <h4 className="text-garden-foreground font-semibold">Końcowa obsada</h4>
+          {finalSpacing ? (
+            <>
+              <p className="mt-1">
+                {formatRange(finalSpacing.inRowCm)} w rzędzie · {formatRange(finalSpacing.betweenRowsCm)} między rzędami
+              </p>
+              <p>
+                Etap: {FINAL_SPACING_STAGE_LABELS[finalSpacing.stage]} · jednostka:{" "}
+                {finalSpacing.unit === "clump" ? "kępa" : "roślina"} · pewność danych:{" "}
+                {CONFIDENCE_LABELS[finalSpacing.confidence]}.
+              </p>
+              <p>{finalSpacing.context}</p>
+              <p className="text-garden-foreground mt-1 font-medium">Źródła rozstawy:</p>
+              <CropSourceLinks sourceIds={finalSpacing.sourceIds} />
+            </>
+          ) : (
+            <p className="mt-1">
+              Brak potwierdzonej rozstawy końcowej — nie podstawiamy danych z siewu, a planer nie wyznaczy tej uprawie
+              pozycji na diagramie.
+            </p>
+          )}
+        </section>
+
+        <section aria-label={`Gęstość siewu: ${crop.commonNamePl}`}>
+          <h4 className="text-garden-foreground font-semibold">Gęstość siewu — osobna od końcowej obsady</h4>
+          <p className="mt-1">{formatSowingDensity(crop)}</p>
+          {crop.sowingDensity && (
+            <>
+              <p>
+                {crop.sowingDensity.context} Pewność danych: {CONFIDENCE_LABELS[crop.sowingDensity.confidence]}.
+              </p>
+              <p className="text-garden-foreground mt-1 font-medium">Źródła gęstości siewu:</p>
+              <CropSourceLinks sourceIds={crop.sowingDensity.sourceIds} />
+            </>
+          )}
+        </section>
+
+        <section aria-label={`Terminy siewu i sadzenia: ${crop.commonNamePl}`}>
+          <h4 className="text-garden-foreground font-semibold">Orientacyjne terminy</h4>
+          {crop.seasonWindows.length > 0 ? (
+            <ul className="mt-1 space-y-2">
+              {crop.seasonWindows.map((window, index) => (
+                <li key={`${window.method}-${window.startMonth}-${window.endMonth}-${index}`}>
+                  <p>
+                    <span className="text-garden-foreground font-medium">{SOWING_METHOD_LABELS[window.method]}: </span>
+                    {formatSeasonWindow(window.startMonth, window.endMonth)} — {window.condition} · pewność danych:{" "}
+                    {CONFIDENCE_LABELS[window.confidence]}.
+                  </p>
+                  <CropSourceLinks sourceIds={window.sourceIds} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1">Brak dostępnych, zweryfikowanych okien terminów.</p>
+          )}
+        </section>
+
+        {crop.needsLocalValidation && crop.validationNotes && (
+          <p className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-md border p-2">
+            Wymaga lokalnej weryfikacji: {crop.validationNotes}
+          </p>
+        )}
+      </div>
+    </details>
+  );
+}
 
 function normalizeInitialSelection(initialSelection: CropSelection[]): CropSelection[] {
   const percentages = normalizeProportionsToPercentages(initialSelection.map((crop) => Number(crop.proportion)));
@@ -255,6 +419,7 @@ export default function CropSelectionForm({
               {selection.map((crop, index) => {
                 const resolution = resolveGardenCropSelection(crop.cropId);
                 const cropName = resolution.displayName;
+                const cropDetails = cropById.get(crop.cropId);
                 const proportionId = `${idPrefix}-proportion-${crop.cropId}`;
                 const proportionHundredths = parseCropPercentageToHundredths(crop.proportion);
 
@@ -275,6 +440,7 @@ export default function CropSelectionForm({
                           Nieznane ID „{crop.cropId}” — pozycja została zachowana. Usuń ją lub zastąp aktywną uprawą.
                         </p>
                       )}
+                      {resolution.status === "active" && cropDetails && <CropDetails crop={cropDetails} />}
                     </div>
                     <label htmlFor={proportionId} className="text-garden-muted/80 space-y-2 text-sm">
                       <span>Udział (%)</span>

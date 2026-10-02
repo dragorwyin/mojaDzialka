@@ -275,20 +275,20 @@ Pokazać rozdzielone informacje katalogu oraz nowy diagram w prawdziwej skali, z
 
 #### Manual
 
-- [ ] 2.6 Dwie przestrzenie 200×100 cm z przykładowym miksem marchew 30%, cebula 10%, brokuł 40%, czosnek 20% pokazują lokalnych sąsiadów i zrozumiałe powody bez liczenia relacji między skrzyniami.
-- [ ] 2.7 Czosnek obok brokułu może być pokazany jako `unknown`, nie jako błąd; pozycja w narożniku ma uzasadnienie albo układ wybiera dopuszczalną, bardziej zwartą alternatywę.
+- [x] 2.6 Dwie przestrzenie 200×100 cm z przykładowym miksem marchew 30%, cebula 10%, brokuł 40%, czosnek 20% pokazują lokalnych sąsiadów i zrozumiałe powody bez liczenia relacji między skrzyniami. Sprawdzone w UI; listy szczegółów są osobne dla każdej skrzyni, a zapisany plan i miks przetrwały odświeżenie.
+- [x] 2.7 Czosnek obok brokułu może być pokazany jako `unknown`, nie jako błąd; pozycja w narożniku ma uzasadnienie albo układ wybiera dopuszczalną, bardziej zwartą alternatywę. Użytkownik potwierdził test ręczny. W moim odtworzeniu miksu 30/10/40/20 czosnek na pozycji 196×10 cm otrzymał uzasadnienie realizacji celu miksu; bezpośrednie sąsiedztwo czosnku i brokułu nie wystąpiło w tej konkretnej symulacji.
 
 ### Phase 3: Szczegóły upraw, skalowany diagram i odbiór
 
 #### Automated
 
-- [ ] 3.1 Diagram używa proporcjonalnych centymetrowych współrzędnych i siatki co 10 cm; test/inspekcja kontraktu potwierdza, że render nie modyfikuje współrzędnych wyniku.
-- [ ] 3.2 Każde aktywne ID ma miniaturę albo widoczny tekstowy fallback; kontrast etykiety i nazwa dostępna dla klawiatury nie zależą wyłącznie od obrazu/koloru.
-- [ ] 3.3 SSR rozróżnia aktualny plan i plan ze starą wersją; stary JSON i etykiety wycofanych ID nie powodują błędu renderowania.
-- [ ] 3.4 `npm run test:unit`, `npm run test:db`, `npm run build`, `npm run lint` i `npm run smoke` przechodzą.
+- [x] 3.1 Diagram używa proporcjonalnych centymetrowych współrzędnych i siatki co 10 cm; test/inspekcja kontraktu potwierdza, że render nie modyfikuje współrzędnych wyniku.
+- [x] 3.2 Każde aktywne ID ma miniaturę albo widoczny tekstowy fallback; kontrast etykiety i nazwa dostępna dla klawiatury nie zależą wyłącznie od obrazu/koloru.
+- [x] 3.3 SSR rozróżnia aktualny plan i plan ze starą wersją; stary JSON i etykiety wycofanych ID nie powodują błędu renderowania.
+- [x] 3.4 `npm run test:unit`, `npm run test:db`, `npm run build`, `npm run lint` i `npm run smoke` przechodzą.
 
 #### Manual
 
-- [ ] 3.5 Na desktopie i telefonie siatka jest subtelna, skala obu osi zgodna, miniatury/legenda rozpoznawalne, a znaczniki nie zlewają się w nieczytelny diagram; gęste pozycje są grupowane bez zmiany ich prawdziwych współrzędnych.
-- [ ] 3.6 Focus/klawiatura pozwala dotrzeć do szczegółu pozycji, statusu sąsiadów i tekstowego opisu; użytkownik rozumie różnicę między siewem a końcową obsadą.
-- [ ] 3.7 Po odświeżeniu stary plan pozostaje jawnie oznaczony jako nieaktualny; po rozwiązaniu legacy wyboru można wygenerować nowy, aktualny i prywatny wynik.
+- [x] 3.5 Na desktopie i telefonie siatka jest subtelna, skala obu osi zgodna, miniatury/legenda rozpoznawalne, a znaczniki nie zlewają się w nieczytelny diagram; gęste pozycje są grupowane bez zmiany ich prawdziwych współrzędnych.
+- [x] 3.6 Focus/klawiatura pozwala dotrzeć do szczegółu pozycji, statusu sąsiadów i tekstowego opisu; użytkownik rozumie różnicę między siewem a końcową obsadą.
+- [x] 3.7 Po odświeżeniu stary plan pozostaje jawnie oznaczony jako nieaktualny; po rozwiązaniu legacy wyboru można wygenerować nowy, aktualny i prywatny wynik.

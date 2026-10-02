@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import type { GardenLayoutResult } from "@/lib/garden-layout";
+import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
 import {
   CROP_ATLAS_HREF,
   CROP_ATLAS_VIEWBOX_HEIGHT,
@@ -66,7 +67,7 @@ function formatDeviation(actual: number, target: number): string {
 }
 
 function cropName(cropId: string, cropNames: Record<string, string>): string {
-  return cropNames[cropId] ?? cropId;
+  return cropNames[cropId] ?? resolveGardenCropSelection(cropId).displayName;
 }
 
 function CropAtlasGlyph({

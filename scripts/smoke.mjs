@@ -180,6 +180,19 @@ const steps = [
     { status: 200, includes: '"saved":true' },
   ],
   [
+    "selected crops render final spacing, sowing density and seasonal details separately",
+    () => request("/garden"),
+    {
+      status: 200,
+      includes: [
+        "Końcowa obsada",
+        "Gęstość siewu — osobna od końcowej obsady",
+        "Orientacyjne terminy",
+        "Źródła rozstawy",
+      ],
+    },
+  ],
+  [
     "garden plan reports missing spaces instead of saving an empty plan",
     () => request("/api/garden-plan", { method: "POST", json: { spaces: [{ widthCm: 1, lengthCm: 1 }] } }),
     { status: 422, includes: '"error":"missing_spaces"' },
