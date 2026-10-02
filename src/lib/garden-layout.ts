@@ -1,5 +1,6 @@
 import {
   COMPANION_RELATIONS,
+  type CompanionStatus,
   type CompanionRelation,
   type Confidence,
   type CropCatalogEntry,
@@ -10,6 +11,7 @@ import { normalizeProportionsToPercentages } from "./garden-crop-percentages.js"
 
 const DEFAULT_CANDIDATE_LIMIT = 2_000;
 const MAX_GRID_POINTS_PER_CROP = 256;
+const MAX_CANDIDATE_ALTERNATIVES_PER_CROP = 8;
 
 export interface GardenLayoutSpace {
   id: string;
@@ -43,6 +45,32 @@ export interface GardenLayoutPosition {
   };
   confidence: Confidence;
   stage: SpacingStage;
+  /** Absent only on plans persisted by a generator predating Phase 2. */
+  neighbors?: readonly GardenLayoutNeighbor[];
+  /** Absent only on plans persisted by a generator predating Phase 2. */
+  placementReason?: GardenLayoutPlacementReason;
+}
+
+export interface GardenLayoutNeighbor {
+  cropId: string;
+  status: CompanionStatus | "unknown";
+  distanceInSpacingSteps: number;
+  rationale: string | null;
+  sourceIds: readonly string[];
+  confidence: Confidence | null;
+}
+
+export interface GardenLayoutPlacementReason {
+  category:
+    | "supported_neighbor"
+    | "target_mix"
+    | "caution_avoidance"
+    | "compactness"
+    | "hard_constraint_avoidance"
+    | "deterministic_tie_break";
+  detail: string;
+  constrainedByCropIds: readonly string[];
+  rejectedGeometryCandidates: number;
 }
 
 export interface GardenLayoutCropSummary {
@@ -93,6 +121,61 @@ export interface GardenLayoutResult {
   };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isLayoutPosition(value: unknown): value is GardenLayoutPosition {
+  if (!isRecord(value) || !isRecord(value.spacing)) return false;
+  if (
+    typeof value.spaceId !== "string" ||
+    typeof value.cropId !== "string" ||
+    typeof value.xCm !== "number" ||
+    typeof value.yCm !== "number" ||
+    typeof value.row !== "number" ||
+    typeof value.column !== "number" ||
+    typeof value.spacing.inRowCm !== "number" ||
+    typeof value.spacing.betweenRowsCm !== "number" ||
+    typeof value.confidence !== "string" ||
+    typeof value.stage !== "string"
+  ) {
+    return false;
+  }
+  if (value.neighbors !== undefined && !Array.isArray(value.neighbors)) return false;
+  if (value.placementReason !== undefined && !isRecord(value.placementReason)) return false;
+  return true;
+}
+
+/** Reads the previous persisted layout shape too; Phase 2 explanation fields are intentionally optional. */
+export function readGardenLayoutResult(value: unknown): GardenLayoutResult | null {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.spaces) ||
+    !Array.isArray(value.cropSummaries) ||
+    !Array.isArray(value.omissions) ||
+    !Array.isArray(value.conflicts) ||
+    !Array.isArray(value.warnings) ||
+    !isRecord(value.metrics)
+  ) {
+    return null;
+  }
+  if (
+    !value.spaces.every(
+      (spaceResult) =>
+        isRecord(spaceResult) &&
+        isRecord(spaceResult.space) &&
+        typeof spaceResult.space.id === "string" &&
+        typeof spaceResult.space.widthCm === "number" &&
+        typeof spaceResult.space.lengthCm === "number" &&
+        Array.isArray(spaceResult.positions) &&
+        spaceResult.positions.every(isLayoutPosition),
+    )
+  ) {
+    return null;
+  }
+  return value as unknown as GardenLayoutResult;
+}
+
 interface UsableCrop {
   selection: GardenLayoutCropSelection;
   inRowCm: number;
@@ -116,6 +199,16 @@ interface CandidateGrid {
 
 interface PlacedPosition extends GardenLayoutPosition {
   crop: UsableCrop;
+}
+
+interface CandidateScore {
+  candidate: Candidate;
+  supported: number;
+  caution: number;
+  targetPressure: number;
+  compactnessDistance: number | null;
+  rejectedGeometryCandidates: number;
+  rejectedHardNeighborCropIds: readonly string[];
 }
 
 function isPositiveFinite(value: number): boolean {
@@ -163,16 +256,20 @@ function getHardBlockers(
     .map((existing) => existing.crop.selection.crop.id);
 }
 
-function areNeighbors(first: GardenLayoutPosition, second: Candidate | GardenLayoutPosition): boolean {
+function distanceInSpacingSteps(first: GardenLayoutPosition, second: Candidate | GardenLayoutPosition): number {
   const dx = Math.abs(first.xCm - second.xCm);
   const dy = Math.abs(first.yCm - second.yCm);
   const secondInRowCm = "crop" in second ? second.crop.inRowCm : second.spacing.inRowCm;
   const secondBetweenRowsCm = "crop" in second ? second.crop.betweenRowsCm : second.spacing.betweenRowsCm;
-  const radius = Math.max(first.spacing.inRowCm, first.spacing.betweenRowsCm, secondInRowCm, secondBetweenRowsCm);
+  const inRowStep = Math.max(first.spacing.inRowCm, secondInRowCm);
+  const betweenRowsStep = Math.max(first.spacing.betweenRowsCm, secondBetweenRowsCm);
 
-  // Treat centers within one larger configured planting interval as adjacent.
-  // This is a layout heuristic, not a biological claim about companion crops.
-  return Math.hypot(dx, dy) <= radius;
+  return Math.hypot(dx / inRowStep, dy / betweenRowsStep);
+}
+
+function areNeighbors(first: GardenLayoutPosition, second: Candidate | GardenLayoutPosition): boolean {
+  // One normalized Euclidean spacing-step is a local layout neighborhood, not a biological claim.
+  return distanceInSpacingSteps(first, second) <= 1;
 }
 
 function overlaps(first: GardenLayoutPosition, second: Candidate): boolean {
@@ -185,13 +282,13 @@ function overlaps(first: GardenLayoutPosition, second: Candidate): boolean {
   );
 }
 
-function compareCandidates(
-  left: { candidate: Candidate; supported: number; caution: number; targetPressure: number },
-  right: { candidate: Candidate; supported: number; caution: number; targetPressure: number },
-): number {
+function compareCandidates(left: CandidateScore, right: CandidateScore): number {
   if (left.supported !== right.supported) return right.supported - left.supported;
   if (left.targetPressure !== right.targetPressure) return right.targetPressure - left.targetPressure;
   if (left.caution !== right.caution) return left.caution - right.caution;
+  const leftDistance = left.compactnessDistance ?? Number.POSITIVE_INFINITY;
+  const rightDistance = right.compactnessDistance ?? Number.POSITIVE_INFINITY;
+  if (leftDistance !== rightDistance) return leftDistance - rightDistance;
   return (
     left.candidate.crop.selection.crop.id.localeCompare(right.candidate.crop.selection.crop.id) ||
     left.candidate.xCm - right.candidate.xCm ||
@@ -230,12 +327,17 @@ function scoreCandidate(
   relations: ReadonlyMap<string, CompanionRelation>,
   actualCounts: ReadonlyMap<string, number>,
   totalPlaced: number,
-): { candidate: Candidate; supported: number; caution: number; targetPressure: number } {
+  rejectedGeometryCandidates: number,
+  rejectedHardNeighborCropIds: readonly string[],
+): CandidateScore {
   let supported = 0;
   let caution = 0;
+  let compactnessDistance: number | null = null;
 
   for (const existing of placed) {
-    if (!areNeighbors(existing, candidate)) continue;
+    const distance = distanceInSpacingSteps(existing, candidate);
+    compactnessDistance = compactnessDistance === null ? distance : Math.min(compactnessDistance, distance);
+    if (distance > 1) continue;
     const relation = relationBetween(existing.crop.selection.crop.id, candidate.crop.selection.crop.id, relations);
     if (relation?.status === "supported") supported += 1;
     if (relation?.status === "caution") caution += 1;
@@ -244,7 +346,131 @@ function scoreCandidate(
   const actualPercentage =
     totalPlaced === 0 ? 0 : ((actualCounts.get(candidate.crop.selection.crop.id) ?? 0) / totalPlaced) * 100;
   const targetPressure = candidate.crop.targetPercentage - actualPercentage;
-  return { candidate, supported, caution, targetPressure };
+  return {
+    candidate,
+    supported,
+    caution,
+    targetPressure,
+    compactnessDistance,
+    rejectedGeometryCandidates,
+    rejectedHardNeighborCropIds,
+  };
+}
+
+function createPlacementReason(
+  selected: CandidateScore,
+  scores: readonly CandidateScore[],
+): GardenLayoutPlacementReason {
+  const alternatives = scores.filter((score) => score !== selected);
+  const sameSupport = alternatives.filter((score) => score.supported === selected.supported);
+  const sameSupportAndTarget = sameSupport.filter((score) => score.targetPressure === selected.targetPressure);
+  const samePrimaryScores = sameSupportAndTarget.filter((score) => score.caution === selected.caution);
+  const sameCropAlternatives = samePrimaryScores.filter(
+    (score) => score.candidate.crop.selection.crop.id === selected.candidate.crop.selection.crop.id,
+  );
+  const constrainedByCropIds = [...selected.rejectedHardNeighborCropIds].sort((left, right) =>
+    left.localeCompare(right),
+  );
+
+  if (selected.supported > 0) {
+    return {
+      category: "supported_neighbor",
+      detail: `Pozycja ma ${selected.supported} lokalne potwierdzone korzystne sąsiedztwo.`,
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  const selectedDistance = selected.compactnessDistance;
+  if (
+    selectedDistance !== null &&
+    sameCropAlternatives.some(
+      (score) => score.compactnessDistance === null || score.compactnessDistance > selectedDistance,
+    )
+  ) {
+    return {
+      category: "compactness",
+      detail: "Przy równoważnej punktacji wybrano dopuszczalną pozycję bliżej obsadzonej części tej samej przestrzeni.",
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  if (sameSupport.some((score) => score.targetPressure < selected.targetPressure)) {
+    return {
+      category: "target_mix",
+      detail: "Wybrano tę uprawę, aby lepiej zbliżyć całościowy układ do zadeklarowanych udziałów.",
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  if (sameSupportAndTarget.some((score) => score.caution > selected.caution)) {
+    return {
+      category: "caution_avoidance",
+      detail: "Przy porównywalnym wpływie na miks wybrano wariant z mniejszą liczbą lokalnych ostrzeżeń.",
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  if (
+    selectedDistance !== null &&
+    samePrimaryScores.some(
+      (score) => score.compactnessDistance === null || score.compactnessDistance > selectedDistance,
+    )
+  ) {
+    return {
+      category: "compactness",
+      detail: "Przy równoważnej punktacji wybrano dopuszczalną pozycję bliżej obsadzonej części tej samej przestrzeni.",
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  if (constrainedByCropIds.length > 0 || selected.rejectedGeometryCandidates > 0) {
+    const constraints: string[] = [];
+    if (constrainedByCropIds.length > 0) constraints.push("potwierdzone negatywne sąsiedztwo");
+    if (selected.rejectedGeometryCandidates > 0) constraints.push("końcowa rozstawa lub geometria");
+    return {
+      category: "hard_constraint_avoidance",
+      detail: `Wcześniej rozważane pozycje naruszały: ${constraints.join(" oraz ")}; wybrano dopuszczalną pozycję.`,
+      constrainedByCropIds,
+      rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+    };
+  }
+  return {
+    category: "deterministic_tie_break",
+    detail:
+      "Nie było silniejszej potwierdzonej relacji; spośród dopuszczalnych pozycji zadziałał deterministyczny tie-break.",
+    constrainedByCropIds,
+    rejectedGeometryCandidates: selected.rejectedGeometryCandidates,
+  };
+}
+
+function createNeighbors(
+  position: PlacedPosition,
+  placed: readonly PlacedPosition[],
+  relations: ReadonlyMap<string, CompanionRelation>,
+): GardenLayoutNeighbor[] {
+  return placed
+    .filter((other) => other !== position)
+    .map((other) => ({
+      other,
+      distance: distanceInSpacingSteps(position, other),
+    }))
+    .filter(({ distance }) => distance <= 1)
+    .map(({ other, distance }) => {
+      const relation = relationBetween(position.cropId, other.cropId, relations);
+      const status: GardenLayoutNeighbor["status"] = relation?.status ?? "unknown";
+      return {
+        cropId: other.cropId,
+        status,
+        distanceInSpacingSteps: Number(distance.toFixed(3)),
+        rationale: relation?.rationale ?? null,
+        sourceIds: relation?.sourceIds ?? [],
+        confidence: relation?.confidence ?? null,
+      };
+    })
+    .sort(
+      (left, right) =>
+        left.distanceInSpacingSteps - right.distanceInSpacingSteps || left.cropId.localeCompare(right.cropId),
+    );
 }
 
 function createSummary(
@@ -323,6 +549,7 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
 
     usableCrops.push({ selection, ...spacing, targetPercentage });
   }
+  const candidateAlternativesLimit = usableCrops.length > 1 ? MAX_CANDIDATE_ALTERNATIVES_PER_CROP : 1;
 
   const spaceResults: GardenLayoutSpaceResult[] = [];
   const conflicts: GardenLayoutConflict[] = [];
@@ -358,47 +585,58 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
     );
 
     while (candidateChecks < candidateLimit) {
-      const scored: { candidate: Candidate; supported: number; caution: number; targetPressure: number }[] = [];
+      const scored: CandidateScore[] = [];
       for (const crop of usableCrops) {
         const candidates = candidatesByCrop.get(crop.selection.crop.id) ?? [];
-        let firstValidIndex = -1;
-        let completedSearch = true;
-        let hadOverlappingCandidates = false;
+        const cropScores: CandidateScore[] = [];
+        const remainingCandidates: Candidate[] = [];
+        let nextCandidateIndex = 0;
+        let stoppedByLimit = false;
+        let hadOverlappingCandidates = 0;
         const hardBlockers = new Set<string>();
-        for (const [candidateIndex, candidate] of candidates.entries()) {
+        for (; nextCandidateIndex < candidates.length; nextCandidateIndex += 1) {
+          if (candidateChecks >= candidateLimit) {
+            stoppedByLimit = true;
+            break;
+          }
+          const candidate = candidates[nextCandidateIndex];
           candidateChecks += 1;
           if (placed.some((existing) => overlaps(existing, candidate))) {
-            hadOverlappingCandidates = true;
-            if (candidateChecks >= candidateLimit) {
-              completedSearch = false;
-              break;
-            }
+            hadOverlappingCandidates += 1;
             continue;
           }
           const candidateBlockers = getHardBlockers(candidate, placed, relations);
           if (candidateBlockers.length > 0) {
             for (const blocker of candidateBlockers) hardBlockers.add(blocker);
-            if (candidateChecks >= candidateLimit) {
-              completedSearch = false;
-              break;
-            }
             continue;
           }
-          const score = scoreCandidate(candidate, placed, relations, actualCounts, totalPlaced);
-          scored.push(score);
-          firstValidIndex = candidateIndex;
-          break;
+          cropScores.push(
+            scoreCandidate(candidate, placed, relations, actualCounts, totalPlaced, hadOverlappingCandidates, [
+              ...hardBlockers,
+            ]),
+          );
+          if (cropScores.length >= candidateAlternativesLimit) {
+            nextCandidateIndex += 1;
+            break;
+          }
         }
-        if (firstValidIndex < 0 && completedSearch) {
+
+        const stoppedAfterAlternatives = cropScores.length >= candidateAlternativesLimit;
+        remainingCandidates.push(...cropScores.map((score) => score.candidate));
+        remainingCandidates.push(...candidates.slice(nextCandidateIndex));
+        candidatesByCrop.set(crop.selection.crop.id, remainingCandidates);
+        scored.push(...cropScores);
+
+        const completedSearch = !stoppedByLimit && !stoppedAfterAlternatives;
+        if (cropScores.length === 0 && completedSearch) {
           if (!truncatedGridCropIdsInSpace.has(crop.selection.crop.id)) {
-            if (candidates.length === 0 || hadOverlappingCandidates) {
+            if (candidates.length === 0 || hadOverlappingCandidates > 0) {
               geometryBlockedCropIds.add(crop.selection.crop.id);
             }
             if (hardBlockers.size > 0) negativeBlockedByCrop.set(crop.selection.crop.id, hardBlockers);
           }
         }
-        candidatesByCrop.set(crop.selection.crop.id, firstValidIndex < 0 ? [] : candidates.slice(firstValidIndex));
-        if (candidateChecks >= candidateLimit) break;
+        if (stoppedByLimit || candidateChecks >= candidateLimit) break;
       }
 
       if (scored.length === 0) break;
@@ -415,6 +653,7 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
         spacing: { inRowCm: selected.crop.inRowCm, betweenRowsCm: selected.crop.betweenRowsCm },
         confidence: selected.crop.selection.crop.spacing?.confidence ?? "low",
         stage: selected.crop.selection.crop.spacing?.stage ?? "mixed",
+        placementReason: createPlacementReason(best, scored),
         crop: selected.crop,
       };
       placed.push(position);
@@ -437,7 +676,13 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
 
     spaceResults.push({
       space,
-      positions: placed.map(({ crop: _crop, ...position }) => position),
+      positions: placed.map((position) => {
+        const { crop: _crop, ...layoutPosition } = position;
+        return {
+          ...layoutPosition,
+          neighbors: createNeighbors(position, placed, relations),
+        };
+      }),
     });
     if (limitReached) break;
   }

@@ -267,11 +267,11 @@ Pokazać rozdzielone informacje katalogu oraz nowy diagram w prawdziwej skali, z
 
 #### Automated
 
-- [ ] 2.1 Testy geometrii potwierdzają końcową obsadę, twarde ograniczenie negatywnej pary tylko przy lokalnym sąsiedztwie oraz brak relacji między pozycjami z różnych przestrzeni.
-- [ ] 2.2 Testy punktacji potwierdzają priorytet relacji pozytywnych, miękki charakter `caution`, neutralność `unknown`, wpływ kompaktowości przy porównywalnych głównych wynikach i powtarzalny tie-break.
-- [ ] 2.3 Testy wyniku potwierdzają listę sąsiadów/statusów i powód pozycji; brak źródła nie jest zamieniany na twierdzenie o biologicznym sąsiedztwie.
-- [ ] 2.4 Test fingerprintu potwierdza, że zmiana wersji katalogu/algorytmu oznacza dawny plan jako nieaktualny, a stary format wyniku nadal można odczytać.
-- [ ] 2.5 `npm run test:unit`, `npx astro check`, `npm run build`, `npm run lint` i odpowiedni `npm run smoke` przechodzą.
+- [x] 2.1 Testy geometrii potwierdzają końcową obsadę, twarde ograniczenie negatywnej pary tylko przy lokalnym sąsiedztwie oraz brak relacji między pozycjami z różnych przestrzeni.
+- [x] 2.2 Testy punktacji potwierdzają priorytet relacji pozytywnych, miękki charakter `caution`, neutralność `unknown`, wpływ kompaktowości przy porównywalnych głównych wynikach i powtarzalny tie-break.
+- [x] 2.3 Testy wyniku potwierdzają listę sąsiadów/statusów i powód pozycji; brak źródła nie jest zamieniany na twierdzenie o biologicznym sąsiedztwie.
+- [x] 2.4 Test fingerprintu potwierdza, że zmiana wersji katalogu/algorytmu oznacza dawny plan jako nieaktualny, a stary format wyniku nadal można odczytać.
+- [x] 2.5 `npm run test:unit`, `npx astro check`, `npm run build`, `npm run lint` i odpowiedni `npm run smoke` przechodzą.
 
 #### Manual
 
