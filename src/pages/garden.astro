@@ -5,6 +5,7 @@ import GardenPlanner from "@/components/garden/GardenPlanner";
 import Topbar from "@/components/Topbar.astro";
 import { CROP_CATALOG } from "@/data/crop-catalog";
 import { readGardenLayoutResult, type GardenLayoutResult } from "@/lib/garden-layout";
+import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
 import {
   createGardenInputSnapshot,
   fingerprintGardenInputSnapshot,
@@ -115,6 +116,7 @@ if (supabase && user) {
 const error = Astro.url.searchParams.get("error") ?? loadError;
 const saved = Astro.url.searchParams.get("saved") === "1";
 const inputsUnavailable = !supabase || !user || Boolean(loadError) || cropsLoadError;
+const hasUnresolvedCrops = initialCrops.some((crop) => resolveGardenCropSelection(crop.cropId).status !== "active");
 const initialPlanStatus =
   inputsUnavailable || currentPlanLoadError
     ? "unavailable"
@@ -173,6 +175,7 @@ const cropNames: Record<string, string> = Object.fromEntries(
           cropNames={cropNames}
           hasSpaces={initialSpaces.length > 0}
           hasCrops={initialCrops.length > 0}
+          hasUnresolvedCrops={hasUnresolvedCrops}
           inputsUnavailable={inputsUnavailable}
           client:load
         />

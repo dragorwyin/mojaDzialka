@@ -16,6 +16,7 @@ export interface GardenDiagramPosition {
 }
 
 export interface GardenDiagramProjection<TPosition extends GardenDiagramPosition> {
+  gridStepCm: number;
   viewBox: {
     xCm: number;
     yCm: number;
@@ -97,6 +98,7 @@ export function createGardenDiagramProjection<TPosition extends GardenDiagramPos
   const stepCm = gridStepCm(space);
 
   return {
+    gridStepCm: stepCm,
     viewBox: {
       xCm: -GARDEN_DIAGRAM_EDGE_PADDING_CM,
       yCm: -GARDEN_DIAGRAM_EDGE_PADDING_CM,

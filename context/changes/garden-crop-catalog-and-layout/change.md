@@ -1,7 +1,7 @@
 ---
 change_id: garden-crop-catalog-and-layout
 title: Katalog roślin i czytelność układu
-status: implemented
+status: impl_reviewed
 created: 2026-09-30
 updated: 2026-10-03
 archived_at: null

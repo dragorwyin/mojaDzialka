@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveGardenCropSelection, validateGardenCropSelection } from "./garden-crop-selection.js";
+import {
+  canGenerateGardenPlan,
+  resolveGardenCropSelection,
+  validateGardenCropSelection,
+} from "./garden-crop-selection.js";
 
 describe("garden crop selection validation", () => {
+  it("blocks generation while saved crop IDs are unresolved and enables it after they are replaced", () => {
+    const base = { inputsUnavailable: false, hasSpaces: true, hasCrops: true };
+
+    expect(canGenerateGardenPlan({ ...base, hasUnresolvedCrops: true })).toBe(false);
+    expect(canGenerateGardenPlan({ ...base, hasUnresolvedCrops: false })).toBe(true);
+  });
+
   it("accepts known crop IDs with positive integer and decimal proportions without normalization", () => {
     expect(
       validateGardenCropSelection([

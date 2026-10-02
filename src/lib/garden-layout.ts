@@ -125,25 +125,115 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return Number.isInteger(value) && typeof value === "number" && value >= 0;
+}
+
+function isConfidence(value: unknown): value is Confidence {
+  return value === "high" || value === "medium" || value === "low";
+}
+
+function isSpacingStage(value: unknown): value is SpacingStage {
+  return value === "sowing" || value === "thinning" || value === "planting" || value === "final_planting" || value === "mixed";
+}
+
+function isLayoutNeighbor(value: unknown): value is GardenLayoutNeighbor {
+  return (
+    isRecord(value) &&
+    typeof value.cropId === "string" &&
+    (value.status === "supported" || value.status === "caution" || value.status === "negative" || value.status === "unknown") &&
+    isFiniteNumber(value.distanceInSpacingSteps) &&
+    value.distanceInSpacingSteps >= 0 &&
+    (typeof value.rationale === "string" || value.rationale === null) &&
+    Array.isArray(value.sourceIds) &&
+    value.sourceIds.every((sourceId) => typeof sourceId === "string") &&
+    (isConfidence(value.confidence) || value.confidence === null)
+  );
+}
+
+function isPlacementReason(value: unknown): value is GardenLayoutPlacementReason {
+  return (
+    isRecord(value) &&
+    (value.category === "supported_neighbor" ||
+      value.category === "target_mix" ||
+      value.category === "caution_avoidance" ||
+      value.category === "compactness" ||
+      value.category === "hard_constraint_avoidance" ||
+      value.category === "deterministic_tie_break") &&
+    typeof value.detail === "string" &&
+    Array.isArray(value.constrainedByCropIds) &&
+    value.constrainedByCropIds.every((cropId) => typeof cropId === "string") &&
+    isNonNegativeInteger(value.rejectedGeometryCandidates)
+  );
+}
+
 function isLayoutPosition(value: unknown): value is GardenLayoutPosition {
   if (!isRecord(value) || !isRecord(value.spacing)) return false;
   if (
     typeof value.spaceId !== "string" ||
     typeof value.cropId !== "string" ||
-    typeof value.xCm !== "number" ||
-    typeof value.yCm !== "number" ||
-    typeof value.row !== "number" ||
-    typeof value.column !== "number" ||
-    typeof value.spacing.inRowCm !== "number" ||
-    typeof value.spacing.betweenRowsCm !== "number" ||
-    typeof value.confidence !== "string" ||
-    typeof value.stage !== "string"
+    !isFiniteNumber(value.xCm) ||
+    value.xCm < 0 ||
+    !isFiniteNumber(value.yCm) ||
+    value.yCm < 0 ||
+    !isNonNegativeInteger(value.row) ||
+    !isNonNegativeInteger(value.column) ||
+    !isFiniteNumber(value.spacing.inRowCm) ||
+    value.spacing.inRowCm <= 0 ||
+    !isFiniteNumber(value.spacing.betweenRowsCm) ||
+    value.spacing.betweenRowsCm <= 0 ||
+    !isConfidence(value.confidence) ||
+    !isSpacingStage(value.stage)
   ) {
     return false;
   }
-  if (value.neighbors !== undefined && !Array.isArray(value.neighbors)) return false;
-  if (value.placementReason !== undefined && !isRecord(value.placementReason)) return false;
+  if (value.neighbors !== undefined && (!Array.isArray(value.neighbors) || !value.neighbors.every(isLayoutNeighbor))) return false;
+  if (value.placementReason !== undefined && !isPlacementReason(value.placementReason)) return false;
   return true;
+}
+
+function isCropSummary(value: unknown): value is GardenLayoutCropSummary {
+  return (
+    isRecord(value) &&
+    typeof value.cropId === "string" &&
+    isFiniteNumber(value.targetPercentage) &&
+    value.targetPercentage >= 0 &&
+    isFiniteNumber(value.actualPercentage) &&
+    value.actualPercentage >= 0 &&
+    isNonNegativeInteger(value.actualCount) &&
+    (isConfidence(value.dataConfidence) || value.dataConfidence === null) &&
+    (isSpacingStage(value.spacingStage) || value.spacingStage === null)
+  );
+}
+
+function isOmission(value: unknown): value is GardenLayoutOmission {
+  return (
+    isRecord(value) &&
+    typeof value.cropId === "string" &&
+    (value.reason === "missing_spacing" ||
+      value.reason === "unverified_spacing" ||
+      value.reason === "invalid_spacing" ||
+      value.reason === "invalid_proportion" ||
+      value.reason === "non_final_spacing" ||
+      value.reason === "no_fit" ||
+      value.reason === "search_limit") &&
+    typeof value.detail === "string"
+  );
+}
+
+function isConflict(value: unknown): value is GardenLayoutConflict {
+  return (
+    isRecord(value) &&
+    typeof value.spaceId === "string" &&
+    (value.type === "geometry" || value.type === "negative_neighbor") &&
+    Array.isArray(value.cropIds) &&
+    value.cropIds.every((cropId) => typeof cropId === "string") &&
+    typeof value.detail === "string"
+  );
 }
 
 /** Reads the previous persisted layout shape too; Phase 2 explanation fields are intentionally optional. */
@@ -165,11 +255,26 @@ export function readGardenLayoutResult(value: unknown): GardenLayoutResult | nul
         isRecord(spaceResult) &&
         isRecord(spaceResult.space) &&
         typeof spaceResult.space.id === "string" &&
-        typeof spaceResult.space.widthCm === "number" &&
-        typeof spaceResult.space.lengthCm === "number" &&
+        (spaceResult.space.name === undefined || typeof spaceResult.space.name === "string") &&
+        isFiniteNumber(spaceResult.space.widthCm) &&
+        spaceResult.space.widthCm > 0 &&
+        isFiniteNumber(spaceResult.space.lengthCm) &&
+        spaceResult.space.lengthCm > 0 &&
         Array.isArray(spaceResult.positions) &&
         spaceResult.positions.every(isLayoutPosition),
     )
+  ) {
+    return null;
+  }
+  if (
+    !value.cropSummaries.every(isCropSummary) ||
+    !value.omissions.every(isOmission) ||
+    !value.conflicts.every(isConflict) ||
+    !value.warnings.every((warning) => typeof warning === "string") ||
+    !isNonNegativeInteger(value.metrics.candidateChecks) ||
+    !isNonNegativeInteger(value.metrics.supportedNeighbors) ||
+    !isNonNegativeInteger(value.metrics.cautionNeighbors) ||
+    typeof value.metrics.limitReached !== "boolean"
   ) {
     return null;
   }

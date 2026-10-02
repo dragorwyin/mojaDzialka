@@ -84,11 +84,12 @@ function CropAtlasGlyph({
   y?: number;
 }) {
   const presentation = resolveCropThumbnailPresentation(cropId, code);
+  const [atlasFailed, setAtlasFailed] = useState(false);
 
   return (
     <svg x={x} y={y} width={size} height={size} viewBox="-50 -50 100 100" aria-hidden="true" focusable="false">
       <circle cx="0" cy="0" r="48" className="fill-garden-surface stroke-garden-surface/40" strokeWidth="3" />
-      {presentation.kind === "atlas" && (
+      {presentation.kind === "atlas" && !atlasFailed && (
         <svg
           x="-40"
           y="-45"
@@ -105,10 +106,11 @@ function CropAtlasGlyph({
             width={CROP_ATLAS_VIEWBOX_WIDTH}
             height={CROP_ATLAS_VIEWBOX_HEIGHT}
             preserveAspectRatio="xMidYMid meet"
+            onError={() => setAtlasFailed(true)}
           />
         </svg>
       )}
-      {presentation.kind === "text" && (
+      {(presentation.kind === "text" || atlasFailed) && (
         <text x="0" y="5" textAnchor="middle" className="fill-garden-foreground" fontSize="28" fontWeight="700">
           {presentation.fallbackLabel}
         </text>
@@ -256,7 +258,7 @@ function GardenSpaceDiagramViewer({
     <>
       <div className="border-garden-surface/15 bg-garden-surface/10 space-y-2 rounded-lg border p-2">
         <p className="text-garden-muted/75 text-xs">
-          Siatka co 10 cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
         </p>
         <GardenSpaceDiagram
           space={space}

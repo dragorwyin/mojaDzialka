@@ -314,7 +314,7 @@ export default function CropSelectionForm({
       setMessage("Wybór upraw został zapisany.");
       window.dispatchEvent(
         new CustomEvent("garden:inputs-saved", {
-          detail: { hasCrops: validated.length > 0 },
+          detail: { hasCrops: validated.length > 0, hasUnresolvedCrops: false },
         }),
       );
     } catch {

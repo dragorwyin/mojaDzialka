@@ -467,6 +467,7 @@ describe("garden layout diagram projection", () => {
     expect(projection.markers[0]?.diameterCm).toBeLessThan(3);
     expect(projection.xGridLinesCm).toContain(10);
     expect(projection.yGridLinesCm).toContain(10);
+    expect(projection.gridStepCm).toBe(10);
     expect(projection.viewBox.xCm).toBeLessThan(0);
     expect(projection.viewBox.yCm).toBeLessThan(0);
   });
@@ -486,6 +487,7 @@ describe("garden layout diagram projection", () => {
 
     expect(projection.xGridLinesCm.length).toBeLessThanOrEqual(100);
     expect(projection.yGridLinesCm.length).toBeLessThanOrEqual(100);
+    expect(projection.gridStepCm).toBe(1_000);
     expect(projection.xGridLinesCm[0]).toBe(1_000);
     expect(projection.yGridLinesCm[0]).toBe(1_000);
     expect(projection.xGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);

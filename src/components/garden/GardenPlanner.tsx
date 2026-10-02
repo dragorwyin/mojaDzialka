@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { canGenerateGardenPlan } from "@/lib/garden-crop-selection";
 import type { GardenLayoutResult } from "@/lib/garden-layout";
 import GardenLayoutView from "./GardenLayoutView";
 
@@ -12,6 +13,7 @@ interface Props {
   cropNames: Record<string, string>;
   hasSpaces: boolean;
   hasCrops: boolean;
+  hasUnresolvedCrops: boolean;
   inputsUnavailable: boolean;
 }
 
@@ -56,11 +58,20 @@ export default function GardenPlanner({
   cropNames,
   hasSpaces,
   hasCrops,
+  hasUnresolvedCrops: initialHasUnresolvedCrops,
   inputsUnavailable,
 }: Props) {
   const [planState, setPlanState] = useState<PlanState>({ plan: initialPlan, status: initialStatus });
   const [generatedAt, setGeneratedAt] = useState(initialGeneratedAt);
-  const [canGenerate, setCanGenerate] = useState(!inputsUnavailable && hasSpaces && hasCrops);
+  const [hasUnresolvedCrops, setHasUnresolvedCrops] = useState(initialHasUnresolvedCrops);
+  const [canGenerate, setCanGenerate] = useState(
+    canGenerateGardenPlan({
+      inputsUnavailable,
+      hasSpaces,
+      hasCrops,
+      hasUnresolvedCrops: initialHasUnresolvedCrops,
+    }),
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const inputRevision = useRef(0);
@@ -68,9 +79,17 @@ export default function GardenPlanner({
 
   useEffect(() => {
     function handleCropSelectionSaved(event: Event) {
-      const detail = (event as CustomEvent<{ hasCrops?: boolean }>).detail;
+      const detail = (event as CustomEvent<{ hasCrops?: boolean; hasUnresolvedCrops?: boolean }>).detail;
       inputRevision.current += 1;
-      setCanGenerate(!inputsUnavailable && hasSpaces && detail.hasCrops === true);
+      setHasUnresolvedCrops(detail.hasUnresolvedCrops === true);
+      setCanGenerate(
+        canGenerateGardenPlan({
+          inputsUnavailable,
+          hasSpaces,
+          hasCrops: detail.hasCrops === true,
+          hasUnresolvedCrops: detail.hasUnresolvedCrops === true,
+        }),
+      );
       setPlanState((current) => (current.plan === null ? current : { ...current, status: "stale" }));
     }
 
@@ -177,7 +196,9 @@ export default function GardenPlanner({
             ? "Generowanie jest wyłączone, ponieważ nie udało się odczytać wszystkich zapisanych danych."
             : !hasSpaces
               ? "Najpierw zapisz co najmniej jedną skrzynię lub sektor."
-              : "Najpierw zapisz co najmniej jedną uprawę z poprawnym udziałem procentowym."}
+              : hasUnresolvedCrops
+                ? "Zapisany wybór zawiera wycofaną lub nierozpoznaną uprawę. Usuń ją albo zamień i zapisz wybór przed generowaniem."
+                : "Najpierw zapisz co najmniej jedną uprawę z poprawnym udziałem procentowym."}
         </p>
       )}
 

@@ -25,6 +25,15 @@ export function resolveGardenCropSelection(cropId: string): GardenCropSelectionR
   return { status: "unknown", displayName: cropId };
 }
 
+export function canGenerateGardenPlan(input: {
+  inputsUnavailable: boolean;
+  hasSpaces: boolean;
+  hasCrops: boolean;
+  hasUnresolvedCrops: boolean;
+}): boolean {
+  return !input.inputsUnavailable && input.hasSpaces && input.hasCrops && !input.hasUnresolvedCrops;
+}
+
 export function validateGardenCropSelection(input: unknown): GardenCropSelection[] | null {
   if (!Array.isArray(input)) return null;
 
