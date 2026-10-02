@@ -205,24 +205,24 @@ Nie ma migracji schematu Supabase ani przepisywania wierszy `garden_crops`. Zach
 
 #### Automated
 
-- [x] 1.1 Test katalogu potwierdza rozstawę końcową marchwi i osobną gęstość siewu.
-- [x] 1.2 Test generatora używa produkcyjnego wpisu marchwi i respektuje minimum 7 cm.
-- [x] 1.3 Test snapshotu oznacza plan ze starą wersją katalogu jako nieaktualny.
+- [x] 1.1 Test katalogu potwierdza rozstawę końcową marchwi i osobną gęstość siewu. — d87e156
+- [x] 1.2 Test generatora używa produkcyjnego wpisu marchwi i respektuje minimum 7 cm. — d87e156
+- [x] 1.3 Test snapshotu oznacza plan ze starą wersją katalogu jako nieaktualny. — d87e156
 
 #### Manual
 
-- [x] 1.4 Wybór marchwi pozostaje zapisany, a dawny plan jest jawnie nieaktualny do ponownego wygenerowania.
+- [x] 1.4 Wybór marchwi pozostaje zapisany, a dawny plan jest jawnie nieaktualny do ponownego wygenerowania. — d87e156
 
 ### Phase 2: Diagram w skali i miniatury upraw
 
 #### Automated
 
-- [ ] 2.1 Testy diagramu potwierdzają równą skalę, zachowane współrzędne i komplet miniaturek z fallbackiem.
+- [x] 2.1 Testy diagramu potwierdzają równą skalę, zachowane współrzędne i komplet miniaturek z fallbackiem.
 
 #### Manual
 
-- [ ] 2.2 Diagram desktop/mobile pokazuje delikatną siatkę i czytelne symbole bez przycinania ani przesuwania pozycji.
-- [ ] 2.3 Miniatury, legenda i szczegóły są zrozumiałe i dostępne także bez obrazków.
+- [x] 2.2 Diagram desktop/mobile pokazuje delikatną siatkę i czytelne symbole bez przycinania ani przesuwania pozycji.
+- [x] 2.3 Miniatury, legenda i szczegóły są zrozumiałe i dostępne także bez obrazków.
 
 ### Phase 3: Weryfikacja przepływu i odbiór
 
