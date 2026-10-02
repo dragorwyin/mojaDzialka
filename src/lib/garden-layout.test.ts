@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  createGardenDiagramProjection,
+  getGardenDiagramAspectRatio,
+  getGardenDiagramZoomDimensions,
+} from "../components/garden/garden-layout-diagram.js";
 import { CROP_CATALOG, type CompanionRelation, type CropCatalogEntry } from "../data/crop-catalog.js";
 import { generateGardenLayout, readGardenLayoutResult } from "./garden-layout.js";
 
@@ -441,5 +446,38 @@ describe("garden layout engine", () => {
 
     expect(readGardenLayoutResult(legacy)).toEqual(legacy);
     expect(readGardenLayoutResult({ spaces: [], cropSummaries: [] })).toBeNull();
+  });
+});
+
+describe("garden layout diagram projection", () => {
+  it("uses one pixel scale per centimeter and preserves each source center", () => {
+    const positions = [
+      { xCm: 85.5, yCm: 40.25 },
+      { xCm: 88.5, yCm: 40.25 },
+    ];
+    const projection = createGardenDiagramProjection({ widthCm: 200, lengthCm: 100 }, positions);
+    const widthPx = 720;
+    const heightPx = widthPx / getGardenDiagramAspectRatio(projection);
+
+    expect(widthPx / projection.viewBox.widthCm).toBeCloseTo(heightPx / projection.viewBox.heightCm);
+    expect(projection.markers.map(({ center }) => center)).toEqual([
+      { xCm: 85.5, yCm: 40.25 },
+      { xCm: 88.5, yCm: 40.25 },
+    ]);
+    expect(projection.markers[0]?.diameterCm).toBeLessThan(3);
+    expect(projection.xGridLinesCm).toContain(10);
+    expect(projection.yGridLinesCm).toContain(10);
+    expect(projection.viewBox.xCm).toBeLessThan(0);
+    expect(projection.viewBox.yCm).toBeLessThan(0);
+  });
+
+  it("scales the zoom viewport equally without moving plant centers", () => {
+    const positions = [{ xCm: 85.5, yCm: 40.25 }];
+    const projection = createGardenDiagramProjection({ widthCm: 200, lengthCm: 100 }, positions);
+    const dimensions = getGardenDiagramZoomDimensions(projection);
+
+    expect(dimensions.widthPx / projection.viewBox.widthCm).toBeCloseTo(8, 10);
+    expect(dimensions.heightPx / projection.viewBox.heightCm).toBeCloseTo(8, 10);
+    expect(projection.markers.map(({ center }) => center)).toEqual([{ xCm: 85.5, yCm: 40.25 }]);
   });
 });
