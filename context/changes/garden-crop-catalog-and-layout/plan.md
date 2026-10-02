@@ -271,9 +271,7 @@ Pokazać rozdzielone informacje katalogu oraz nowy diagram w prawdziwej skali, z
 - [x] 2.2 Testy punktacji potwierdzają priorytet relacji pozytywnych, miękki charakter `caution`, neutralność `unknown`, wpływ kompaktowości przy porównywalnych głównych wynikach i powtarzalny tie-break. — d5307fa
 - [x] 2.3 Testy wyniku potwierdzają listę sąsiadów/statusów i powód pozycji; brak źródła nie jest zamieniany na twierdzenie o biologicznym sąsiedztwie. — d5307fa
 - [x] 2.4 Test fingerprintu potwierdza, że zmiana wersji katalogu/algorytmu oznacza dawny plan jako nieaktualny, a stary format wyniku nadal można odczytać. — d5307fa
-- [ ] 2.5 `npm run test:unit`, `npx astro check`, `npm run build`, `npm run lint` i odpowiedni `npm run smoke` przechodzą.
-
-> 2.5 pozostaje otwarte: unit, Astro check, build i lint przechodzą, ale pełny smoke wymaga dostępnego lokalnego Supabase/preview i nie został uruchomiony.
+- [x] 2.5 `npm run test:unit`, `npx astro check`, `npm run build`, `npm run lint` i odpowiedni `npm run smoke` przechodzą. — 8fc0b5b
 
 #### Manual
 
