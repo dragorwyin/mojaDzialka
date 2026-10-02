@@ -51,7 +51,7 @@
 - **Location**: `scripts/smoke.mjs:230, 236`
 - **Detail**: W wersji z `HEAD` smoke sprawdza generowanie i ponowienie planu, a potem osobno czyszczenie wyboru. Nie asercjonuje sekwencji: zmiana wejścia → status `stale` → ponowne wygenerowanie → status `current`. Faza 3 oznacza smoke jako zaliczony, mimo że nie uruchomiono go z powodu niedostępnego lokalnego środowiska Supabase/preview. Robocza, niezacommitowana wersja skryptu dodaje asercję `stale`, ale nadal nie sprawdza regeneracji po tej zmianie.
 - **Fix**: Uzupełnić smoke o pełną sekwencję nieaktualności i ponownego generowania, a gate oznaczyć jako zaliczony dopiero po wykonaniu go w skonfigurowanym środowisku.
-- **Decision**: FIXED — zachowano wcześniejsze testy i dopisano sekwencję: zmiana udziału marchwi → sprawdzenie `stale` → regeneracja planu → sprawdzenie `current`. Składnia, ESLint i Prettier przechodzą; pełny smoke nadal wymaga dostępnego lokalnego Supabase/preview.
+- **Decision**: FIXED — zachowano wcześniejsze testy i dopisano sekwencję: zmiana udziału marchwi → sprawdzenie `stale` → regeneracja planu → sprawdzenie `current`. Składnia, ESLint i Prettier przechodzą; pełny smoke na lokalnym Supabase/preview przeszedł — wszystkie kroki PASS.
 
 ### F3 — Commitowany test:unit pomija nowy test fingerprintu
 
@@ -111,9 +111,9 @@
 - `npx astro check` — PASS, 53 pliki, 0 błędów, 0 ostrzeżeń.
 - `npm run lint` — PASS.
 - `npm run build` — PASS; Astro wypisał nieblokującą informację, że integracja sitemap pomija generowanie bez `site` w konfiguracji.
-- `npm run smoke` — NOT RUN: lokalne środowisko Supabase/preview nie było dostępne.
+- `npm run smoke` — PASS: wszystkie kroki przeszły na lokalnym Supabase i produkcyjnym preview Astro; obejmuje m.in. izolację dwóch kont oraz przejście `stale` → ponowna generacja → `current`.
 - Po poprawce F1: `npx vitest run src/data/crop-catalog.test.ts` — PASS, 6 testów; `npx eslint src/data/crop-catalog.ts src/data/crop-catalog.test.ts` — PASS.
-- Po poprawce F2: `node --check scripts/smoke.mjs`, `npx eslint scripts/smoke.mjs` i `npx prettier --check scripts/smoke.mjs` — PASS; pełny smoke nieuruchomiony bez lokalnego Supabase/preview.
+- Po poprawce F2: `node --check scripts/smoke.mjs`, `npx eslint scripts/smoke.mjs` i `npx prettier --check scripts/smoke.mjs` — PASS; pełny wynik smoke zapisano powyżej.
 - Po poprawce F4: `npx vitest run src/lib/garden-layout.test.ts` — PASS, 19 testów; ESLint i Prettier dla zmienionych plików — PASS.
 - Po poprawce F5: ESLint i Prettier dla `src/components/garden/GardenLayoutView.tsx` — PASS.
 - Końcowe `npm run test:unit` po triage — PASS, 6 plików / 69 testów; ESLint i Prettier dla snapshotu — PASS.
