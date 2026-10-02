@@ -286,6 +286,34 @@ const steps = [
     { status: 422, includes: '"error":"missing_crops"' },
   ],
   [
+    "garden crop mix can be changed after the saved plan becomes stale",
+    () =>
+      request("/api/garden-crops", {
+        method: "POST",
+        json: [
+          { cropId: "pomidor", proportion: 2 },
+          { cropId: "marchew", proportion: 1 },
+        ],
+        idempotent: true,
+      }),
+    { status: 200, includes: '"saved":true' },
+  ],
+  [
+    "changed garden crop mix remains stale until the plan is regenerated",
+    () => request("/garden"),
+    { status: 200, includes: ['data-plan-status="stale"', "Plan nieaktualny"] },
+  ],
+  [
+    "garden plan can be regenerated after the crop mix changes",
+    () => request("/api/garden-plan", { method: "POST", json: { gardenId: "regenerate-after-stale" } }),
+    { status: 200, includes: ['"saved":true', '"inputFingerprint"', '"plan"'] },
+  ],
+  [
+    "garden SSR shows the regenerated plan as current",
+    () => request("/garden"),
+    { status: 200, includes: ['data-plan-status="current"', "Układ działki"] },
+  ],
+  [
     "signout clears session before default signin",
     () => request("/api/auth/signout", { method: "POST", idempotent: true }),
     { status: 302, location: "/" },

@@ -463,13 +463,14 @@ export const CROP_SOURCES: readonly SourceReference[] = [
     id: "S54",
     title: "Urządzisz.pl: Jak siać warzywa w ogródku",
     url: "https://urzadzisz.pl/jak-siac-warzywa-w-ogrodku-praktyczne-wskazowki/",
-    context: "Końcowa rozstawa marchwi i kandydat rozstawy buraka; rozróżnia siew i pozostawione rośliny.",
+    context:
+      "Podaje dla marchwi 3–5 cm po przerywce i kandydata rozstawy buraka; nie potwierdza roboczego profilu marchwi 7–8 cm.",
   },
   {
     id: "S55",
     title: "Deccoria: Marchewka z ogródka — zasady uprawy",
     url: "https://deccoria.pl/artykuly/porady-ogrodnicze/news-marchewka-z-ogrodka-jest-gorzka-stosuj-proste-zasady-bedzie,nId,22438398",
-    context: "Końcowy odstęp marchwi po przerywce.",
+    context: "Podaje końcowy odstęp marchwi 3–5 cm po przerywce; nie potwierdza roboczego profilu 7–8 cm.",
   },
   {
     id: "S56",
@@ -1424,8 +1425,8 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
       "plant",
       "after_thinning",
       ["S54", "S55"],
-      "medium",
-      "Roboczy, zachowawczy profil późnej marchwi na większy korzeń; końcowa rozstawa po przerywce, nie gęstość siewu ani uniwersalna norma dla wszystkich odmian.",
+      "low",
+      "Użytkownik zatwierdził minimum 7 cm dla późnej marchwi. Roboczy zakres 7–8 cm, w tym górna granica 8 cm, nie jest potwierdzony przez źródła S54/S55; końcowa rozstawa po przerywce, nie gęstość siewu ani uniwersalna norma dla wszystkich odmian.",
     ),
     sowingDensity: sowingDensity(
       cm(2, 3),

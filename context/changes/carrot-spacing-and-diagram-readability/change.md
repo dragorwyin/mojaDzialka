@@ -1,7 +1,7 @@
 ---
 change_id: carrot-spacing-and-diagram-readability
 title: Rozstaw późnej marchwi i czytelność diagramu
-status: implemented
+status: impl_reviewed
 created: 2026-09-30
 updated: 2026-10-02
 archived_at: null

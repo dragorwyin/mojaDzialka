@@ -480,4 +480,15 @@ describe("garden layout diagram projection", () => {
     expect(dimensions.heightPx / projection.viewBox.heightCm).toBeCloseTo(8, 10);
     expect(projection.markers.map(({ center }) => center)).toEqual([{ xCm: 85.5, yCm: 40.25 }]);
   });
+
+  it("caps grid lines for very large spaces while keeping a shared 10 cm step multiple", () => {
+    const projection = createGardenDiagramProjection({ widthCm: 100_000, lengthCm: 50_000 }, []);
+
+    expect(projection.xGridLinesCm.length).toBeLessThanOrEqual(100);
+    expect(projection.yGridLinesCm.length).toBeLessThanOrEqual(100);
+    expect(projection.xGridLinesCm[0]).toBe(1_000);
+    expect(projection.yGridLinesCm[0]).toBe(1_000);
+    expect(projection.xGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
+    expect(projection.yGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
+  });
 });

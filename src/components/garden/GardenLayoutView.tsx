@@ -448,8 +448,9 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
               Cel i osiągnięty miks
             </h3>
             <p className="text-garden-muted/70 mt-1 text-sm">
-              Cel procentowy pochodzi z wyboru upraw. Liczba roślin i osiągnięty udział pokazują ten diagram; kody upraw
-              znajdziesz w legendzie, a szczegóły pozycji po wskazaniu rośliny.
+              Cel procentowy pochodzi z wyboru upraw. Liczba pozycji obsady i osiągnięty udział pokazują ten diagram;
+              udział liczymy według jednostek sadzenia (np. jedna kępa szczypiorku to jedna pozycja). Kody upraw
+              znajdziesz w legendzie, a szczegóły po wskazaniu pozycji.
             </p>
           </div>
           <div className="border-garden-surface/10 overflow-x-auto rounded-xl border">
@@ -463,7 +464,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                     Cel
                   </th>
                   <th scope="col" className="px-3 py-3 font-semibold">
-                    Rośliny
+                    Pozycje obsady
                   </th>
                   <th scope="col" className="px-3 py-3 font-semibold">
                     Osiągnięto

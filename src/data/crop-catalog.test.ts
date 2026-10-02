@@ -156,6 +156,7 @@ describe("crop catalog", () => {
         betweenRowsCm: { min: 20, max: 30 },
         stage: "after_thinning",
         sourceIds: ["S54", "S55"],
+        confidence: "low",
       },
       sowingDensity: {
         inRowCm: { min: 2, max: 3 },
@@ -163,7 +164,9 @@ describe("crop catalog", () => {
         sourceIds: ["S64"],
       },
     });
-    expect(carrot?.finalSpacing?.context).toMatch(/późnej marchwi.*po przerywce.*nie gęstość siewu/i);
+    expect(carrot?.finalSpacing?.context).toMatch(
+      /użytkownik zatwierdził minimum 7 cm.*nie jest potwierdzony przez źródła S54\/S55.*po przerywce.*nie gęstość siewu/i,
+    );
     expect(carrot?.sowingDensity?.context).toMatch(/siew.*osobny parametr.*nie końcowa obsada/i);
   });
 

@@ -1,6 +1,7 @@
 export const GARDEN_DIAGRAM_GRID_STEP_CM = 10;
 export const GARDEN_DIAGRAM_MAX_MARKER_DIAMETER_CM = 5.5;
 export const GARDEN_DIAGRAM_ZOOM_PIXELS_PER_CM = 8;
+const GARDEN_DIAGRAM_MAX_GRID_LINES_PER_AXIS = 100;
 const GARDEN_DIAGRAM_MIN_MARKER_DIAMETER_CM = 0.8;
 const GARDEN_DIAGRAM_EDGE_PADDING_CM = GARDEN_DIAGRAM_MAX_MARKER_DIAMETER_CM / 2 + 0.5;
 
@@ -30,13 +31,19 @@ export interface GardenDiagramProjection<TPosition extends GardenDiagramPosition
   }[];
 }
 
-function gridLines(extentCm: number): number[] {
+function gridStepCm(space: GardenDiagramSpace): number {
+  const maxExtentCm = Math.max(space.widthCm, space.lengthCm);
+  const stepMultiple = Math.max(
+    1,
+    Math.ceil(maxExtentCm / (GARDEN_DIAGRAM_GRID_STEP_CM * GARDEN_DIAGRAM_MAX_GRID_LINES_PER_AXIS)),
+  );
+
+  return GARDEN_DIAGRAM_GRID_STEP_CM * stepMultiple;
+}
+
+function gridLines(extentCm: number, stepCm: number): number[] {
   const lines: number[] = [];
-  for (
-    let coordinateCm = GARDEN_DIAGRAM_GRID_STEP_CM;
-    coordinateCm < extentCm;
-    coordinateCm += GARDEN_DIAGRAM_GRID_STEP_CM
-  ) {
+  for (let coordinateCm = stepCm; coordinateCm < extentCm; coordinateCm += stepCm) {
     lines.push(coordinateCm);
   }
   return lines;
@@ -87,6 +94,7 @@ export function createGardenDiagramProjection<TPosition extends GardenDiagramPos
   positions: readonly TPosition[],
 ): GardenDiagramProjection<TPosition> {
   const diameters = markerDiameters(positions);
+  const stepCm = gridStepCm(space);
 
   return {
     viewBox: {
@@ -95,8 +103,8 @@ export function createGardenDiagramProjection<TPosition extends GardenDiagramPos
       widthCm: space.widthCm + GARDEN_DIAGRAM_EDGE_PADDING_CM * 2,
       heightCm: space.lengthCm + GARDEN_DIAGRAM_EDGE_PADDING_CM * 2,
     },
-    xGridLinesCm: gridLines(space.widthCm),
-    yGridLinesCm: gridLines(space.lengthCm),
+    xGridLinesCm: gridLines(space.widthCm, stepCm),
+    yGridLinesCm: gridLines(space.lengthCm, stepCm),
     markers: positions.map((position, index) => ({
       position,
       center: { xCm: position.xCm, yCm: position.yCm },
