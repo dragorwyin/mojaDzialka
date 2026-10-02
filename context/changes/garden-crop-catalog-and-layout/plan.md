@@ -282,13 +282,13 @@ Pokazać rozdzielone informacje katalogu oraz nowy diagram w prawdziwej skali, z
 
 #### Automated
 
-- [x] 3.1 Diagram używa proporcjonalnych centymetrowych współrzędnych i siatki co 10 cm; test/inspekcja kontraktu potwierdza, że render nie modyfikuje współrzędnych wyniku.
-- [x] 3.2 Każde aktywne ID ma miniaturę albo widoczny tekstowy fallback; kontrast etykiety i nazwa dostępna dla klawiatury nie zależą wyłącznie od obrazu/koloru.
-- [x] 3.3 SSR rozróżnia aktualny plan i plan ze starą wersją; stary JSON i etykiety wycofanych ID nie powodują błędu renderowania.
-- [x] 3.4 `npm run test:unit`, `npm run test:db`, `npm run build`, `npm run lint` i `npm run smoke` przechodzą.
+- [x] 3.1 Diagram używa proporcjonalnych centymetrowych współrzędnych i siatki co 10 cm; test/inspekcja kontraktu potwierdza, że render nie modyfikuje współrzędnych wyniku. — abe64dc
+- [x] 3.2 Każde aktywne ID ma miniaturę albo widoczny tekstowy fallback; kontrast etykiety i nazwa dostępna dla klawiatury nie zależą wyłącznie od obrazu/koloru. — abe64dc
+- [x] 3.3 SSR rozróżnia aktualny plan i plan ze starą wersją; stary JSON i etykiety wycofanych ID nie powodują błędu renderowania. — abe64dc
+- [x] 3.4 `npm run test:unit`, `npm run test:db`, `npm run build`, `npm run lint` i `npm run smoke` przechodzą. — abe64dc
 
 #### Manual
 
-- [x] 3.5 Na desktopie i telefonie siatka jest subtelna, skala obu osi zgodna, miniatury/legenda rozpoznawalne, a znaczniki nie zlewają się w nieczytelny diagram; gęste pozycje są grupowane bez zmiany ich prawdziwych współrzędnych.
-- [x] 3.6 Focus/klawiatura pozwala dotrzeć do szczegółu pozycji, statusu sąsiadów i tekstowego opisu; użytkownik rozumie różnicę między siewem a końcową obsadą.
-- [x] 3.7 Po odświeżeniu stary plan pozostaje jawnie oznaczony jako nieaktualny; po rozwiązaniu legacy wyboru można wygenerować nowy, aktualny i prywatny wynik.
+- [x] 3.5 Na desktopie i telefonie siatka jest subtelna, skala obu osi zgodna, miniatury/legenda rozpoznawalne, a znaczniki nie zlewają się w nieczytelny diagram; gęste pozycje są grupowane bez zmiany ich prawdziwych współrzędnych. — abe64dc
+- [x] 3.6 Focus/klawiatura pozwala dotrzeć do szczegółu pozycji, statusu sąsiadów i tekstowego opisu; użytkownik rozumie różnicę między siewem a końcową obsadą. — abe64dc
+- [x] 3.7 Po odświeżeniu stary plan pozostaje jawnie oznaczony jako nieaktualny; po rozwiązaniu legacy wyboru można wygenerować nowy, aktualny i prywatny wynik. — abe64dc
