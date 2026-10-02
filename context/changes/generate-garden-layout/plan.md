@@ -31,11 +31,12 @@ Wynik jest prywatny, zapisany jako bieżący plan działki i odtwarzany po odśw
 ## What We're NOT Doing
 
 - Nie prosimy użytkownika o ręczne przypisywanie upraw do skrzyń ani o ręczne wybieranie dobrych i złych sąsiedztw.
-- Nie inferujemy fizycznej sąsiedniości osobnych skrzyń z kolejności formularza; relacje optymalizujemy na podstawie wygenerowanych pozycji w obrębie danej skrzyni/sektora.
+- Sąsiedztwo upraw oceniamy wyłącznie w obrębie tej samej skrzyni lub sektora. Nie inferujemy ani nie optymalizujemy fizycznej sąsiedniości między osobnymi przestrzeniami.
 - Nie dodajemy ręcznego przesuwania roślin, edycji własnego katalogu, dodatkowego pola na całkowitą liczbę roślin ani historii wielu sezonów.
-- Nie dodajemy nowych upraw poza zatwierdzonym katalogiem 30 (w tym szczypioru) w ramach S-04.
+- Fazy 1–5 opisują pierwotny katalog 30 pozycji. Zatwierdzony follow-up poniżej rozszerza katalog docelowy do 31 pozycji.
 - Nie obiecujemy plonu, ochrony przed szkodnikami ani identycznej realizacji procentów mimo ograniczeń geometrii.
-- Nie dodajemy terminów siewu/sadzenia i kalendarza (S-06) ani pełnego przepływu ostrzegania i czyszczenia planu przy każdej zmianie danych (S-05). Zapisany plan musi jednak dać się rozpoznać jako nieaktualny względem wejścia, zamiast być prezentowany jako bieżący.
+- Nie wdrażamy pełnego kalendarza prac z S-06. Follow-up może pokazać informacyjnie terminy i gęstość siewu w szczegółach wybranej rośliny, ale generator i diagram korzystają wyłącznie z końcowej obsady po przerywce lub sadzeniu.
+- Nie dodajemy pełnego przepływu ostrzegania i czyszczenia planu przy każdej zmianie danych (S-05). Zapisany plan musi jednak dać się rozpoznać jako nieaktualny względem wejścia, zamiast być prezentowany jako bieżący.
 
 ## Implementation Approach
 
@@ -278,6 +279,34 @@ Ta faza domyka wizualny gate i utrwala kontrakt po naprawie charges UI-01–UI-0
 
 **Implementation Note**: To ostatnia faza wizualna. Po automatycznej weryfikacji zatrzymać się na ręczne potwierdzenie screenshotów i macierzy stanów przed zamknięciem S-04 i uruchomieniem `/10x-impl-review`.
 
+## Follow-up S-04: końcowa obsada, katalog i czytelny diagram
+
+> Dopisano 2026-09-30 na prośbę użytkownika. To zatwierdzony kierunek dalszej pracy, nie wykonana faza; dotychczasowe postępy 1–5 pozostają bez zmian. Research uzupełniający ma status partial, więc przed implementacją trzeba domknąć źródła i szczegóły modelu w osobnym change.
+
+### Zakres uzgodniony
+
+- Katalog końcowy ma zawierać 31 pozycji: usunąć fasolę szparagową i bób, rozdzielić pomidora na Faworyta i pomidora koktajlowego (palikowanego), dodać koper i szczypiorek, bez pięciu dodatkowych ziół. Zachować dotychczasowy wybór użytkownika przy zmianie identyfikatorów; rekomendowany wariant zgodności — utrzymać obecne ID pomidora dla Faworyta i nadać koktajlowemu nowe ID — wymaga sprawdzenia w implementacji.
+- Dla diagramu używać wyłącznie rozstawy końcowej po przerywce lub posadzeniu rozsady. Dane o gęstości siewu i terminach siewu przechowywać oddzielnie i pokazywać informacyjnie w szczegółach wybranej rośliny; nie mogą wpływać na liczbę ani pozycje roślin w diagramie. Przykład marchewki: 3–5 cm w rzędzie i 20–30 cm między rzędami po przerywce.
+- Sąsiedztwo liczyć tylko między roślinami w tej samej skrzyni/sektorze. Pozytywne relacje są priorytetem, potwierdzone negatywne odrzucają układ, a brak relacji pozostaje neutralny; relacja caution nie jest zakazem. Gdy twarde warunki i dobre relacje na to pozwalają, preferować spójne, sąsiadujące grupy zamiast bez uzasadnienia odsuwać neutralne uprawy w odległy narożnik. Nie tworzyć relacji przestrzennych między osobnymi skrzyniami.
+- Diagram ma zachowywać proporcje wymiarów i centymetrową skalę, mieć subtelną siatkę (docelowo linie co 10 cm), nie nakładające się znaczniki oraz miniatury roślin dostępnych w katalogu. Legenda i nazwy upraw muszą pozostać czytelne również bez obrazu. Użytkownik powinien móc odczytać lokalne sąsiedztwa i zrozumieć, z jakiego ograniczenia lub preferencji wynika nietypowe położenie; wyjaśnienie nie może przypisywać roślinom niepotwierdzonej relacji.
+
+### Proponowane pakiety follow-up
+
+1. **Research i model danych:** domknąć 31 rekordów, rozdzielić końcową obsadę od siewu i terminów oraz zapisać jednostkę stanowiska i poziom pewności dla każdego rekordu.
+2. **Silnik i katalog:** wprowadzić uzgodniony zestaw upraw i używać wyłącznie końcowych rozstaw; oceniać sąsiedztwo w obrębie pojedynczej przestrzeni i dodać miękką preferencję zwartego, czytelnego układu bez naruszania priorytetu relacji pozytywnych ani zakazu relacji negatywnych.
+3. **Diagram i objaśnienia:** dodać fizyczną siatkę, miniatury i czytelną legendę; ujawnić lokalne sąsiedztwa oraz powód odstępstw/odległych pozycji; zachować poprawną skalę na mobile i desktopie.
+4. **Weryfikacja:** powtórzyć przypadek dwóch przestrzeni 200×100 cm z miksem marchew/cebula/brokuł/czosnek 30/10/40/20, sprawdzić finalną obsadę marchewki, relacje tylko wewnątrz przestrzeni, dostępność wyjaśnień oraz screenshoty na desktopie i mobile.
+
+### Kryteria akceptacji follow-up
+
+- Wybór obejmuje dokładnie uzgodnione 31 pozycji, bez fasoli, bobu i nowych ziół; dotychczasowe zapisane wybory nie znikają po cichu.
+- Generator rozmieszcza rośliny według końcowej obsady, a osobne informacje o siewie i terminach nie zmieniają diagramu. Brak wiarygodnej końcowej rozstawy jest widoczny jako brak danych, nie zastępowany gęstością siewu.
+- Relacje między roślinami z różnych skrzyń/sektorów nie wpływają na wynik. W każdej pojedynczej przestrzeni pozytywne są preferowane, negatywne blokowane, a unknown pozostaje neutralne i może być sąsiadujące.
+- Siatka jest ledwo widoczna, lecz pomaga odczytać pozycje; grafiki, nazwy i legenda są rozpoznawalne, układ nie jest spłaszczony ani napaćkany, a położenie nie pozostaje niewyjaśnioną niespodzianką.
+- Testy automatyczne obejmują zgodność katalogu i danych, reguły relacji, finalną geometrię oraz brak wpływu relacji między przestrzeniami; ręczny przegląd potwierdza czytelność na telefonie i desktopie.
+
+**Następny krok:** po dokończeniu aktualnych ręcznych bramek S-04 otworzyć follow-up jako osobny change przez standardowy łańcuch new → research → plan. Nie zmieniać poniższych checkboxów postępu ani nie oznaczać S-04 jako ukończonego na podstawie samego dopisania zakresu.
+
 ## Testing Strategy
 
 ### Unit Tests:
@@ -348,20 +377,20 @@ Ta faza domyka wizualny gate i utrwala kontrakt po naprawie charges UI-01–UI-0
 
 #### Automated
 
-- [x] 3.1 Build i lint przechodzą; lint uruchamia scoped hardcoded-value check dla strony i obu formularzy.
-- [x] 3.2 Scan zgłasza brak nieuzasadnionych hardcoded values, a liczba kandydatów spada względem 47 linii z audytu.
+- [x] 3.1 Build i lint przechodzą; lint uruchamia scoped hardcoded-value check dla strony i obu formularzy. (39e621c)
+- [x] 3.2 Scan zgłasza brak nieuzasadnionych hardcoded values, a liczba kandydatów spada względem 47 linii z audytu. (39e621c)
 
 #### Manual
 
-- [x] 3.3 Strona i oba formularze zachowują uzgodniony motyw, wspólny `Button` i poprawne zachowanie podstawowych kontrolek.
-- [x] 3.4 Screenshoty przed/po fazie są obejrzane na desktopie oraz jednym mobile; focus pozostaje widoczny.
+- [x] 3.3 Strona i oba formularze zachowują uzgodniony motyw, wspólny `Button` i poprawne zachowanie podstawowych kontrolek. (39e621c)
+- [x] 3.4 Screenshoty przed/po fazie są obejrzane na desktopie oraz jednym mobile; focus pozostaje widoczny. (39e621c)
 
 ### Phase 4: Widok planera i stan nieaktualnego planu
 
 #### Automated
 
-- [ ] 4.1 Build, unit, DB i smoke przechodzą.
-- [ ] 4.2 SSR potwierdza prywatny odczyt, status bieżącego snapshotu oraz stary diagram z ostrzeżeniem/CTA po zmianie wejścia.
+- [x] 4.1 Build, unit, DB i smoke przechodzą.
+- [x] 4.2 SSR potwierdza prywatny odczyt, status bieżącego snapshotu oraz stary diagram z ostrzeżeniem/CTA po zmianie wejścia.
 
 #### Manual
 

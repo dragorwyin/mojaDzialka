@@ -34,7 +34,19 @@ Po wygenerowaniu użytkownik widzi plan wszystkich przestrzeni, docelowe i osią
 
 **In scope:** robocze dane i pewność dla 30 upraw; testowany silnik pozycji; preferencje i twarde relacje sąsiedztwa; prywatne generowanie i zapis bieżącego planu; diagram przestrzeni; wyniki target/actual, ostrzeżenia i jawne wyniki częściowe; semantyczne tokeny i wspólny `Button` w całym `/garden` oraz obu formularzach; stary diagram z ostrzeżeniem i CTA po zmianie snapshotu; kitchen sink i ręczny gate screenshotowy desktop/mobile.
 
-**Out of scope:** ręczne przesuwanie roślin, ręczne przypisywanie upraw do grządek, edytor mapy położenia osobnych grządek, historia sezonów, ręczne warianty odmian, prognoza plonu i terminy prac S-06; rebranding pozostałych widoków aplikacji lub dodawanie nowej zależności do screenshotów.
+**Out of scope:** ręczne przesuwanie roślin, ręczne przypisywanie upraw do grządek, edytor mapy położenia osobnych grządek, historia sezonów, ręczne warianty odmian, prognoza plonu i pełny kalendarz prac S-06; rebranding pozostałych widoków aplikacji lub dodawanie nowej zależności do screenshotów. Follow-up może pokazać wyłącznie informacyjne dane o siewie i terminach w szczegółach rośliny.
+
+## Follow-up uzgodniony po bieżących fazach S-04
+
+Użytkownik zatwierdził dalszy zakres katalogu i czytelności diagramu. Dopisek nie zmienia wykonanych faz; research nadal ma status partial, a follow-up należy otworzyć jako osobny change po aktualnych ręcznych bramkach S-04.
+
+- Katalog docelowy: 31 pozycji — usunąć fasolę szparagową i bób; rozdzielić pomidora na Faworyta i palikowanego pomidora koktajlowego; dodać koper i szczypiorek; odłożyć pięć dodatkowych ziół.
+- Diagram wykorzystuje rozstawę końcową po przerywce lub posadzeniu. Gęstość i terminy siewu są osobnymi informacjami o roślinie, a nie danymi wejściowymi układu.
+- Sąsiedztwo upraw liczymy tylko w jednej skrzyni/sektorze. Preferujemy dobre pary, potwierdzone negatywne odrzucamy, a brak relacji jest neutralny; nie modelujemy fizycznego sąsiedztwa między osobnymi przestrzeniami.
+- Ulepszyć diagram o delikatną siatkę centymetrową, miniatury roślin, stabilną skalę, niepokrywające się znaczniki i wyjaśnienie lokalnego sąsiedztwa/położenia. Zachować wybory upraw przy zmianie identyfikatorów.
+- Zweryfikować przykład dwóch przestrzeni 200×100 cm z miksem 30/10/40/20 oraz obejrzeć zrzuty desktop/mobile po follow-upie.
+
+Szczegółowy zakres i kryteria akceptacji znajdują się w sekcji „Follow-up S-04” planu.
 
 ## Architecture / Approach
 
