@@ -228,9 +228,9 @@ Nie ma migracji schematu Supabase ani przepisywania wierszy `garden_crops`. Zach
 
 #### Automated
 
-- [x] 3.1 Testy jednostkowe, Astro check, lint, build i skonfigurowany smoke test przechodzą.
+- [x] 3.1 Testy jednostkowe, Astro check, lint, build i skonfigurowany smoke test przechodzą. — 67327ca
 
 #### Manual
 
-- [x] 3.2 Końcowy przepływ zachowuje wybory, przelicza marchwie z nowym minimum i przechodzi kontrolę desktop/mobile.
-- [x] 3.3 Szczegóły pozycji nie sugerują niepotwierdzonego sąsiedztwa ani nie zmieniają algorytmu S-04.
+- [x] 3.2 Końcowy przepływ zachowuje wybory, przelicza marchwie z nowym minimum i przechodzi kontrolę desktop/mobile. — 67327ca
+- [x] 3.3 Szczegóły pozycji nie sugerują niepotwierdzonego sąsiedztwa ani nie zmieniają algorytmu S-04. — 67327ca
