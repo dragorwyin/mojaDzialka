@@ -87,3 +87,10 @@ Each handoff is a **STOP point**. The orchestrator copies the next command to th
 - `context/changes/<change-id>/` — per-rollout-phase change folder (one per row in §3)
 
 <!-- END @przeprogramowani/10x-cli -->
+
+## UI implementation guard
+
+- Use semantic design tokens from `src/styles/global.css` and shared primitives from `src/components/ui`; use the existing `Button` for button controls.
+- Before adding a component or styling pattern, inspect `src/components/ui` and reuse an existing component when it fits. Do not add literal colors, palette-specific utility colors, or arbitrary Tailwind values in views; add a semantic token or a shared UI component when the design system is missing something.
+- Add a missing shared component under `src/components/ui` using the repository's existing component conventions, then use it from views rather than creating a local duplicate.
+- For planner visual states, use `src/pages/dev/garden-planner-kitchen-sink.astro`; keep its examples deterministic and free of private data or API writes.

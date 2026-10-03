@@ -6,7 +6,7 @@ import {
   getGardenDiagramZoomDimensions,
 } from "../components/garden/garden-layout-diagram.js";
 import { CROP_CATALOG, type CompanionRelation, type CropCatalogEntry } from "../data/crop-catalog.js";
-import { generateGardenLayout, readGardenLayoutResult } from "./garden-layout.js";
+import { GardenLayoutSearchLimitError, generateGardenLayout, readGardenLayoutResult } from "./garden-layout.js";
 
 function crop(id: string): CropCatalogEntry {
   const entry = CROP_CATALOG.find((candidate) => candidate.id === id);
@@ -227,6 +227,51 @@ describe("garden layout engine", () => {
     expect(result.metrics.limitReached).toBe(false);
   });
 
+  it("does not scan rows when a space is too narrow for any candidate", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "narrow-long", widthCm: 10, lengthCm: 100_000 }],
+      crops: [{ crop: compactCrop("marchew", 30, 0.001), proportion: 100 }],
+      relations: [],
+    });
+
+    expect(result.spaces).toHaveLength(1);
+    expect(result.spaces[0]).toMatchObject({ status: "complete", positions: [] });
+    expect(result.metrics.candidateChecks).toBe(0);
+    expect(result.metrics.limitReached).toBe(false);
+    expect(result.omissions).toContainEqual(expect.objectContaining({ cropId: "marchew", reason: "no_fit" }));
+  });
+
+  it("keeps every space in the result and labels spaces when the search budget is exhausted", () => {
+    const result = generateGardenLayout({
+      spaces: [
+        { id: "first", name: "Skrzynia 1", widthCm: 200, lengthCm: 100 },
+        { id: "second", name: "Skrzynia 2", widthCm: 200, lengthCm: 100 },
+        { id: "third", name: "Skrzynia 3", widthCm: 200, lengthCm: 100 },
+      ],
+      crops: [{ crop: compactCrop("marchew", 10, 10), proportion: 100 }],
+      relations: [],
+      maxCandidates: 1,
+    });
+
+    expect(result.spaces).toHaveLength(3);
+    expect(result.spaces.map(({ status }) => status)).toEqual(["partial", "not_processed", "not_processed"]);
+    expect(result.spaces.slice(1).every(({ positions }) => positions.length === 0)).toBe(true);
+    expect(result.warnings.join(" ")).toContain("Skrzynia 2, Skrzynia 3");
+    expect(result.warnings.join(" ")).toContain("Bieżąca przestrzeń może zawierać układ częściowy.");
+    expect(result.metrics.limitReached).toBe(true);
+  });
+
+  it("fails with a controlled error if the search budget ends before any valid position is found", () => {
+    expect(() =>
+      generateGardenLayout({
+        spaces: [{ id: "bed", widthCm: 200, lengthCm: 100 }],
+        crops: [{ crop: compactCrop("marchew"), proportion: 100 }],
+        relations: [],
+        maxCandidates: 0,
+      }),
+    ).toThrow(GardenLayoutSearchLimitError);
+  });
+
   it("prioritizes a supported neighbor over a large target-percentage gap", () => {
     const supportedRelation: CompanionRelation = {
       cropIds: ["marchew", "cebula"],
@@ -438,6 +483,7 @@ describe("garden layout engine", () => {
     });
     const legacy = structuredClone(generated);
     for (const space of legacy.spaces) {
+      delete space.status;
       for (const position of space.positions) {
         delete position.neighbors;
         delete position.placementReason;

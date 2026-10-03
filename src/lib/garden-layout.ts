@@ -13,6 +13,13 @@ const DEFAULT_CANDIDATE_LIMIT = 2_000;
 const MAX_GRID_POINTS_PER_CROP = 256;
 const MAX_CANDIDATE_ALTERNATIVES_PER_CROP = 8;
 
+export class GardenLayoutSearchLimitError extends Error {
+  constructor() {
+    super("Garden layout search limit reached before a valid position could be found.");
+    this.name = "GardenLayoutSearchLimitError";
+  }
+}
+
 export interface GardenLayoutSpace {
   id: string;
   name?: string;
@@ -105,6 +112,8 @@ export interface GardenLayoutConflict {
 export interface GardenLayoutSpaceResult {
   space: GardenLayoutSpace;
   positions: readonly GardenLayoutPosition[];
+  /** Missing on older saved plans; new generator output always includes it. */
+  status?: "complete" | "partial" | "not_processed";
 }
 
 export interface GardenLayoutResult {
@@ -138,14 +147,23 @@ function isConfidence(value: unknown): value is Confidence {
 }
 
 function isSpacingStage(value: unknown): value is SpacingStage {
-  return value === "sowing" || value === "thinning" || value === "planting" || value === "final_planting" || value === "mixed";
+  return (
+    value === "sowing" ||
+    value === "thinning" ||
+    value === "planting" ||
+    value === "final_planting" ||
+    value === "mixed"
+  );
 }
 
 function isLayoutNeighbor(value: unknown): value is GardenLayoutNeighbor {
   return (
     isRecord(value) &&
     typeof value.cropId === "string" &&
-    (value.status === "supported" || value.status === "caution" || value.status === "negative" || value.status === "unknown") &&
+    (value.status === "supported" ||
+      value.status === "caution" ||
+      value.status === "negative" ||
+      value.status === "unknown") &&
     isFiniteNumber(value.distanceInSpacingSteps) &&
     value.distanceInSpacingSteps >= 0 &&
     (typeof value.rationale === "string" || value.rationale === null) &&
@@ -191,7 +209,8 @@ function isLayoutPosition(value: unknown): value is GardenLayoutPosition {
   ) {
     return false;
   }
-  if (value.neighbors !== undefined && (!Array.isArray(value.neighbors) || !value.neighbors.every(isLayoutNeighbor))) return false;
+  if (value.neighbors !== undefined && (!Array.isArray(value.neighbors) || !value.neighbors.every(isLayoutNeighbor)))
+    return false;
   if (value.placementReason !== undefined && !isPlacementReason(value.placementReason)) return false;
   return true;
 }
@@ -260,6 +279,10 @@ export function readGardenLayoutResult(value: unknown): GardenLayoutResult | nul
         spaceResult.space.widthCm > 0 &&
         isFiniteNumber(spaceResult.space.lengthCm) &&
         spaceResult.space.lengthCm > 0 &&
+        (spaceResult.status === undefined ||
+          spaceResult.status === "complete" ||
+          spaceResult.status === "partial" ||
+          spaceResult.status === "not_processed") &&
         Array.isArray(spaceResult.positions) &&
         spaceResult.positions.every(isLayoutPosition),
     )
@@ -408,6 +431,11 @@ function makeCandidates(space: GardenLayoutSpace, crop: UsableCrop): CandidateGr
   const columns = Math.max(0, Math.floor((space.widthCm - startX) / crop.inRowCm) + 1);
   const rows = Math.max(0, Math.floor((space.lengthCm - startY) / crop.betweenRowsCm) + 1);
   const totalCandidates = columns * rows;
+
+  // With no columns, the row loop would otherwise scan the entire (potentially huge) length.
+  if (columns === 0 || rows === 0) {
+    return { candidates, totalCandidates, truncatedCount: totalCandidates };
+  }
 
   for (let row = 0; row < rows && candidates.length < MAX_GRID_POINTS_PER_CROP; row += 1) {
     for (let column = 0; column < columns && candidates.length < MAX_GRID_POINTS_PER_CROP; column += 1) {
@@ -781,6 +809,7 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
 
     spaceResults.push({
       space,
+      status: limitReached ? "partial" : "complete",
       positions: placed.map((position) => {
         const { crop: _crop, ...layoutPosition } = position;
         return {
@@ -790,6 +819,10 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
       }),
     });
     if (limitReached) break;
+  }
+
+  for (const space of input.spaces.slice(spaceResults.length)) {
+    spaceResults.push({ space, positions: [], status: "not_processed" });
   }
 
   for (const crop of usableCrops) {
@@ -829,6 +862,9 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
   }
 
   const totalCount = [...actualCounts.values()].reduce((sum, count) => sum + count, 0);
+  if (limitReached && totalCount === 0) {
+    throw new GardenLayoutSearchLimitError();
+  }
   const cropSummaries = selections.map((selection) =>
     createSummary(
       selection,
@@ -839,7 +875,16 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
   );
   const warnings = [
     ...candidateGridWarnings,
-    ...(limitReached ? ["Osiągnięto limit obliczeń; zwrócono najlepszy znaleziony poprawny układ."] : []),
+    ...(limitReached
+      ? [
+          `Osiągnięto limit obliczeń; pokazano najlepszy znaleziony układ. Przestrzenie nieprzetworzone: ${
+            spaceResults
+              .filter((spaceResult) => spaceResult.status === "not_processed")
+              .map(({ space }) => space.name ?? space.id)
+              .join(", ") || "brak"
+          }. Bieżąca przestrzeń może zawierać układ częściowy.`,
+        ]
+      : []),
   ];
 
   return {

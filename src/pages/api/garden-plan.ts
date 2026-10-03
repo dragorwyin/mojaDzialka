@@ -8,7 +8,7 @@ import {
   type GardenSnapshotSpace,
 } from "@/lib/garden-plan-snapshot";
 import { createClient } from "@/lib/supabase";
-import { generateGardenLayout, type GardenLayoutResult } from "@/lib/garden-layout";
+import { GardenLayoutSearchLimitError, generateGardenLayout, type GardenLayoutResult } from "@/lib/garden-layout";
 
 export const prerender = false;
 
@@ -103,10 +103,16 @@ export const POST: APIRoute = async (context) => {
 
   const snapshot = createGardenInputSnapshot(spaces, crops);
   const inputFingerprint = await fingerprintGardenInputSnapshot(snapshot);
-  const plan: GardenLayoutResult = generateGardenLayout({
-    spaces: spaces.map(({ spaceType: _spaceType, sortOrder: _sortOrder, ...space }) => space),
-    crops: selections,
-  });
+  let plan: GardenLayoutResult;
+  try {
+    plan = generateGardenLayout({
+      spaces: spaces.map(({ spaceType: _spaceType, sortOrder: _sortOrder, ...space }) => space),
+      crops: selections,
+    });
+  } catch (error) {
+    if (error instanceof GardenLayoutSearchLimitError) return jsonResponse({ error: "search_limit" }, 422);
+    throw error;
+  }
   const generatedAt = new Date().toISOString();
 
   const { error: saveError } = await supabase.from("garden_plans").upsert(

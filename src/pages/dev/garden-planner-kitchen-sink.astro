@@ -1,0 +1,270 @@
+---
+import { Button } from "@/components/ui/button";
+import GardenLayoutView from "@/components/garden/GardenLayoutView";
+import type { GardenLayoutResult } from "@/lib/garden-layout";
+import Layout from "@/layouts/Layout.astro";
+
+const isProduction = import.meta.env.PROD;
+
+if (isProduction) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+}
+
+const cropNames = { marchew: "Marchew", cebula: "Cebula" };
+
+const successPlan = {
+  spaces: [
+    {
+      space: { id: "demo-bed-1", name: "Skrzynia demonstracyjna", widthCm: 120, lengthCm: 80 },
+      positions: [
+        {
+          spaceId: "demo-bed-1",
+          cropId: "marchew",
+          xCm: 15,
+          yCm: 15,
+          row: 0,
+          column: 0,
+          spacing: { inRowCm: 30, betweenRowsCm: 30 },
+          confidence: "medium",
+          stage: "thinning",
+          neighbors: [
+            {
+              cropId: "cebula",
+              status: "supported",
+              distanceInSpacingSteps: 1,
+              rationale: "Przykładowa relacja korzystna z katalogu.",
+              sourceIds: [],
+              confidence: "medium",
+            },
+          ],
+          placementReason: {
+            category: "supported_neighbor",
+            detail: "Pozycja leży obok uprawy z przykładową potwierdzoną relacją korzystną.",
+            constrainedByCropIds: [],
+            rejectedGeometryCandidates: 0,
+          },
+        },
+        {
+          spaceId: "demo-bed-1",
+          cropId: "cebula",
+          xCm: 45,
+          yCm: 15,
+          row: 0,
+          column: 1,
+          spacing: { inRowCm: 15, betweenRowsCm: 25 },
+          confidence: "medium",
+          stage: "planting",
+          neighbors: [
+            {
+              cropId: "marchew",
+              status: "supported",
+              distanceInSpacingSteps: 1,
+              rationale: "Przykładowa relacja korzystna z katalogu.",
+              sourceIds: [],
+              confidence: "medium",
+            },
+          ],
+          placementReason: {
+            category: "supported_neighbor",
+            detail: "Pozycja została dobrana tak, aby wykorzystać przykład korzystnego sąsiedztwa.",
+            constrainedByCropIds: [],
+            rejectedGeometryCandidates: 0,
+          },
+        },
+      ],
+    },
+  ],
+  cropSummaries: [
+    {
+      cropId: "marchew",
+      targetPercentage: 50,
+      actualPercentage: 50,
+      actualCount: 1,
+      dataConfidence: "medium",
+      spacingStage: "thinning",
+    },
+    {
+      cropId: "cebula",
+      targetPercentage: 50,
+      actualPercentage: 50,
+      actualCount: 1,
+      dataConfidence: "medium",
+      spacingStage: "planting",
+    },
+  ],
+  omissions: [],
+  conflicts: [],
+  warnings: [],
+  metrics: { candidateChecks: 2, supportedNeighbors: 1, cautionNeighbors: 0, limitReached: false },
+} satisfies GardenLayoutResult;
+
+const partialPlan = {
+  ...successPlan,
+  spaces: [
+    { ...successPlan.spaces[0], status: "partial" as const },
+    {
+      space: { id: "demo-bed-2", name: "Skrzynia nieprzetworzona", widthCm: 120, lengthCm: 80 },
+      positions: [],
+      status: "not_processed" as const,
+    },
+  ],
+  cropSummaries: successPlan.cropSummaries.map((summary) =>
+    summary.cropId === "cebula" ? { ...summary, targetPercentage: 60, actualPercentage: 50 } : summary,
+  ),
+  omissions: [{ cropId: "pomidor", reason: "missing_spacing", detail: "W przykładzie brak rozstawy dla tej uprawy." }],
+  warnings: [
+    "Osiągnięto limit obliczeń; pokazano najlepszy znaleziony układ. Przestrzenie nieprzetworzone: Skrzynia nieprzetworzona. Bieżąca przestrzeń może zawierać układ częściowy.",
+  ],
+} satisfies GardenLayoutResult;
+---
+
+{!isProduction && (
+  <Layout title="Kitchen sink planera działki" lang="pl">
+    <main class="bg-cosmic text-garden-foreground min-h-screen p-4 md:p-8">
+      <div class="mx-auto max-w-6xl space-y-6">
+        <header class="border-garden-surface/10 bg-garden-surface/5 rounded-2xl border p-5 md:p-8">
+          <p class="text-garden-accent text-sm font-semibold tracking-widest uppercase">Widok deweloperski</p>
+          <h1 class="mt-2 text-3xl font-bold">Stany planera działki</h1>
+          <p class="text-garden-muted mt-3 max-w-3xl">
+            Deterministyczne dane demonstracyjne. Ta strona nie odczytuje prywatnych danych i nie wysyła żądań do API.
+            Przyciski są przykładami stanów, nie wykonują zapisu ani generowania.
+          </p>
+        </header>
+
+        <section aria-labelledby="planner-interactions-title" class="space-y-4">
+          <h2 id="planner-interactions-title" class="text-garden-foreground text-xl font-semibold">
+            Macierz interakcji
+          </h2>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="default"
+            >
+              <h3 class="font-semibold">Default</h3>
+              <p class="text-garden-muted text-sm">Plan jest gotowy do wygenerowania.</p>
+              <Button
+                type="button"
+                variant="default"
+                className="bg-garden-accent-strong text-garden-accent-foreground hover:bg-garden-accent-hover focus-visible:ring-garden-focus"
+              >
+                Wygeneruj plan
+              </Button>
+            </article>
+
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="hover"
+            >
+              <h3 class="font-semibold">Hover</h3>
+              <p class="text-garden-muted text-sm">Najedź kursorem, aby zobaczyć zmianę tła.</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20"
+              >
+                Przycisk demonstracyjny
+              </Button>
+            </article>
+
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="focus-visible"
+            >
+              <h3 class="font-semibold">Focus-visible</h3>
+              <p class="text-garden-muted text-sm">Użyj Tab, aby sprawdzić widoczny focus klawiatury.</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground focus-visible:ring-garden-focus"
+              >
+                Przycisk dostępny z klawiatury
+              </Button>
+            </article>
+
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="disabled"
+            >
+              <h3 class="font-semibold">Disabled</h3>
+              <p class="text-garden-muted text-sm">Brak zapisanej przestrzeni — generowanie jest niedostępne.</p>
+              <Button type="button" disabled>
+                Wygeneruj plan
+              </Button>
+            </article>
+
+            <article
+              class="border-garden-danger-border/30 bg-garden-danger-surface/10 space-y-3 rounded-xl border p-4"
+              data-state="error"
+            >
+              <h3 class="text-garden-danger font-semibold">Error</h3>
+              <p role="alert" class="text-garden-danger">
+                Nie udało się odczytać planu. Spróbuj ponownie później.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger"
+              >
+                Spróbuj ponownie
+              </Button>
+            </article>
+
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="empty"
+            >
+              <h3 class="font-semibold">Empty</h3>
+              <p class="text-garden-muted text-sm" role="status">
+                Nie ma jeszcze planu. Po wygenerowaniu pojawią się tu diagram i zestawienie udziałów.
+              </p>
+            </article>
+
+            <article
+              class="border-garden-surface/10 bg-garden-surface/5 space-y-3 rounded-xl border p-4"
+              data-state="loading"
+            >
+              <h3 class="font-semibold">Loading</h3>
+              <p class="text-garden-muted text-sm" role="status" aria-live="polite">
+                Trwa generowanie planu…
+              </p>
+              <Button type="button" disabled aria-busy="true">
+                Generowanie…
+              </Button>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="planner-results-title" class="space-y-4">
+          <h2 id="planner-results-title" class="text-garden-foreground text-xl font-semibold">
+            Wyniki planowania
+          </h2>
+          <article
+            class="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4 md:p-6"
+            data-state="success"
+          >
+            <h3 class="mb-4 font-semibold">Success · aktualny plan</h3>
+            <GardenLayoutView plan={successPlan} status="current" cropNames={cropNames} client:load />
+          </article>
+          <article
+            class="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4 md:p-6"
+            data-state="partial"
+          >
+            <h3 class="mb-4 font-semibold">Wynik częściowy · jawny brak danych</h3>
+            <GardenLayoutView plan={partialPlan} status="current" cropNames={cropNames} client:load />
+          </article>
+          <article class="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4 md:p-6" data-state="stale">
+            <h3 class="mb-4 font-semibold">Plan nieaktualny · ostrzeżenie i CTA</h3>
+            <GardenLayoutView plan={successPlan} status="stale" cropNames={cropNames} client:load />
+            <Button
+              type="button"
+              className="mt-4 bg-garden-accent-strong text-garden-accent-foreground hover:bg-garden-accent-hover"
+            >
+              Wygeneruj ponownie
+            </Button>
+          </article>
+        </section>
+      </div>
+    </main>
+  </Layout>
+)}

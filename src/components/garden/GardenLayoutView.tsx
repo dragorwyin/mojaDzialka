@@ -100,13 +100,22 @@ function CropAtlasGlyph({
           overflow="hidden"
         >
           <image
+            ref={(image) => {
+              if (image === null) return;
+              image.addEventListener(
+                "error",
+                () => {
+                  setAtlasFailed(true);
+                },
+                { once: true },
+              );
+            }}
             href={CROP_ATLAS_HREF}
             x="0"
             y="0"
             width={CROP_ATLAS_VIEWBOX_WIDTH}
             height={CROP_ATLAS_VIEWBOX_HEIGHT}
             preserveAspectRatio="xMidYMid meet"
-            onError={() => setAtlasFailed(true)}
           />
         </svg>
       )}
@@ -258,7 +267,8 @@ function GardenSpaceDiagramViewer({
     <>
       <div className="border-garden-surface/15 bg-garden-surface/10 space-y-2 rounded-lg border p-2">
         <p className="text-garden-muted/75 text-xs">
-          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji
+          rośliny.
         </p>
         <GardenSpaceDiagram
           space={space}
@@ -362,7 +372,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
       )}
 
       <div className="space-y-6">
-        {plan.spaces.map(({ space, positions }) => {
+        {plan.spaces.map(({ space, positions, status = "complete" }) => {
           return (
             <article
               key={space.id}
@@ -374,6 +384,17 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                   {space.widthCm} × {space.lengthCm} cm · {positions.length} pozycji
                 </p>
               </header>
+
+              {status !== "complete" && (
+                <p
+                  className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-lg border px-3 py-2 text-sm font-medium"
+                  role="alert"
+                >
+                  {status === "partial"
+                    ? "Układ tej przestrzeni jest częściowy — osiągnięto limit obliczeń. Nie wszystkie pozycje musiały zostać sprawdzone."
+                    : "Ta przestrzeń nie została przetworzona z powodu limitu obliczeń; nie pokazujemy jej jako zaplanowanej."}
+                </p>
+              )}
 
               <GardenSpaceDiagramViewer
                 space={space}
