@@ -394,19 +394,19 @@ Ta faza domyka wizualny gate i utrwala kontrakt po naprawie charges UI-01–UI-0
 
 #### Manual
 
-- [x] 4.3 Przykład dwóch skrzyń pokazuje automatyczny układ oraz target obok actual.
-- [x] 4.4 Pewność/braki danych i reguły sąsiedztwa są czytelne; neutralne i `caution` nie blokują, a potwierdzony negatyw wyklucza.
-- [x] 4.5 Zmiana wejścia zachowuje widoczny stary diagram jako nieaktualny; CTA tworzy nowy wynik, a plan pozostaje prywatny dla właściciela.
-- [x] 4.6 Screenshoty widoku planera są obejrzane na desktopie i jednym mobile, a scan po fazie nie pokazuje regresji.
+- [x] 4.3 Przykład dwóch skrzyń pokazuje automatyczny układ oraz target obok actual. — c46481a
+- [x] 4.4 Pewność/braki danych i reguły sąsiedztwa są czytelne; neutralne i `caution` nie blokują, a potwierdzony negatyw wyklucza. — c46481a
+- [x] 4.5 Zmiana wejścia zachowuje widoczny stary diagram jako nieaktualny; CTA tworzy nowy wynik, a plan pozostaje prywatny dla właściciela. — c46481a
+- [x] 4.6 Screenshoty widoku planera są obejrzane na desktopie i jednym mobile, a scan po fazie nie pokazuje regresji. — c46481a
 
 ### Phase 5: Macierz stanów, kitchen sink i wizualny gate
 
 #### Automated
 
-- [x] 5.1 Lint nadal uruchamia scoped hardcoded-value check i nie zgłasza nieuzasadnionych trafień w widoku planera.
+- [x] 5.1 Lint nadal uruchamia scoped hardcoded-value check i nie zgłasza nieuzasadnionych trafień w widoku planera. — c46481a
 
 #### Manual
 
-- [x] 5.2 Kitchen sink pokazuje default, hover, focus-visible, disabled, error, empty i loading (albo wyjaśnia N/A), oraz sukces/częściowy/nieaktualny wynik.
-- [x] 5.3 Screenshot kitchen sink i planera przechodzi przegląd desktop/mobile, nazw kontrolek, focusu i informacji niezależnej od koloru.
-- [x] 5.4 Guard UI jest poza blokiem zarządzanym w `AGENTS.md`, a zmiany użytkownika w pliku pozostają zachowane.
+- [x] 5.2 Kitchen sink pokazuje default, hover, focus-visible, disabled, error, empty i loading (albo wyjaśnia N/A), oraz sukces/częściowy/nieaktualny wynik. — c46481a
+- [x] 5.3 Screenshot kitchen sink i planera przechodzi przegląd desktop/mobile, nazw kontrolek, focusu i informacji niezależnej od koloru. — c46481a
+- [x] 5.4 Guard UI jest poza blokiem zarządzanym w `AGENTS.md`, a zmiany użytkownika w pliku pozostają zachowane. — c46481a
