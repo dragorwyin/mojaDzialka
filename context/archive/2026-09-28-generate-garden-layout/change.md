@@ -1,10 +1,10 @@
 ---
 change_id: generate-garden-layout
 title: Research garden layout allocation and spacing rules
-status: impl_reviewed
+status: archived
 created: 2026-09-28
 updated: 2026-10-03
-archived_at: null
+archived_at: 2026-10-03T00:24:00Z
 ---
 
 ## Notes

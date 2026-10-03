@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-29
+updated: 2026-10-03
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -43,7 +43,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | S-01 | email-account-access | Użytkownik może założyć konto i logować się adresem e-mail oraz hasłem. | — | FR-001 | done |
 | S-02 | define-private-garden-space | Użytkownik może zdefiniować jedną prywatną działkę i wymiary swoich skrzyń lub sektorów. | F-01, S-01 | FR-002 | done |
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | done |
-| S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | in-progress |
+| S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | done |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | blocked |
 | S-06 | show-sowing-and-seedling-dates | Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac w sezonie. | F-01, S-03, S-04 | FR-008, US-01 | blocked |
 
@@ -132,7 +132,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **Resolved UI decisions:** Cały `/garden`, wraz z formularzem działki i formularzem wyboru upraw, przechodzi na semantyczne tokeny i współdzielony `Button`. Po zmianie snapshotu poprzedni diagram pozostaje widoczny, ale ma wyraźny status nieaktualności, ostrzeżenie i CTA do ponownego generowania.
 - **Unknowns:** —
 - **Risk:** Research ma roboczy wariant dla 30/30 upraw, ale część źródeł opisuje siew/stanowisko, a nie pewną końcową obsadę. Wynik musi ujawniać pewność i ograniczenia danych, a search optymalizujący układ musi być ograniczony kosztowo. Nieaktualny diagram musi być wizualnie odróżniony od bieżącego, żeby zachowanie poprzedniego wyniku nie wprowadzało użytkownika w błąd.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-05: Zmiana danych i ponowne przeliczenie
 
@@ -197,3 +197,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **S-01: Użytkownik może samodzielnie założyć konto oraz logować się adresem e-mail i hasłem.** — Archived 2026-09-25 → `context/archive/2026-09-24-email-account-access/`. Lesson: —.
 - **S-02: Użytkownik może utworzyć jedną prywatną działkę i podać wymiary dowolnej liczby skrzyń lub sektorów.** — Archived 2026-09-26 → `context/archive/2026-09-26-define-private-garden-space/`. Lesson: —.
 - **S-03: Użytkownik może wyszukać i wybrać warzywa z ograniczonego katalogu oraz wpisać dla każdego liczbowe proporcje.** — Archived 2026-09-27 → `context/archive/2026-09-27-select-crops-and-proportions/`. Lesson: —.
+- **S-04: Użytkownik może wygenerować graficzną propozycję rozmieszczenia, zobaczyć konflikty odstępów lub powierzchni oraz niewykorzystane miejsca.** — Archived 2026-10-03 → `context/archive/2026-09-28-generate-garden-layout/`. Lesson: —.
