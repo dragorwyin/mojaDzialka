@@ -169,20 +169,20 @@ Brak migracji danych. Usuwane są wyłącznie cookie sesji bieżącego projektu 
 
 #### Automated
 
-- [x] 1.1 `npm run smoke` potwierdza obsługę starego cookie, błędnego i poprawnego signin oraz ochronę tras.
-- [x] 1.2 Ślady potwierdzają brak refresh przed publicznym signin.
-- [x] 1.3 Po odrzuceniu hasła odpowiedź usuwa wszystkie fragmenty cookie.
-- [x] 1.4 Lint, Astro check i build przechodzą.
+- [x] 1.1 `npm run smoke` potwierdza obsługę starego cookie, błędnego i poprawnego signin oraz ochronę tras. — de0d70f
+- [x] 1.2 Ślady potwierdzają brak refresh przed publicznym signin. — de0d70f
+- [x] 1.3 Po odrzuceniu hasła odpowiedź usuwa wszystkie fragmenty cookie. — de0d70f
+- [x] 1.4 Lint, Astro check i build przechodzą. — de0d70f
 
 #### Manual
 
-- [x] 1.5 Lokalny test potwierdza formularz i czyszczenie sesji po nieudanym signin.
-- [x] 1.6 Zalogowany użytkownik zachowuje dostęp, a anonimowy jest przekierowany z chronionych stron.
+- [x] 1.5 Lokalny test potwierdza formularz i czyszczenie sesji po nieudanym signin. — de0d70f
+- [x] 1.6 Zalogowany użytkownik zachowuje dostęp, a anonimowy jest przekierowany z chronionych stron. — de0d70f
 
 ### Phase 2: Potwierdź zachowanie produkcji
 
 #### Manual
 
-- [ ] 2.1 Operator potwierdza signin, błąd hasła, zachowanie zastanej sesji i ochronę tras na koncie testowym.
-- [ ] 2.2 Wynik produkcyjny zapisuje bezpieczne czasy/statusy albo jawnie pozostawia brak slow trace.
-- [ ] 2.3 Anonimowy request produkcyjny do chronionej trasy jest przekierowany, a zalogowany ma dostęp.
+- [x] 2.1 Operator potwierdza signin, błąd hasła, zachowanie zastanej sesji i ochronę tras na koncie testowym.
+- [x] 2.2 Wynik produkcyjny zapisuje bezpieczne czasy/statusy albo jawnie pozostawia brak slow trace.
+- [x] 2.3 Anonimowy request produkcyjny do chronionej trasy jest przekierowany, a zalogowany ma dostęp.

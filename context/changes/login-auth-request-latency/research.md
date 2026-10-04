@@ -7,9 +7,9 @@ repository: mojaDzialka
 topic: "Żądania signin trwają ponad 20 sekund lokalnie i na produkcji"
 tags: [research, auth, latency]
 status: partial
-last_updated: 2026-10-03
+last_updated: 2026-10-04
 last_updated_by: Codex
-last_updated_note: "Potwierdzono rzeczywiste lokalne retry w śladach; zmierzono szybkie żądania bez cookies lokalnie i na produkcji"
+last_updated_note: "Dodano raportowane czasy produkcyjne i wyniki ochrony tras; mapowanie żądań oraz test starej sesji wymagają doprecyzowania"
 ---
 
 # Research: opóźnienie signin
@@ -83,3 +83,13 @@ Lokalna diagnoza opóźnienia: HIGH confidence — sekwencja refresh retry i bł
 Plan powinien uwzględnić publiczne GET/POST auth, ochronę prywatnych tras i odzyskanie po starej sesji. Nie wolno zastąpić autoryzacji zaufaniem do niesprawdzonych cookies. Pomiar powinien rozróżniać czas middleware, password auth i błędy transportu, bez danych uwierzytelniających. Sam timeout fetch nie jest równoważny ograniczeniu całej serii retry SDK. Zmiana getUser na getClaims również może odświeżać wygasłą sesję.
 
 Przed deklaracją potwierdzenia przyczyny na produkcji potrzebny jest jeden slow trace z czasami Auth i bezpiecznymi kodami błędów albo reprodukcja z dotkniętą sesją. Do ustalenia infrastrukturalnej przyczyny lokalnego zerwania połączenia potrzebna jest korelacja czasu awarii z dostępnością kontenera Auth i ścieżką runtime–127.0.0.1:54321. Research pozostaje `partial` ze względu na te luki, ale zawiera potwierdzony lokalny mechanizm i konkretne dane dla planu.
+
+## Uzupełnienie — 2026-10-04: aktywna wersja produkcyjna przed fazą 2
+
+Read-only `wrangler deployments list --name moja-dzialka-prod --json` (telemetria wyłączona; zapisano tylko czas i identyfikator wersji) pokazuje najnowsze wdrożenie z `2026-09-25T16:12:24Z`, wersja `2f115b01-8bfa-4574-993c-3ba854c4e845` z ruchem 100%. Commit fazy 1 `de0d70f` powstał 2026-10-04 i nie jest wdrożony. Zgodnie z zakresem fazy 2 nie wykonano wdrożenia; pomiar produkcyjny będzie więc dotyczył poprzedniej wersji i da punkt odniesienia, nie potwierdzenie zachowania poprawki.
+
+### Wyniki testu operatora — 2026-10-04
+
+Operator zgłosił dla produkcji następujący przebieg: pierwsze `signin` — 2,45 s; dalej `signin` — 377 ms, `signin failed` — 284 ms, ponowne `signin` — 326 ms, `/dashboard` — 338 ms. Dokładne powiązanie powtarzających się nazw z GET/POST i stanem sesji nie zostało podane, więc czasy zachowano jako zgłoszoną sekwencję, bez przypisywania ich do konkretnej fazy żądania. Żadna podana próba nie przekroczyła 20 s; operator nie dostarczył slow trace ani liczby/statusów wywołań `refresh_token`.
+
+Operator potwierdził, że pierwszy pomiar signin 2,45 s był wykonany ze starą sesją/cookie. Anonimowe wejście do `/dashboard` i `/garden` kierowało do signin; po poprawnym logowaniu działają `/dashboard` (338 ms) i `/garden`, oba z dobrą prędkością. Kody HTTP i dokładne mapowanie pozostałych czasów do żądań GET/POST nie zostały podane. Produkcja nadal działa na wersji z 2026-09-25, więc wyniki nie walidują commita `de0d70f`.
