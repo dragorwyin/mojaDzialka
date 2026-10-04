@@ -188,16 +188,16 @@ Brak planowanej migracji bazy. Runner i dependency są zmianą developerską; br
 
 #### Automated
 
-- [x] 2.1 `npm run test:e2e` przechodzi w desktop/mobile: cykl current/stale, zapis upraw bez reload oraz jawny Cancel/Accept dodania i usunięcia.
-- [x] 2.2 Test pierwszej generacji bez reload sprawdza prompt; bugs.md zapisuje rzeczywisty wynik MD-FLOW-001 i dowód ewentualnej regresji/naprawy.
-- [x] 2.3 Testy kontrolowanych błędów i ostrzeżenia przechodzą, rozdzielając realny zapis od intercepted rendering contract.
-- [x] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po minimalnych poprawkach.
+- [x] 2.1 `npm run test:e2e` przechodzi w desktop/mobile: cykl current/stale, zapis upraw bez reload oraz jawny Cancel/Accept dodania i usunięcia. — 8e7c45a
+- [x] 2.2 Test pierwszej generacji bez reload sprawdza prompt; bugs.md zapisuje rzeczywisty wynik MD-FLOW-001 i dowód ewentualnej regresji/naprawy. — 8e7c45a
+- [x] 2.3 Testy kontrolowanych błędów i ostrzeżenia przechodzą, rozdzielając realny zapis od intercepted rendering contract. — 8e7c45a
+- [x] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po minimalnych poprawkach. — 8e7c45a
 
 ### Phase 3: CI i cookbook
 
 #### Automated
 
-- [ ] 3.1 `npm run test:unit`, `npm run test:db`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla końcowego stanu.
-- [ ] 3.2 `npm run smoke` i `npm run test:e2e` przechodzą sekwencyjnie na lokalnym preview z lokalnym Supabase.
+- [x] 3.1 `npm run test:unit`, `npm run test:db`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla końcowego stanu. — lokalnie, 2026-10-04
+- [x] 3.2 `npm run smoke` i `npm run test:e2e` przechodzą sekwencyjnie na lokalnym preview z lokalnym Supabase. — lokalnie, 2026-10-04
 - [ ] 3.3 Hosted CI na PR wykonuje e2e i dotychczasowe bramki; kontrolowana awaria testu daje niezerowy gate oraz dostępne artefakty porażki, a końcowy przebieg jest zielony.
-- [ ] 3.4 Cookbook §6.5 wskazuje istniejące testy i sprawdzone komendy; rollout status odpowiada Progress i verification.md zawiera dowody.
+- [x] 3.4 Cookbook §6.5 wskazuje istniejące testy i sprawdzone komendy; rollout status odpowiada Progress i verification.md zawiera dowody. — lokalnie, 2026-10-04; hosted run pozostaje wymagany w 3.3

@@ -37,6 +37,8 @@ jobs:
         with:
           version: 2.117.0
       - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
       - name: Start local Supabase
         run: |
           supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
@@ -49,10 +51,28 @@ jobs:
           printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
           cp .env .dev.vars
       - run: npm run build
-      - name: Run smoke test against production preview
+      - name: Run smoke and browser tests against production preview
         run: |
-          npm run preview -- --port 4321 &
-          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
-          BASE_URL=http://localhost:4321 npm run smoke
+          ASTRO_PREVIEW_BACKGROUND=0 npm run preview -- --host 127.0.0.1 --port 4321 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true; wait "$preview_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://127.0.0.1:4321/; then break; fi
+            if [ "$i" -eq 60 ]; then echo "Preview did not become ready" >&2; exit 1; fi
+            sleep 1
+          done
+          BASE_URL=http://127.0.0.1:4321 npm run smoke
+          E2E_EXTERNAL_PREVIEW=1 E2E_BASE_URL=http://127.0.0.1:4321 npm run test:e2e
+      - name: Upload browser test failure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+        continue-on-error: true
       - if: always()
         run: supabase stop --no-backup
