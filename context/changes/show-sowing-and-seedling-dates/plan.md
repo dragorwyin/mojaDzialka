@@ -173,14 +173,14 @@ Nie przewiduje się migracji bazy. Zmiana obejmuje statyczny katalog i widok; ni
 
 #### Automated
 
-- [x] 1.1 Niezależne testy katalogu potwierdzają ręcznie zweryfikowane przykłady terminów, źródeł i pewności oraz jawny przypadek bez potwierdzonego terminu.
-- [x] 1.2 Testy helpera potwierdzają wybór bieżącego i następnego miesiąca, brak duplikatów, brak niepotwierdzonych prac, przejście grudzień–styczeń oraz najbliższy późniejszy miesiąc po pustym okresie dla jawnego miesiąca referencyjnego.
-- [x] 1.3 `npm run test:unit` przechodzi z nowymi testami sezonowymi włączonymi do skryptu.
-- [x] 1.4 `npm run lint`, `npx astro check` i `npm run build` przechodzą po zmianach UI i katalogu.
-- [x] 1.5 §6 cookbook w `context/foundation/test-plan.md` wskazuje właściwe testy, niezależne źródło oczekiwań i komendę uruchomienia.
+- [x] 1.1 Niezależne testy katalogu potwierdzają ręcznie zweryfikowane przykłady terminów, źródeł i pewności oraz jawny przypadek bez potwierdzonego terminu. — 6df98b3
+- [x] 1.2 Testy helpera potwierdzają wybór bieżącego i następnego miesiąca, brak duplikatów, brak niepotwierdzonych prac, przejście grudzień–styczeń oraz najbliższy późniejszy miesiąc po pustym okresie dla jawnego miesiąca referencyjnego. — 6df98b3
+- [x] 1.3 `npm run test:unit` przechodzi z nowymi testami sezonowymi włączonymi do skryptu. — 6df98b3
+- [x] 1.4 `npm run lint`, `npx astro check` i `npm run build` przechodzą po zmianach UI i katalogu. — 6df98b3
+- [x] 1.5 §6 cookbook w `context/foundation/test-plan.md` wskazuje właściwe testy, niezależne źródło oczekiwań i komendę uruchomienia. — 6df98b3
 
 #### Manual
 
-- [x] 1.6 Na `/garden` szczegóły upraw pokazują źródło, metodę, miesiące, warunek i pewność, a uprawa bez potwierdzonego terminu pokazuje jawny brak i flagę weryfikacji.
-- [x] 1.7 Po wygenerowaniu planu lista prac pokazuje wyłącznie terminy dla upraw widocznego planu i bieżącego/następnego miesiąca; zmiana wejść nie przedstawia starego wyniku jako aktualnego, a gdy oba miesiące są puste, osobny komunikat wskazuje najbliższy późniejszy miesiąc prac i linki źródeł.
-- [x] 1.8 Ręczny przegląd adjudykacji potwierdza, że każdy pozostawiony termin ma odpowiednie źródło i kontekst, a niewystarczające źródła nie zostały pokazane jako potwierdzona praca.
+- [x] 1.6 Na `/garden` szczegóły upraw pokazują źródło, metodę, miesiące, warunek i pewność, a uprawa bez potwierdzonego terminu pokazuje jawny brak i flagę weryfikacji. — 6df98b3
+- [x] 1.7 Po wygenerowaniu planu lista prac pokazuje wyłącznie terminy dla upraw widocznego planu i bieżącego/następnego miesiąca; zmiana wejść nie przedstawia starego wyniku jako aktualnego, a gdy oba miesiące są puste, osobny komunikat wskazuje najbliższy późniejszy miesiąc prac i linki źródeł. — 6df98b3
+- [x] 1.8 Ręczny przegląd adjudykacji potwierdza, że każdy pozostawiony termin ma odpowiednie źródło i kontekst, a niewystarczające źródła nie zostały pokazane jako potwierdzona praca. — 6df98b3
