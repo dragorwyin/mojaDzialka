@@ -1,7 +1,11 @@
 import { useMemo, useSyncExternalStore } from "react";
 
 import { CROP_CATALOG } from "../../data/crop-catalog.js";
-import { getNextSeasonWork, getUpcomingSeasonWork } from "../../lib/season-work-schedule.js";
+import {
+  getMillisecondsUntilNextLocalMonthStart,
+  getNextSeasonWork,
+  getUpcomingSeasonWork,
+} from "../../lib/season-work-schedule.js";
 import type { GardenLayoutCropSummary } from "../../lib/garden-layout.js";
 import CropSourceLinks from "./CropSourceLinks";
 
@@ -35,8 +39,32 @@ const CONFIDENCE_LABELS = {
   low: "niska",
 } as const;
 
-function subscribeToMonthChanges() {
-  return () => undefined;
+function subscribeToMonthChanges(onStoreChange: () => void) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const scheduleRefresh = () => {
+    if (timer !== undefined) clearTimeout(timer);
+    timer = setTimeout(() => {
+      onStoreChange();
+      scheduleRefresh();
+    }, getMillisecondsUntilNextLocalMonthStart(new Date()));
+  };
+
+  const refreshWhenVisible = () => {
+    if (document.visibilityState !== "visible") return;
+    onStoreChange();
+    scheduleRefresh();
+  };
+
+  window.addEventListener("focus", refreshWhenVisible);
+  document.addEventListener("visibilitychange", refreshWhenVisible);
+  scheduleRefresh();
+
+  return () => {
+    if (timer !== undefined) clearTimeout(timer);
+    window.removeEventListener("focus", refreshWhenVisible);
+    document.removeEventListener("visibilitychange", refreshWhenVisible);
+  };
 }
 
 export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: readonly GardenLayoutCropSummary[] }) {
@@ -114,13 +142,18 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
               aria-label="Najbliższe późniejsze prace sezonowe"
             >
               <p className="text-garden-foreground text-sm font-semibold">
-                Najbliższe potwierdzone prace sezonowe wypadają w {MONTH_NAMES[nextWork.month - 1]}.
+                Najbliższe późniejsze prace sezonowe wypadają w {MONTH_NAMES[nextWork.month - 1]} (termin orientacyjny).
               </p>
               <ul className="mt-2 space-y-2">
                 {nextWork.items.map(({ cropId, cropNamePl, window }) => (
                   <li key={`${cropId}-${window.method}-${window.startMonth}-${window.endMonth}-${window.condition}`}>
-                    <p className="text-garden-muted/80 text-sm">
-                      {cropNamePl} · {SOWING_METHOD_LABELS[window.method]} — {window.condition}
+                    <p className="text-garden-foreground text-sm font-medium">
+                      {cropNamePl} · {SOWING_METHOD_LABELS[window.method]}
+                    </p>
+                    <p className="text-garden-muted/80 mt-1 text-sm">{window.condition}</p>
+                    <p className="text-garden-muted/70 mt-1 text-xs">
+                      Okno: {MONTH_NAMES[window.startMonth - 1]}–{MONTH_NAMES[window.endMonth - 1]} · pewność danych:{" "}
+                      {CONFIDENCE_LABELS[window.confidence]}.
                     </p>
                     <CropSourceLinks sourceIds={window.sourceIds} />
                   </li>

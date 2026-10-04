@@ -1,7 +1,7 @@
 ---
 change_id: show-sowing-and-seedling-dates
 title: Terminy siewu i przygotowania rozsady
-status: implemented
+status: impl_reviewed
 created: 2026-10-04
 updated: 2026-10-04
 archived_at: null

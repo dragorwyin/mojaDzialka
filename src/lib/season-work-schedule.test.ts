@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getNextSeasonWork, getUpcomingSeasonWork, type SeasonScheduleCrop } from "./season-work-schedule.js";
+import {
+  getMillisecondsUntilNextLocalMonthStart,
+  getNextSeasonWork,
+  getUpcomingSeasonWork,
+  type SeasonScheduleCrop,
+} from "./season-work-schedule.js";
 
 const tomato: SeasonScheduleCrop = {
   id: "pomidor",
@@ -24,6 +29,16 @@ const tomato: SeasonScheduleCrop = {
     },
   ],
 };
+
+describe("local month refresh timing", () => {
+  it("schedules at the next local month boundary, including year rollover", () => {
+    expect(getMillisecondsUntilNextLocalMonthStart(new Date(2026, 11, 31, 23, 59, 59, 999))).toBe(1);
+  });
+
+  it("handles the last day of a leap-year February", () => {
+    expect(getMillisecondsUntilNextLocalMonthStart(new Date(2024, 1, 29, 23, 59, 59, 999))).toBe(1);
+  });
+});
 
 describe("upcoming season work", () => {
   it("includes work for the reference month and the following month", () => {

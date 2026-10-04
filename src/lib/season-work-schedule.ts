@@ -14,6 +14,12 @@ export interface NextSeasonWork {
   items: SeasonWorkItem[];
 }
 
+/** Returns the delay until the next local calendar-month boundary. */
+export function getMillisecondsUntilNextLocalMonthStart(referenceDate: Date): number {
+  const nextMonthStart = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1);
+  return Math.max(1, nextMonthStart.getTime() - referenceDate.getTime());
+}
+
 function nextMonth(month: number): number {
   return month === 12 ? 1 : month + 1;
 }
