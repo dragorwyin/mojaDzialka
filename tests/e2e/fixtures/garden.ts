@@ -47,7 +47,10 @@ export const test = base.extend<{ gardenReady: undefined }, { gardenSession: Ses
       expectRedirect(space, "/garden?saved=1");
       const crops = await context.request.post("/api/garden-crops", {
         headers: { Origin: baseURL },
-        data: [{ cropId: "marchew", proportion: 1 }],
+        data: [
+          { cropId: "marchew", proportion: 0.5 },
+          { cropId: "pomidor", proportion: 0.5 },
+        ],
       });
       expect(crops.status()).toBe(200);
       expect(await crops.json()).toEqual({ saved: true });

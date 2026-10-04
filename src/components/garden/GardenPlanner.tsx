@@ -138,6 +138,7 @@ export default function GardenPlanner({
         status: inputRevision.current === revisionAtStart ? "current" : "stale",
       });
       setGeneratedAt(result.generatedAt);
+      window.dispatchEvent(new Event("garden:plan-saved"));
     } catch {
       setPlanState((current) => (current.plan === null ? current : { ...current, status: "stale" }));
       setGenerationError(GENERATION_ERROR);

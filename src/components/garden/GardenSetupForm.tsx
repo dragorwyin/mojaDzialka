@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { shouldBlockGardenSpaceSubmit } from "@/lib/garden-space-change";
 
@@ -40,11 +40,23 @@ function createSpace(index: number): GardenSpace {
 }
 
 export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, saved }: Props) {
+  const [hasCurrentPlan, setHasCurrentPlan] = useState(hasSavedPlan);
   const [spaces, setSpaces] = useState<EditableGardenSpace[]>(
     initialSpaces.length
       ? initialSpaces.map((space) => ({ ...space, persistedId: space.id }))
       : [{ ...createSpace(1), persistedId: null }],
   );
+
+  useEffect(() => {
+    function handlePlanSaved() {
+      setHasCurrentPlan(true);
+    }
+
+    window.addEventListener("garden:plan-saved", handlePlanSaved);
+    return () => {
+      window.removeEventListener("garden:plan-saved", handlePlanSaved);
+    };
+  }, []);
 
   function updateSpace(index: number, patch: Partial<EditableGardenSpace>) {
     setSpaces((current) => current.map((space, spaceIndex) => (spaceIndex === index ? { ...space, ...patch } : space)));
@@ -63,7 +75,7 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
 
   function confirmStructuralChange(event: SubmitEvent<HTMLFormElement>) {
     const shouldBlockSubmit = shouldBlockGardenSpaceSubmit({
-      hasSavedPlan,
+      hasSavedPlan: hasCurrentPlan,
       initialSpaceIds: initialSpaces.map((space) => space.id),
       currentSpaces: spaces,
       confirm: (message) => window.confirm(message),
