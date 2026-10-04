@@ -1,10 +1,10 @@
 ---
 change_id: testing-safe-garden-storage
 title: Testing safe garden storage
-status: impl_reviewed
+status: archived
 created: 2026-10-04
 updated: 2026-10-04
-archived_at: null
+archived_at: 2026-10-04T18:21:00Z
 ---
 
 ## Notes
