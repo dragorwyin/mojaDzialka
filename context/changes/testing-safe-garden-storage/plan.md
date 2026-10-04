@@ -179,18 +179,18 @@ Plan bazowo nie zmienia schematu. Ewentualna wykazana poprawka SQL trafia do now
 
 #### Automated
 
-- [x] 1.1 `npm run test:db` przechodzi z nowymi przypadkami rollbacku, rewizji i izolacji.
-- [x] 1.2 Testy rollbacku i odrzuconego starego wyniku porównują pełne dane, w tym input_revision, snapshot i generated_at.
-- [x] 1.3 Próby mutacji obcego konta i anon mają odczyt kontrolny potwierdzający niezmieniony stan.
+- [x] 1.1 `npm run test:db` przechodzi z nowymi przypadkami rollbacku, rewizji i izolacji. — e66fa2b
+- [x] 1.2 Testy rollbacku i odrzuconego starego wyniku porównują pełne dane, w tym input_revision, snapshot i generated_at. — e66fa2b
+- [x] 1.3 Próby mutacji obcego konta i anon mają odczyt kontrolny potwierdzający niezmieniony stan. — e66fa2b
 
 ### Phase 2: Błędy i konflikty w API
 
 #### Automated
 
-- [ ] 2.1 `npm run test:api` przechodzi i uruchamia wszystkie trzy pliki testów POST.
-- [ ] 2.2 Kontrolowane awarie odczytu/zapisu i konflikt rewizji dają oczekiwane odpowiedzi, bez fałszywego sukcesu i bez ujawnienia szczegółów błędu.
-- [ ] 2.3 `npm run lint` oraz `npx astro check` przechodzą po dodaniu testów i ewentualnych minimalnych poprawek.
-- [ ] 2.4 Każdy faktycznie wykryty błąd ma reprodukcję, test regresyjny, stan naprawy i handoff do 10x flow w bugs.md.
+- [x] 2.1 `npm run test:api` przechodzi i uruchamia wszystkie trzy pliki testów POST.
+- [x] 2.2 Kontrolowane awarie odczytu/zapisu i konflikt rewizji dają oczekiwane odpowiedzi, bez fałszywego sukcesu i bez ujawnienia szczegółów błędu.
+- [x] 2.3 `npm run lint` oraz `npx astro check` przechodzą po dodaniu testów i ewentualnych minimalnych poprawek.
+- [x] 2.4 Każdy faktycznie wykryty błąd ma reprodukcję, test regresyjny, stan naprawy i handoff do 10x flow w bugs.md.
 
 ### Phase 3: Weryfikacja i dokumentacja
 
