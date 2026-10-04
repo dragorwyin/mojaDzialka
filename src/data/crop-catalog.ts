@@ -8,6 +8,8 @@ export type RelationshipType =
   "space_saving" | "pest_management" | "habitat" | "rotation" | "disease_risk" | "folklore";
 export type SowingMethod = "direct_sow" | "seedling" | "plant_out" | "overwintering";
 
+const SOWING_METHODS: readonly SowingMethod[] = ["direct_sow", "seedling", "plant_out", "overwintering"];
+
 export type SourceId =
   | "S1"
   | "S2"
@@ -70,7 +72,8 @@ export type SourceId =
   | "S63"
   | "S64"
   | "S65"
-  | "S66";
+  | "S66"
+  | "S67";
 
 export interface SourceReference {
   id: SourceId;
@@ -198,7 +201,8 @@ export const CROP_SOURCES: readonly SourceReference[] = [
     id: "S7",
     title: "SODR: Warzywa gruntowe — ilości i terminy",
     url: "https://www.sodr.pl/main/aktualnosci/Warzywa-gruntowe-ilosci-i-terminy/idn:4111",
-    context: "Aktualny polski materiał terminowy z 2026 r.",
+    context:
+      "Tabela Świętokrzyskiego ODR z 2026 r. rozdziela wysiew rozsady, siew do gruntu i sadzenie rozsady; to ogólne terminy produkcyjne, zależne od regionu i warunków.",
   },
   {
     id: "S8",
@@ -532,6 +536,13 @@ export const CROP_SOURCES: readonly SourceReference[] = [
     url: "https://atlas-roslin.pl/gatunki/Anethum_graveolens.htm",
     context: "Polska gęstość siewu kopru na kiszenie; nie końcowa rozstawa po przerywce.",
   },
+  {
+    id: "S67",
+    title: "GIORiN/IOR-PIB: Metodyka Integrowanej Produkcji Ziemniaka (2024)",
+    url: "https://www.gov.pl/attachment/07d4d440-6a1f-44e4-a68d-ea5b34005d4e",
+    context:
+      "Metodyka wskazuje temperaturę gleby i regionalny termin sadzenia sadzeniaków; kalendarz jest orientacyjny i zależny od warunków.",
+  },
 ];
 
 const verifiedSpacing = (
@@ -588,16 +599,28 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 4, "seedling", "Wysiew rozsady pod osłoną; kwietniowego wysiewu nie traktować jako terminu gruntu.", [
-        "S6",
-        "S9",
-      ]),
+      season(
+        3,
+        4,
+        "seedling",
+        "Wysiew rozsady; tabela dotyczy produkcji gruntowej, warunki domowe mogą się różnić.",
+        ["S7"],
+        "medium",
+      ),
+      season(
+        5,
+        5,
+        "plant_out",
+        "Sadzenie rozsady w gruncie w drugiej połowie maja; lokalnie po ustąpieniu przymrozków.",
+        ["S7"],
+        "medium",
+      ),
       season(
         5,
         6,
-        "plant_out",
-        "Sadzenie po połowie maja i po ustąpieniu ryzyka przymrozków; lokalnie później.",
-        ["S5", "S6", "S7"],
+        "direct_sow",
+        "Siew bezpośredni w gruncie w cieplejszym okresie; termin zależy od warunków lokalnych.",
+        ["S7"],
         "medium",
       ),
     ],
@@ -620,13 +643,15 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(4, 4, "seedling", "Rozsada w cieple; nie przenosić terminu bezpośrednio na grunt.", ["S6", "S9"]),
-      season(5, 6, "direct_sow", "Siew lub sadzenie po przymrozkach; ogórek jest bardzo wrażliwy na chłód.", [
-        "S2",
-        "S6",
-        "S7",
-        "S9",
-      ]),
+      season(4, 4, "seedling", "Wysiew rozsady w połowie kwietnia.", ["S7"], "medium"),
+      season(
+        5,
+        6,
+        "direct_sow",
+        "Siew do gruntu; ogórek jest wrażliwy na chłód, więc termin zależy od warunków.",
+        ["S7"],
+        "medium",
+      ),
     ],
     needsLocalValidation: true,
     validationNotes:
@@ -647,7 +672,10 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(3, 6, "direct_sow", "Siew bezpośredni; wolne wschody i potrzeba utrzymania wilgotności.", ["S6", "S7"]),
+      season(3, 5, "direct_sow", "Pietruszka korzeniowa: siew do gruntu.", ["S7"], "medium"),
+      season(9, 9, "direct_sow", "Pietruszka korzeniowa: dodatkowy termin siewu.", ["S7"], "medium"),
+      season(3, 4, "direct_sow", "Pietruszka naciowa: siew do gruntu.", ["S7"], "medium"),
+      season(7, 7, "direct_sow", "Pietruszka naciowa: dodatkowy termin siewu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Default dotyczy późnej pietruszki korzeniowej; wariant naciowy wymaga osobnej rozstawy.",
@@ -668,7 +696,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       false,
     ),
     seasonWindows: [
-      season(3, 6, "direct_sow", "Siew bezpośredni; po wschodach konieczna przerywka.", ["S6", "S7", "S9"]),
+      season(3, 6, "direct_sow", "Siew do gruntu; po wschodach konieczna przerywka.", ["S7"], "medium"),
+      season(11, 11, "direct_sow", "Siew przedzimowy, jeśli gleba nie jest zamarznięta.", ["S7"], "low"),
     ],
     needsLocalValidation: true,
     validationNotes: "Rzodkiewka może pełnić funkcję markera rzędu, ale nie jest to poprawka rozstawy.",
@@ -688,7 +717,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 4, "direct_sow", "Siew lub dymka; wariant zależy od materiału sadzeniowego.", ["S6", "S7"]),
+      season(2, 3, "seedling", "Wysiew na rozsadę.", ["S7"], "medium"),
+      season(3, 4, "direct_sow", "Siew nasion bezpośrednio do gruntu.", ["S7"], "medium"),
+      season(4, 5, "plant_out", "Sadzenie rozsady lub dymki; termin kończy się w połowie maja.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Rozdzielić siew, dymkę i rozsadę przed dokładnym planowaniem.",
@@ -707,7 +738,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "medium",
       "thinning",
     ),
-    seasonWindows: [season(4, 6, "direct_sow", "Siew po ogrzaniu gleby; możliwe kolejne siewy.", ["S6", "S7"])],
+    seasonWindows: [
+      season(4, 6, "direct_sow", "Siew do gruntu; tabela nie wyznacza dokładnego dnia.", ["S7"], "medium"),
+    ],
     needsLocalValidation: true,
     validationNotes: "Dodać osobny kontekst dla botwiny i korzeni do przechowania.",
   },
@@ -727,12 +760,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       false,
     ),
     seasonWindows: [
-      season(3, 7, "direct_sow", "Siewy sukcesywne w chłodniejszych oknach; zakres zależy od odmiany.", [
-        "S2",
-        "S6",
-        "S7",
-        "S9",
-      ]),
+      season(3, 5, "direct_sow", "Siew do gruntu wiosną.", ["S7"], "medium"),
+      season(7, 9, "direct_sow", "Siew do gruntu w późniejszym, chłodniejszym oknie.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie traktować jednej wartości jako normy dla wszystkich terminów i odmian.",
@@ -752,11 +781,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "final_planting",
     ),
     seasonWindows: [
-      season(3, 7, "direct_sow", "Wczesne i kolejne siewy; odmiana wyznacza tolerancję temperatury.", [
-        "S6",
-        "S7",
-        "S9",
-      ]),
+      season(2, 7, "seedling", "Wysiew rozsady od końca lutego do lipca.", ["S7"], "medium"),
+      season(4, 5, "direct_sow", "Siew bezpośredni do gruntu.", ["S7"], "medium"),
+      season(4, 7, "plant_out", "Sadzenie rozsady stosownie do terminu siewu i warunków.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Oddzielić główki i baby leaf, zanim rozstaw będzie użyty do alokacji.",
@@ -776,8 +803,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada wczesna lub późna; termin zależny od odmiany.", ["S6", "S7"]),
-      season(4, 6, "plant_out", "Sadzenie wiosenne z uwzględnieniem odporności na chłód.", ["S6", "S7"]),
+      season(2, 4, "seedling", "Wysiew rozsady; termin zależy od odmiany.", ["S7"], "medium"),
+      season(4, 6, "plant_out", "Sadzenie rozsady do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie mieszać kapusty białej z innymi kapustnymi w jednym parametrze odmianowym.",
@@ -797,8 +824,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada dla wariantu wczesnego lub późnego.", ["S6", "S7"]),
-      season(4, 6, "plant_out", "Sadzenie wiosenne zależne od odporności na chłód.", ["S6", "S7"]),
+      season(2, 6, "seedling", "Wysiew rozsady dla różnych terminów uprawy.", ["S7"], "medium"),
+      season(4, 7, "plant_out", "Sadzenie rozsady do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Zweryfikować wariant odmianowy przed precyzyjnym układem.",
@@ -818,8 +845,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "final_planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada; wariant wczesny lub późny.", ["S6", "S7"]),
-      season(4, 7, "plant_out", "Sadzenie wiosenne i późniejsze okna produkcyjne.", ["S7"]),
+      season(3, 4, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(4, 6, "direct_sow", "Możliwy siew bezpośredni do gruntu.", ["S7"], "low"),
+      season(4, 7, "plant_out", "Sadzenie rozsady do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Default opisuje dojrzałą roślinę w ogrodzie działkowym; lokalnie zweryfikować rozmiar odmiany.",
@@ -839,8 +867,10 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada lub siew w chłodniejszym oknie.", ["S6", "S7"]),
-      season(4, 6, "plant_out", "Sadzenie wiosenne; możliwe kolejne terminy.", ["S6", "S7"]),
+      season(2, 4, "seedling", "Wysiew rozsady do kwietnia.", ["S7"], "medium"),
+      season(7, 7, "seedling", "Wysiew rozsady dla późniejszej uprawy.", ["S7"], "medium"),
+      season(4, 6, "plant_out", "Sadzenie rozsady do gruntu wiosną.", ["S7"], "medium"),
+      season(8, 8, "plant_out", "Sadzenie rozsady w późnym oknie.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Wariant zbioru młodego wymaga osobnej interpretacji rozstawy.",
@@ -860,8 +890,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "final_planting",
     ),
     seasonWindows: [
-      season(4, 6, "seedling", "Rozsada lub siew zależnie od odmiany.", ["S6", "S7"]),
-      season(5, 7, "plant_out", "Sadzenie po przygotowaniu rozsady; toleruje chłód.", ["S7", "S9"]),
+      season(5, 6, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(6, 7, "plant_out", "Sadzenie rozsady do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Zachować niską pewność zagranicznego fallbacku i sprawdzić dopasowanie odmiany do grządki.",
@@ -881,7 +911,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "sowing",
       false,
     ),
-    seasonWindows: [season(3, 4, "direct_sow", "Wczesny siew bezpośredni.", ["S2", "S6", "S7"])],
+    seasonWindows: [season(3, 4, "direct_sow", "Wczesny siew bezpośredni.", ["S7"], "medium")],
     needsLocalValidation: true,
     validationNotes: "Rozdzielić odmiany karłowe i wymagające podpory; podana siatka dotyczy siewu nasion.",
   },
@@ -900,9 +930,16 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(4, 4, "seedling", "Rozsada w cieple.", ["S6", "S9"]),
-      season(5, 5, "direct_sow", "Siew po ogrzaniu gleby i ryzyku przymrozków.", ["S6", "S7", "S9"]),
-      season(5, 6, "plant_out", "Sadzenie po połowie maja, zależnie od lokalnych warunków.", ["S2", "S6", "S7"]),
+      season(4, 4, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(5, 5, "direct_sow", "Siew do gruntu.", ["S7"], "medium"),
+      season(
+        5,
+        5,
+        "plant_out",
+        "Sadzenie rozsady w połowie maja; lokalnie po ustąpieniu przymrozków.",
+        ["S7"],
+        "medium",
+      ),
     ],
     needsLocalValidation: true,
     validationNotes: "Wariant prowadzony i forma krzaczasta mogą wymagać innych zakresów.",
@@ -922,9 +959,16 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "final_planting",
     ),
     seasonWindows: [
-      season(4, 4, "seedling", "Rozsada w cieple.", ["S6", "S9"]),
-      season(5, 5, "direct_sow", "Siew po ogrzaniu gleby i ryzyku przymrozków.", ["S6", "S7", "S9"]),
-      season(5, 6, "plant_out", "Sadzenie po połowie maja, lokalnie później.", ["S6", "S7"]),
+      season(4, 4, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(5, 5, "direct_sow", "Siew do gruntu.", ["S7"], "medium"),
+      season(
+        5,
+        5,
+        "plant_out",
+        "Sadzenie rozsady w połowie maja; lokalnie po ustąpieniu przymrozków.",
+        ["S7"],
+        "medium",
+      ),
     ],
     needsLocalValidation: true,
     validationNotes: "Warianty dyni mają bardzo różny pokrój; nie uogólniać jednej pary.",
@@ -944,8 +988,16 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 4, "seedling", "Wysiew rozsady w ogrzewanym miejscu.", ["S5", "S6", "S9"]),
-      season(5, 6, "plant_out", "Sadzenie do gruntu po połowie maja, lokalnie później.", ["S5", "S6", "S7"]),
+      season(2, 4, "seedling", "Wysiew rozsady od lutego do 10 kwietnia.", ["S7"], "medium"),
+      season(5, 6, "direct_sow", "Siew bezpośredni do gruntu.", ["S7"], "low"),
+      season(
+        5,
+        6,
+        "plant_out",
+        "Sadzenie rozsady od maja do połowy czerwca; lokalnie po ustąpieniu chłodów.",
+        ["S7"],
+        "medium",
+      ),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie stosować terminu rozsady jako terminu gruntu.",
@@ -965,8 +1017,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada wiosenna.", ["S6", "S7"]),
-      season(5, 7, "plant_out", "Sadzenie późną wiosną i latem.", ["S7"]),
+      season(3, 3, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(4, 4, "plant_out", "Sadzenie rozsady w drugiej połowie kwietnia.", ["S7"], "medium"),
+      season(4, 5, "direct_sow", "Siew do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie mieszać rozstawy z głębokością sadzenia.",
@@ -986,8 +1039,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(3, 6, "direct_sow", "Siew w chłodniejszych oknach; odmiana wpływa na termin.", ["S6", "S7", "S10"]),
-      season(8, 9, "direct_sow", "Późne okno może być użyteczne dla zbioru jesiennego.", ["S7", "S10"], "low"),
+      season(3, 4, "direct_sow", "Siew do gruntu wiosną.", ["S7"], "medium"),
+      season(8, 10, "direct_sow", "Siew do gruntu w późniejszym oknie.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie porównywać bezpośrednio gęstości S6 z liczbą nasion S10.",
@@ -1007,8 +1060,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 5, "seedling", "Rozsada wymaga długiego sezonu.", ["S6", "S7"]),
-      season(5, 6, "plant_out", "Sadzenie późną wiosną po przygotowaniu rozsady.", ["S7"]),
+      season(2, 3, "seedling", "Wysiew rozsady od połowy lutego do marca.", ["S7"], "medium"),
+      season(5, 6, "plant_out", "Sadzenie rozsady do gruntu od połowy maja do czerwca.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Rozdzielić seler korzeniowy i naciowy przed użyciem rozstawy.",
@@ -1028,7 +1081,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(5, 6, "direct_sow", "Siew od połowy maja na ciepłą glebę; lepszy układ blokowy.", ["S5", "S6", "S9"]),
+      season(5, 5, "direct_sow", "Siew do gruntu w maju; korzystny jest układ blokowy.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Nie wyliczać plonu z samej powierzchni bez uwzględnienia układu bloku.",
@@ -1074,7 +1127,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "medium",
       "thinning",
     ),
-    seasonWindows: [season(3, 6, "direct_sow", "Siew bezpośredni; wolne wschody.", ["S6", "S7"], "medium")],
+    seasonWindows: [season(3, 4, "direct_sow", "Siew bezpośredni; wolne wschody.", ["S7"], "medium")],
     needsLocalValidation: true,
     validationNotes: "Sprawdzić wpływ uprawy na redlinach i lokalne okno dla odmiany.",
   },
@@ -1083,7 +1136,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     commonNamePl: "rukola",
     aliases: ["arugula", "rocket"],
     catalogTier: "extended",
-    sourceIds: ["S4", "S6", "S9"],
+    sourceIds: ["S4", "S6", "S7", "S9"],
     spacing: verifiedSpacing(
       { min: 4, max: 5 },
       { min: 15, max: 20 },
@@ -1092,7 +1145,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "low",
       "thinning",
     ),
-    seasonWindows: [season(3, 8, "direct_sow", "Siewy sukcesywne w chłodniejszych oknach.", ["S6", "S9"], "low")],
+    seasonWindows: [],
     needsLocalValidation: true,
     validationNotes: "Brak wystarczających danych o popularności i wariantach zbioru.",
   },
@@ -1111,7 +1164,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(8, 10, "direct_sow", "Chłodne późne lato i jesień; termin zależy od odmiany.", ["S7", "S9"], "low"),
+      season(3, 4, "direct_sow", "Siew do gruntu wiosną.", ["S7"], "medium"),
+      season(7, 8, "direct_sow", "Siew do gruntu w późniejszym oknie.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes:
@@ -1122,7 +1176,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     commonNamePl: "bakłażan",
     aliases: ["eggplant", "aubergine"],
     catalogTier: "extended",
-    sourceIds: ["S4", "S6", "S9"],
+    sourceIds: ["S4", "S6", "S7", "S9"],
     spacing: verifiedSpacing(
       { min: 50, max: 60 },
       { min: 60, max: 80 },
@@ -1132,11 +1186,12 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "planting",
     ),
     seasonWindows: [
-      season(3, 4, "seedling", "Wysiew rozsady w cieple.", ["S6", "S9"]),
-      season(5, 6, "plant_out", "Sadzenie po połowie maja i po ustąpieniu ryzyka przymrozków.", ["S6", "S9"]),
+      season(3, 3, "seedling", "Wysiew rozsady w marcu.", ["S7"], "medium"),
+      season(5, 6, "plant_out", "Sadzenie rozsady do gruntu od maja do czerwca.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
-    validationNotes: "Brak polskiego źródła produkcyjnego w zebranym materiale.",
+    validationNotes:
+      "Tabela dotyczy ogólnej produkcji gruntowej; lokalne warunki i uprawa pod osłoną mogą zmienić termin.",
   },
   {
     id: "rzepa",
@@ -1153,7 +1208,8 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
       "thinning",
     ),
     seasonWindows: [
-      season(4, 7, "direct_sow", "Okno orientacyjne z grupy korzeniowych; wymaga lokalnej walidacji.", ["S4"], "low"),
+      season(3, 4, "direct_sow", "Siew do gruntu wiosną.", ["S7"], "medium"),
+      season(7, 8, "direct_sow", "Siew do gruntu w późniejszym oknie.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Brak wystarczających polskich danych o rozstawie i terminach.",
@@ -1178,12 +1234,13 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
         5,
         "plant_out",
         "Sadzenie od połowy kwietnia, zależnie od regionu i temperatury gleby.",
-        ["S51"],
+        ["S67"],
         "medium",
       ),
     ],
     needsLocalValidation: true,
-    validationNotes: "Roboczy rozstaw pochodzi z polskiego atlasu; lokalne okno sadzenia pozostaje do walidacji.",
+    validationNotes:
+      "Rozstaw jest roboczy; termin sadzenia zależy od regionu i temperatury gleby wskazanej w metodyce.",
   },
   {
     id: "pomidor-koktajlowy-palikowany",
@@ -1193,15 +1250,15 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     sourceIds: ["S45", "S46"],
     spacing: null,
     seasonWindows: [
-      season(3, 3, "seedling", "Wysiew na rozsadę około połowy marca.", ["S46"], "medium"),
       season(
-        5,
-        6,
-        "plant_out",
-        "Sadzenie po połowie maja, po ustąpieniu ryzyka przymrozków.",
-        ["S45", "S46"],
+        3,
+        4,
+        "seedling",
+        "Wysiew rozsady; okno ogólne dla pomidorów gruntowych, niezależne od typu owocu.",
+        ["S7"],
         "medium",
       ),
+      season(5, 5, "plant_out", "Sadzenie rozsady do gruntu; lokalnie po ustąpieniu przymrozków.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes:
@@ -1214,7 +1271,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     catalogTier: "core",
     sourceIds: ["S4", "S63", "S66"],
     spacing: null,
-    seasonWindows: [season(3, 7, "direct_sow", "Siew bezpośredni sukcesywnie do początku lata.", ["S66"], "medium")],
+    seasonWindows: [
+      season(3, 8, "direct_sow", "Siew bezpośredni; tabela podaje terminy od marca do sierpnia.", ["S7"], "medium"),
+    ],
     needsLocalValidation: true,
     validationNotes: "Końcowa siatka jest niskiej pewności; polski Atlas opisuje gęstość siewu na kiszenie.",
   },
@@ -1226,8 +1285,9 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     sourceIds: ["S4", "S62"],
     spacing: null,
     seasonWindows: [
-      season(3, 4, "direct_sow", "Siew zewnętrzny pod koniec marca lub na początku kwietnia.", ["S62"], "medium"),
-      season(5, 5, "plant_out", "Możliwe sadzenie rozsady w maju.", ["S62"], "medium"),
+      season(3, 4, "seedling", "Wysiew rozsady.", ["S7"], "medium"),
+      season(4, 4, "plant_out", "Sadzenie rozsady.", ["S7"], "medium"),
+      season(5, 5, "direct_sow", "Siew bezpośrednio do gruntu.", ["S7"], "medium"),
     ],
     needsLocalValidation: true,
     validationNotes: "Jedna jednostka końcowej obsady to kępa złożona z kilku roślin, nie pojedynczy pęd.",
@@ -1911,6 +1971,7 @@ export function validateCropCatalog(
       assertCondition(Number.isInteger(window.endMonth), crop.id + " end month must be an integer");
       assertCondition(window.startMonth >= 1 && window.startMonth <= 12, crop.id + " start month is out of range");
       assertCondition(window.endMonth >= 1 && window.endMonth <= 12, crop.id + " end month is out of range");
+      assertCondition(SOWING_METHODS.includes(window.method), crop.id + " season window has an unknown method");
       assertCondition(window.condition.trim().length > 0, crop.id + " season window has no condition");
       assertSourceIds(window.sourceIds, crop.id + " season window");
     }

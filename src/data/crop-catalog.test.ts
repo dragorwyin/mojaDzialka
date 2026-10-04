@@ -10,7 +10,7 @@ import {
   getCropAtlasCellViewBox,
   resolveCropThumbnailPresentation,
 } from "../components/garden/crop-thumbnail-manifest.js";
-import { COMPANION_RELATIONS, CROP_CATALOG, validateCropCatalog, type SourceId } from "./crop-catalog.js";
+import { COMPANION_RELATIONS, CROP_CATALOG, CROP_SOURCES, validateCropCatalog, type SourceId } from "./crop-catalog.js";
 
 describe("crop catalog", () => {
   it("maps every active crop to one atlas cell and retains a text fallback", () => {
@@ -207,6 +207,65 @@ describe("crop catalog", () => {
     expect(COMPANION_RELATIONS.every((relation) => !relation.hardBlock)).toBe(true);
   });
 
+  it("keeps seasonal examples tied to independently reviewed Polish sources", () => {
+    const tomato = CROP_CATALOG.find((crop) => crop.id === "pomidor");
+    expect(tomato?.seasonWindows).toEqual([
+      {
+        startMonth: 3,
+        endMonth: 4,
+        method: "seedling",
+        condition: "Wysiew rozsady; tabela dotyczy produkcji gruntowej, warunki domowe mogą się różnić.",
+        sourceIds: ["S7"],
+        confidence: "medium",
+      },
+      {
+        startMonth: 5,
+        endMonth: 5,
+        method: "plant_out",
+        condition: "Sadzenie rozsady w gruncie w drugiej połowie maja; lokalnie po ustąpieniu przymrozków.",
+        sourceIds: ["S7"],
+        confidence: "medium",
+      },
+      {
+        startMonth: 5,
+        endMonth: 6,
+        method: "direct_sow",
+        condition: "Siew bezpośredni w gruncie w cieplejszym okresie; termin zależy od warunków lokalnych.",
+        sourceIds: ["S7"],
+        confidence: "medium",
+      },
+    ]);
+
+    const potato = CROP_CATALOG.find((crop) => crop.id === "ziemniak");
+    expect(potato?.seasonWindows[0]).toMatchObject({
+      startMonth: 4,
+      endMonth: 5,
+      method: "plant_out",
+      sourceIds: ["S67"],
+      confidence: "medium",
+    });
+    expect(CROP_SOURCES.find((source) => source.id === "S67")?.url).toBe(
+      "https://www.gov.pl/attachment/07d4d440-6a1f-44e4-a68d-ea5b34005d4e",
+    );
+
+    const arugula = CROP_CATALOG.find((crop) => crop.id === "rukola");
+    expect(arugula).toMatchObject({ seasonWindows: [], needsLocalValidation: true });
+
+    expect(CROP_CATALOG.find((crop) => crop.id === "marchew")?.seasonWindows).toEqual([
+      expect.objectContaining({ startMonth: 3, endMonth: 6, method: "direct_sow", sourceIds: ["S7"] }),
+      expect.objectContaining({ startMonth: 11, endMonth: 11, method: "direct_sow", sourceIds: ["S7"] }),
+    ]);
+    expect(CROP_CATALOG.find((crop) => crop.id === "rzodkiewka")?.seasonWindows).toEqual([
+      expect.objectContaining({ startMonth: 3, endMonth: 5, method: "direct_sow", sourceIds: ["S7"] }),
+      expect.objectContaining({ startMonth: 7, endMonth: 9, method: "direct_sow", sourceIds: ["S7"] }),
+    ]);
+    expect(CROP_CATALOG.find((crop) => crop.id === "cebula")?.seasonWindows).toEqual([
+      expect.objectContaining({ startMonth: 2, endMonth: 3, method: "seedling", sourceIds: ["S7"] }),
+      expect.objectContaining({ startMonth: 3, endMonth: 4, method: "direct_sow", sourceIds: ["S7"] }),
+      expect.objectContaining({ startMonth: 4, endMonth: 5, method: "plant_out", sourceIds: ["S7"] }),
+    ]);
+  });
+
   it("rejects invalid spacing, source references, and relations", () => {
     const invalidSpacingCatalog = CROP_CATALOG.map((crop) => {
       if (crop.id !== "marchew" || crop.finalSpacing === null) {
@@ -242,6 +301,43 @@ describe("crop catalog", () => {
     expect(() => {
       validateCropCatalog(CROP_CATALOG, invalidRelations);
     }).toThrow(/unknown crop/);
+  });
+
+  it("rejects unknown seasonal methods and source references", () => {
+    const invalidMethodCatalog = CROP_CATALOG.map((crop) =>
+      crop.id === "pomidor"
+        ? {
+            ...crop,
+            seasonWindows: [{ ...crop.seasonWindows[0], method: "sprouting" as never }],
+          }
+        : crop,
+    );
+    const invalidSeasonSourceCatalog = CROP_CATALOG.map((crop) =>
+      crop.id === "pomidor"
+        ? {
+            ...crop,
+            seasonWindows: [{ ...crop.seasonWindows[0], sourceIds: ["S99" as SourceId] }],
+          }
+        : crop,
+    );
+    const invalidSeasonMonthCatalog = CROP_CATALOG.map((crop) =>
+      crop.id === "pomidor"
+        ? {
+            ...crop,
+            seasonWindows: [{ ...crop.seasonWindows[0], startMonth: 13 }],
+          }
+        : crop,
+    );
+
+    expect(() => {
+      validateCropCatalog(invalidMethodCatalog, COMPANION_RELATIONS);
+    }).toThrow(/unknown method/);
+    expect(() => {
+      validateCropCatalog(invalidSeasonSourceCatalog, COMPANION_RELATIONS);
+    }).toThrow(/unknown source/);
+    expect(() => {
+      validateCropCatalog(invalidSeasonMonthCatalog, COMPANION_RELATIONS);
+    }).toThrow(/start month is out of range/);
   });
 
   it("allows only an explicitly negative relation to be a hard block", () => {

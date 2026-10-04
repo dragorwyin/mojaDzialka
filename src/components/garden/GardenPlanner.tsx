@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { canGenerateGardenPlan } from "@/lib/garden-crop-selection";
 import type { GardenLayoutResult } from "@/lib/garden-layout";
 import GardenLayoutView from "./GardenLayoutView";
+import SeasonWorkSchedule from "./SeasonWorkSchedule";
 
 type InitialPlanStatus = "current" | "stale" | "empty" | "unavailable";
 
@@ -212,7 +213,10 @@ export default function GardenPlanner({
       )}
 
       {planState.plan ? (
-        <GardenLayoutView plan={planState.plan} status={layoutStatus(planState.status)} cropNames={cropNames} />
+        <>
+          <GardenLayoutView plan={planState.plan} status={layoutStatus(planState.status)} cropNames={cropNames} />
+          <SeasonWorkSchedule cropSummaries={planState.plan.cropSummaries} />
+        </>
       ) : (
         <p className="border-garden-surface/10 bg-garden-surface/5 text-garden-muted/80 rounded-xl border px-4 py-5 text-sm">
           {planState.status === "unavailable"

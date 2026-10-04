@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
     "test:api": "vitest run --config vitest.api.config.ts",
-    "test:unit": "vitest run src/data/crop-catalog.test.ts src/lib/crop-catalog.test.ts src/lib/garden-crop-selection.test.ts src/lib/garden-crop-percentages.test.ts src/lib/garden-layout.test.ts src/lib/garden-plan-snapshot.test.ts src/lib/garden-space-change.test.ts && npm run test:api"
+    "test:unit": "vitest run src/data/crop-catalog.test.ts src/lib/crop-catalog.test.ts src/lib/garden-crop-selection.test.ts src/lib/garden-crop-percentages.test.ts src/lib/garden-layout.test.ts src/lib/garden-plan-snapshot.test.ts src/lib/garden-space-change.test.ts src/lib/season-work-schedule.test.ts && npm run test:api"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

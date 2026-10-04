@@ -52,7 +52,7 @@ Impact High: utrata/dostęp/publiczny błąd; Medium: degradacja; Low: kosmetyka
 |---|---|---|---|---|---|---|
 | 1 | Poprawność decyzji algorytmu | Dowieść geometrii/priorytetów/jawności braków. | #1, #5, #6 | unit + contract | complete | context/changes/testing-algorithm-decisions/ |
 | 2 | Bezpieczny zapis i dostęp | Chronić zapis/prywatność podczas błędów. | #2, #3, #4 | DB/API integration | complete | context/changes/testing-safe-garden-storage/ |
-| 3 | Krytyczny przepływ i bramki | Domknąć interakcje/CI. | #1–#6 | e2e + gates | not started | — |
+| 3 | Krytyczny przepływ i bramki | Domknąć interakcje/CI. | #1–#6 | e2e + gates | change opened | context/changes/testing-critical-flow-and-gates/ |
 
 Kolejność: obawa → trwałość → interakcje. Każdy etap aktualizuje §6. #4 sprawdza reakcję aplikacji, nie zapobiega zatrzymaniu usługi.
 
@@ -122,11 +122,19 @@ Phase 3 domyka odkrywanie testów/CI: obecna lista unit jest ograniczona.
 
 TBD — see §3 Phase 3. Minimalny przepływ zapis → generowanie → zmiana → nieaktualność → przeliczenie oraz potwierdzenie/anulowanie utraty planu; tylko luki niepokryte taniej. Wzorzec, izolacja danych i komendy lokalne/CI po wdrożeniu.
 
+### 6.6 Terminy sezonowe i lista prac
+
+- **Lokalizacje:** `src/data/crop-catalog.test.ts` oraz `src/lib/season-work-schedule.test.ts`.
+- **Nazewnictwo:** opisz niezależnie zweryfikowane okna, jawny brak źródła, granicę roku, filtrowanie bieżącego/następnego miesiąca oraz wskazanie najbliższego późniejszego miesiąca z pracami.
+- **Referencje:** pomidor — osobne przygotowanie rozsady, sadzenie i siew bezpośredni z kontekstem gruntu; ziemniak — okno sadzenia z metodyki GIORiN/IOR-PIB; rukola — brak potwierdzonego terminu nie tworzy pracy; grudzień przechodzi w styczeń dla okna zimowego.
+- **Komenda lokalna:** `npm run test:unit`.
+- **Źródło oczekiwań:** ręcznie sprawdzone źródła zapisane w katalogu (SODR dla terminów warzyw gruntowych, metodyka GIORiN/IOR-PIB dla ziemniaka). Fixture helpera jest jawny i niezależny od katalogu; walidator strukturalny metod i referencji nie jest dowodem prawdziwości agronomicznej.
+
 ## 7. What We Deliberately Don't Test
 
 - Kosmetyka, dekoracyjne screenshoty i zgodność pikselowa — ograniczony czas (interview Q5). Wrócić, jeśli wygląd utrudnia rozpoznanie aktualności, konfliktów lub odczyt układu; to już zachowanie funkcjonalne.
 - Nie testujemy globalnej optymalności ani równomierności bez zatwierdzonego wymagania. Research może wykazać potrzebę decyzji produktowej (interview Q4; PRD FR-006).
-- Brak funkcji wyjaśniania decyzji w UI w zakresie rollout; uzasadnienia przypadków mają służyć weryfikacji. Nie sprawdzamy niewdrożonych terminów sezonowych — roadmap S-06 blocked; wrócić po odblokowaniu.
+- Brak funkcji wyjaśniania decyzji w UI w zakresie rollout; uzasadnienia przypadków mają służyć weryfikacji. Dla S-06 sprawdzamy orientacyjne miesiące i ich źródła, ale nie dokładny dzień, pogodę regionalną ani personalizację według lokalizacji.
 
 ## 8. Freshness Ledger
 
