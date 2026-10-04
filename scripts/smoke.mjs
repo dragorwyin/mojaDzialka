@@ -1,4 +1,5 @@
 /* global AbortController */
+import { Buffer } from "node:buffer";
 import { clearTimeout, setTimeout } from "node:timers";
 
 // Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
@@ -28,6 +29,35 @@ function storeCookies(response, cookieJar = jar) {
     if (expired) cookieJar.delete(name.trim());
     else cookieJar.set(name.trim(), rest.join("="));
   }
+}
+
+function createExpiredSessionJar(sourceJar = jar) {
+  const expiredJar = new Map(sourceJar);
+  const authCookieNames = [...expiredJar.keys()].filter((name) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name));
+  const storageKey = authCookieNames.find((name) => !/\.\d+$/.test(name)) ?? authCookieNames[0]?.replace(/\.\d+$/, "");
+  if (!storageKey) throw new Error("Supabase auth cookie missing from smoke session");
+
+  const encodedSession = authCookieNames
+    .sort((a, b) => {
+      const aIndex = Number(a.match(/\.(\d+)$/)?.[1] ?? -1);
+      const bIndex = Number(b.match(/\.(\d+)$/)?.[1] ?? -1);
+      return aIndex - bIndex;
+    })
+    .map((name) => expiredJar.get(name))
+    .join("");
+  const hasBase64Prefix = encodedSession.startsWith("base64-");
+  const sessionJson = Buffer.from(hasBase64Prefix ? encodedSession.slice(7) : encodedSession, "base64url").toString(
+    "utf8",
+  );
+  const session = JSON.parse(sessionJson);
+  session.expires_at = Math.floor(Date.now() / 1000) - 3_600;
+  session.expires_in = 0;
+
+  const encoded = `${hasBase64Prefix ? "base64-" : ""}${Buffer.from(JSON.stringify(session)).toString("base64url")}`;
+  const chunks = encoded.match(/.{1,3180}/g) ?? [];
+  authCookieNames.forEach((name) => expiredJar.delete(name));
+  chunks.forEach((chunk, index) => expiredJar.set(chunks.length === 1 ? storageKey : `${storageKey}.${index}`, chunk));
+  return expiredJar;
 }
 
 async function request(
@@ -122,6 +152,31 @@ const steps = [
     { status: 302, location: "/dashboard" },
   ],
   ["signup establishes dashboard session", () => request("/dashboard"), { status: 200 }],
+  [
+    "public signin page skips refresh for an expired session cookie",
+    () => request("/auth/signin", { cookieJar: createExpiredSessionJar() }),
+    { status: 200, includes: "Sign in" },
+  ],
+  [
+    "wrong password clears every expired session cookie chunk",
+    async () => {
+      const staleJar = createExpiredSessionJar();
+      const result = await request("/api/auth/signin", {
+        method: "POST",
+        form: { email, password: "wrong", returnTo: "/dashboard" },
+        cookieJar: staleJar,
+      });
+      if ([...staleJar.keys()].some((name) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name))) {
+        throw new Error("expired Supabase auth cookie was not fully cleared after failed signin");
+      }
+      return result;
+    },
+    {
+      status: 302,
+      location: "/auth/signin?error=signin_failed&returnTo=%2Fdashboard",
+      locationExcludes: ["Invalid login credentials"],
+    },
+  ],
   [
     "signout clears session",
     () => request("/api/auth/signout", { method: "POST", idempotent: true }),

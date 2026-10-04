@@ -1,9 +1,9 @@
 ---
 change_id: login-auth-request-latency
 title: Diagnoza opóźnienia logowania
-status: preparing
+status: implementing
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 archived_at: null
 ---
 

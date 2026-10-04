@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getSafeReturnTo } from "@/lib/auth-utils";
-import { createClient } from "@/lib/supabase";
+import { clearAuthSessionCookies, createClient } from "@/lib/supabase";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -24,6 +24,7 @@ export const POST: APIRoute = async (context) => {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    await clearAuthSessionCookies(context.request.headers, context.cookies);
     return context.redirect(`/auth/signin?error=signin_failed&returnTo=${encodeURIComponent(returnTo)}`);
   }
 
