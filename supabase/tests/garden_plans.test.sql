@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(23);
 
 insert into auth.users (
   id,
@@ -223,6 +223,69 @@ select throws_ok(
   '42501',
   null,
   'anon cannot write garden plans'
+);
+
+reset role;
+select set_config('test.before_plan_attacks', (
+  select jsonb_agg(to_jsonb(p) order by garden_id) from public.garden_plans p
+)::text, true);
+select set_config('test.second_plan_before_owner_save', (
+  select to_jsonb(p) from public.garden_plans p where garden_id = current_setting('test.second_garden_id')::uuid
+)::text, true);
+set local role authenticated;
+with changed as (
+    update public.garden_plans set plan = '{"corrupted":true}'::jsonb
+    where garden_id = current_setting('test.second_garden_id')::uuid returning *
+)
+select is((select count(*) from changed), 0::bigint, 'the first owner updates zero foreign plan rows');
+with removed as (
+    delete from public.garden_plans
+    where garden_id = current_setting('test.second_garden_id')::uuid returning *
+)
+select is((select count(*) from removed), 0::bigint, 'the first owner deletes zero foreign plan rows');
+select throws_ok(
+  $$ update public.garden_plans set garden_id = current_setting('test.second_garden_id')::uuid
+     where garden_id = current_setting('test.first_garden_id')::uuid $$,
+  '42501', null,
+  'WITH CHECK rejects moving an owned plan into another owner garden'
+);
+reset role;
+select is(
+  (select jsonb_agg(to_jsonb(p) order by garden_id) from public.garden_plans p),
+  current_setting('test.before_plan_attacks')::jsonb,
+  'privileged read-back confirms both complete plans are unchanged after owner attacks'
+);
+set local role authenticated;
+select is(public.save_garden_plan_if_current(
+  (select input_revision from public.gardens),
+  '{"version":1,"positions":[{"cropId":"cebula"}]}'::jsonb,
+  '{"version":1,"spaces":[],"crops":[{"cropId":"cebula","proportion":"100"}]}'::jsonb,
+  repeat('f', 64), '2026-10-02 12:00:00+00'::timestamptz
+), true, 'the first owner can use guarded RPC while another owner has a saved plan');
+reset role;
+select is(
+  (select to_jsonb(p) from public.garden_plans p where garden_id = current_setting('test.second_garden_id')::uuid),
+  current_setting('test.second_plan_before_owner_save')::jsonb,
+  'saving through owner RPC leaves the complete second owner plan unchanged'
+);
+select set_config('test.before_anon_plan_attacks', (
+  select jsonb_agg(to_jsonb(p) order by garden_id) from public.garden_plans p
+)::text, true);
+set local role anon;
+select throws_ok($$ update public.garden_plans set input_fingerprint = repeat('0', 64) $$,
+  '42501', null, 'anon cannot update plans');
+select throws_ok($$ delete from public.garden_plans $$,
+  '42501', null, 'anon cannot delete plans');
+select throws_ok(
+  $$ select public.save_garden_plan_if_current(0, '{"version":1}'::jsonb,
+     '{"version":1}'::jsonb, repeat('0', 64), '2026-10-02 13:00:00+00'::timestamptz) $$,
+  '42501', null, 'anon cannot execute guarded generation RPC'
+);
+reset role;
+select is(
+  (select jsonb_agg(to_jsonb(p) order by garden_id) from public.garden_plans p),
+  current_setting('test.before_anon_plan_attacks')::jsonb,
+  'privileged read-back confirms both complete plans survive anonymous attacks unchanged'
 );
 
 select * from finish();

@@ -189,26 +189,26 @@ Bez migracji SQL/backfillu. Wersja algorytmu 3 zmienia fingerprint, starszy wyni
 
 #### Automated
 
-- [x] 1.1 Ręczne przypadki obu osi, dokładnego dopasowania, braku miejsca i 15×15 przechodzą z marginesem połowy rozstawy.
-- [x] 1.2 Snapshot wersji 2 jest stale wobec wersji 3; bieżący jest current, starszy wynik pozostaje czytelny.
-- [x] 1.3 `npm run test:unit`, `npx astro check` i `npm run lint` przechodzą po zmianie marginesu.
+- [x] 1.1 Ręczne przypadki obu osi, dokładnego dopasowania, braku miejsca i 15×15 przechodzą z marginesem połowy rozstawy. — a3ce5a0
+- [x] 1.2 Snapshot wersji 2 jest stale wobec wersji 3; bieżący jest current, starszy wynik pozostaje czytelny. — a3ce5a0
+- [x] 1.3 `npm run test:unit`, `npx astro check` i `npm run lint` przechodzą po zmianie marginesu. — a3ce5a0
 
 ### Phase 2: Testy decyzji i danych
 
 #### Automated
 
-- [ ] 2.1 Niezależne fixture dowodzą progów par, granic obu osi i rozdziału geometrii od lokalnego sąsiedztwa.
-- [ ] 2.2 Przypadki 80/20 i caution dowodzą wyniku 2/1 bez konfliktu samego zaokrąglenia; dotychczasowe priorytety i limity pozostają chronione.
-- [ ] 2.3 invalid_spacing, non_final_spacing, final low i odwzorowanie katalogu mają znaczące asercje z niezależnymi oczekiwaniami.
-- [ ] 2.4 Produkcyjna marchew i miks 30/30/40 zachowują dwie osie, marginesy i niepewność danych; `npm run test:unit` przechodzi.
+- [x] 2.1 Niezależne fixture dowodzą progów par, granic obu osi i rozdziału geometrii od lokalnego sąsiedztwa. — 5192836
+- [x] 2.2 Przypadki 80/20 i caution dowodzą wyniku 2/1 bez konfliktu samego zaokrąglenia; dotychczasowe priorytety i limity pozostają chronione. — 5192836
+- [x] 2.3 invalid_spacing, non_final_spacing, final low i odwzorowanie katalogu mają znaczące asercje z niezależnymi oczekiwaniami. — 5192836
+- [x] 2.4 Produkcyjna marchew i miks 30/30/40 zachowują dwie osie, marginesy i niepewność danych; `npm run test:unit` przechodzi. — 5192836
 
 ### Phase 3: Weryfikacja i instrukcje
 
 #### Automated
 
-- [ ] 3.1 `npm run test:unit`, `npx astro check`, `npm run lint` i `npm run build` przechodzą dla finalnej zmiany.
-- [ ] 3.2 §6.1–§6.2 wskazują rzeczywiste testy, nazewnictwo, komendy i niezależne oczekiwania; nowe testy uruchamia istniejąca komenda unit.
+- [x] 3.1 `npm run test:unit`, `npx astro check`, `npm run lint` i `npm run build` przechodzą dla finalnej zmiany.
+- [x] 3.2 §6.1–§6.2 wskazują rzeczywiste testy, nazewnictwo, komendy i niezależne oczekiwania; nowe testy uruchamia istniejąca komenda unit.
 
 #### Manual
 
-- [ ] 3.3 Starszy zapis jest nieaktualny, po przeliczeniu wynik jest aktualny i zachowuje marginesy oraz widoczną niepewność danych.
+- [x] 3.3 Starszy zapis jest nieaktualny, po przeliczeniu wynik jest aktualny i zachowuje marginesy oraz widoczną niepewność danych. — użytkownik zaakceptował odbiór; lokalna baza po zmianie potwierdza 2 skrzynie, zgodny snapshot algorytmu 3, 53 pozycje, 0 naruszeń marginesu/odstępu między gatunkami oraz brak ostrzeżeń, konfliktów i pominięć. Niska pewność marchwi zachowana; ścieżkę stale wersji 2 pokrywają testy snapshotu.

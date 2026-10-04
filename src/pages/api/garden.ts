@@ -30,7 +30,12 @@ export const POST: APIRoute = async (context) => {
   } = await supabase.auth.getUser();
   if (!user) return context.redirect("/auth/signin?returnTo=%2Fgarden");
 
-  const form = await context.request.formData();
+  let form: FormData;
+  try {
+    form = await context.request.formData();
+  } catch {
+    return redirectWithError(context, "invalid_spaces");
+  }
   const names = getStrings(form, "spaceName");
   const ids = getStrings(form, "spaceId");
   const types = getStrings(form, "spaceType");

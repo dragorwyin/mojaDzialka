@@ -1,9 +1,10 @@
 import { useMemo, useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 
-import { CROP_CATALOG, CROP_SOURCES, type CropCatalogEntry, type SourceId } from "../../data/crop-catalog.js";
+import { CROP_CATALOG, type CropCatalogEntry } from "../../data/crop-catalog.js";
 import { searchCrops } from "../../lib/crop-catalog.js";
 import { resolveGardenCropSelection, validateGardenCropSelection } from "../../lib/garden-crop-selection.js";
+import CropSourceLinks from "./CropSourceLinks";
 import {
   isValidCropPercentageMix,
   normalizeProportionsToPercentages,
@@ -33,7 +34,6 @@ const percentageFormatter = new Intl.NumberFormat("pl-PL", {
 });
 const spacingFormatter = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 });
 const cropById = new Map(CROP_CATALOG.map((crop) => [crop.id, crop] as const));
-const sourceById = new Map(CROP_SOURCES.map((source) => [source.id, source] as const));
 
 const CONFIDENCE_LABELS = {
   high: "wysoka",
@@ -73,29 +73,6 @@ function formatRange(range: { min: number; max: number }, unit = "cm"): string {
   const value =
     range.min === range.max ? formatNumber(range.min) : `${formatNumber(range.min)}–${formatNumber(range.max)}`;
   return unit ? `${value} ${unit}` : value;
-}
-
-function CropSourceLinks({ sourceIds }: { sourceIds: readonly SourceId[] }) {
-  if (sourceIds.length === 0) return <span>Brak wskazanego źródła.</span>;
-
-  return (
-    <ul className="mt-1 list-disc space-y-1 pl-5">
-      {sourceIds.map((sourceId) => {
-        const source = sourceById.get(sourceId);
-        return (
-          <li key={sourceId}>
-            {source ? (
-              <a className="text-garden-accent underline underline-offset-2" href={source.url}>
-                {source.title}
-              </a>
-            ) : (
-              `Nieznane źródło ${sourceId}`
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
 }
 
 function formatSowingDensity(crop: CropCatalogEntry): string {
