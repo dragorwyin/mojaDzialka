@@ -196,7 +196,7 @@ Plan bazowo nie zmienia schematu. Ewentualna wykazana poprawka SQL trafia do now
 
 #### Automated
 
-- [x] 3.1 `npm run test:unit` wykonuje dotychczasowe unit oraz wszystkie testy API i przechodzi.
-- [x] 3.2 `npm run test:db`, `npm run lint`, `npx astro check` oraz `npm run build` przechodzą dla końcowego stanu.
-- [x] 3.3 `npm run smoke` przechodzi na lokalnym preview skonfigurowanym z lokalną bazą Supabase.
-- [x] 3.4 Cookbook §6.3–§6.4 wskazuje istniejące referencyjne testy i poprawne komendy, a §3 Phase 2 wskazuje tę zmianę i stan wynikający z Progress.
+- [x] 3.1 `npm run test:unit` wykonuje dotychczasowe unit oraz wszystkie testy API i przechodzi. — ad46f93
+- [x] 3.2 `npm run test:db`, `npm run lint`, `npx astro check` oraz `npm run build` przechodzą dla końcowego stanu. — ad46f93
+- [x] 3.3 `npm run smoke` przechodzi na lokalnym preview skonfigurowanym z lokalną bazą Supabase. — ad46f93
+- [x] 3.4 Cookbook §6.3–§6.4 wskazuje istniejące referencyjne testy i poprawne komendy, a §3 Phase 2 wskazuje tę zmianę i stan wynikający z Progress. — ad46f93
