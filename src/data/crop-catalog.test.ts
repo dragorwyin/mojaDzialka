@@ -170,6 +170,33 @@ describe("crop catalog", () => {
     expect(carrot?.sowingDensity?.context).toMatch(/siew.*osobny parametr.*nie końcowa obsada/i);
   });
 
+  it("maps final spacing metadata into the layout compatibility view without losing uncertainty", () => {
+    for (const crop of CROP_CATALOG) {
+      if (crop.finalSpacing === null) {
+        expect(crop.spacing).toBeNull();
+        continue;
+      }
+
+      const final = crop.finalSpacing;
+      expect(crop.spacing).toEqual({
+        publishedPairCm: null,
+        inRowCm: final.inRowCm,
+        betweenRowsCm: final.betweenRowsCm,
+        context: final.context,
+        sourceIds: final.sourceIds,
+        confidence: final.confidence,
+        axisVerified: true,
+        stage: final.stage === "after_thinning" ? "thinning" : "planting",
+        isFinalPlanting: true,
+      });
+    }
+
+    const corn = CROP_CATALOG.find((crop) => crop.id === "kukurydza-cukrowa");
+    expect(corn?.finalSpacing).toBeNull();
+    expect(corn?.sowingDensity).not.toBeNull();
+    expect(corn?.spacing).toBeNull();
+  });
+
   it("keeps local validation and non-blocking relation semantics explicit", () => {
     expect(CROP_CATALOG.find((crop) => crop.id === "ziemniak")).toMatchObject({
       needsLocalValidation: true,

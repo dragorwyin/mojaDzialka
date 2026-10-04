@@ -78,7 +78,39 @@ describe("garden layout engine", () => {
     }
 
     expect(positions.length).toBeGreaterThan(1);
-    expect(positions.every((position) => position.spacing.inRowCm === 7)).toBe(true);
+    expect(
+      positions.every(
+        (position) =>
+          position.spacing.inRowCm === 7 &&
+          position.spacing.betweenRowsCm === 20 &&
+          position.confidence === "low" &&
+          position.stage === "thinning",
+      ),
+    ).toBe(true);
+    expect(positions.every((position) => position.xCm >= 3.5 && position.xCm <= 196.5)).toBe(true);
+    expect(positions.every((position) => position.yCm >= 10 && position.yCm <= 90)).toBe(true);
+    expect(result.cropSummaries[0]).toMatchObject({ dataConfidence: "low", spacingStage: "thinning" });
+
+    const tooNarrow = generateGardenLayout({
+      spaces: [{ id: "too-narrow-for-carrot", widthCm: 6, lengthCm: 20 }],
+      crops: [{ crop: crop("marchew"), proportion: 100 }],
+      relations: [],
+    });
+    const tooShort = generateGardenLayout({
+      spaces: [{ id: "too-short-for-carrot", widthCm: 7, lengthCm: 19 }],
+      crops: [{ crop: crop("marchew"), proportion: 100 }],
+      relations: [],
+    });
+
+    expect(tooNarrow.spaces[0]?.positions).toEqual([]);
+    expect(tooNarrow.omissions).toContainEqual(
+      expect.objectContaining({ cropId: "marchew", reason: "no_fit" }),
+    );
+    expect(tooShort.spaces[0]?.positions).toEqual([]);
+    expect(tooShort.omissions).toContainEqual(
+      expect.objectContaining({ cropId: "marchew", reason: "no_fit" }),
+    );
+
     for (const rowPositions of positionsByRow.values()) {
       const orderedPositions = [...rowPositions].sort((left, right) => left.xCm - right.xCm);
       const spacingCheck = orderedPositions.reduce<{ previousX: number | null; isValid: boolean }>(
@@ -122,13 +154,22 @@ describe("garden layout engine", () => {
         expect(position.yCm).toBeLessThanOrEqual(space.space.lengthCm);
       }
 
+      const inputSpacingByCrop: Record<string, { inRowCm: number; betweenRowsCm: number }> = {
+        marchew: { inRowCm: 30, betweenRowsCm: 30 },
+        cebula: { inRowCm: 30, betweenRowsCm: 30 },
+        brokul: { inRowCm: 40, betweenRowsCm: 30 },
+        czosnek: { inRowCm: 30, betweenRowsCm: 30 },
+      };
       for (const [leftIndex, left] of space.positions.entries()) {
         for (const right of space.positions.slice(leftIndex + 1)) {
+          const leftSpacing = inputSpacingByCrop[left.cropId];
+          const rightSpacing = inputSpacingByCrop[right.cropId];
+          if (!leftSpacing || !rightSpacing) throw new Error("Missing independent spacing fixture");
           const dx = Math.abs(left.xCm - right.xCm);
           const dy = Math.abs(left.yCm - right.yCm);
           expect(
-            dx >= Math.max(left.spacing.inRowCm, right.spacing.inRowCm) ||
-              dy >= Math.max(left.spacing.betweenRowsCm, right.spacing.betweenRowsCm),
+            dx >= Math.max(leftSpacing.inRowCm, rightSpacing.inRowCm) ||
+              dy >= Math.max(leftSpacing.betweenRowsCm, rightSpacing.betweenRowsCm),
           ).toBe(true);
         }
       }
@@ -322,6 +363,89 @@ describe("garden layout engine", () => {
     expect(onion).toMatchObject({ targetPercentage: 1, actualPercentage: 50, actualCount: 1 });
   });
 
+  it("keeps rectangular exclusion separate from elliptical neighbor distance at an axis threshold", () => {
+    const equalThreshold = generateGardenLayout({
+      spaces: [{ id: "equal-threshold", widthCm: 40, lengthCm: 40 }],
+      crops: [
+        { crop: compactCrop("marchew", 20, 20), proportion: 80 },
+        { crop: compactCrop("cebula", 20, 40), proportion: 20 },
+      ],
+      relations: [],
+    });
+    const equalPair = equalThreshold.spaces[0]?.positions ?? [];
+    const carrot = equalPair.find((position) => position.cropId === "marchew");
+    const onion = equalPair.find((position) => position.cropId === "cebula");
+
+    expect(carrot).toMatchObject({ xCm: 10, yCm: 10 });
+    expect(onion).toMatchObject({ xCm: 30, yCm: 20 });
+    expect(Math.abs((onion?.xCm ?? 0) - (carrot?.xCm ?? 0))).toBe(20);
+    expect(Math.abs((onion?.yCm ?? 0) - (carrot?.yCm ?? 0))).toBe(10);
+    expect(carrot?.neighbors).not.toContainEqual(expect.objectContaining({ cropId: "cebula" }));
+    expect(onion?.neighbors).not.toContainEqual(expect.objectContaining({ cropId: "marchew" }));
+
+    const belowThreshold = generateGardenLayout({
+      spaces: [{ id: "below-threshold", widthCm: 20, lengthCm: 38 }],
+      crops: [
+        { crop: compactCrop("marchew", 20, 20), proportion: 99 },
+        { crop: compactCrop("cebula", 18, 38), proportion: 1 },
+      ],
+      relations: [],
+    });
+
+    expect(belowThreshold.spaces[0]?.positions).toMatchObject([{ cropId: "marchew", xCm: 10, yCm: 10 }]);
+    expect(belowThreshold.spaces[0]?.positions).toHaveLength(1);
+    expect(belowThreshold.omissions).toContainEqual(
+      expect.objectContaining({ cropId: "cebula", reason: "no_fit" }),
+    );
+  });
+
+  it("keeps an 80/20 target with three discrete positions as 2/1 without a rounding conflict", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "three-cells", widthCm: 30, lengthCm: 10 }],
+      crops: [
+        { crop: compactCrop("marchew", 10, 10), proportion: 80 },
+        { crop: compactCrop("cebula", 10, 10), proportion: 20 },
+      ],
+      relations: [],
+    });
+    const positions = result.spaces[0]?.positions ?? [];
+    const carrot = result.cropSummaries.find((summary) => summary.cropId === "marchew");
+    const onion = result.cropSummaries.find((summary) => summary.cropId === "cebula");
+
+    expect(positions.map((position) => position.cropId)).toEqual(["marchew", "cebula", "marchew"]);
+    expect(positions.map(({ xCm, yCm }) => [xCm, yCm])).toEqual([[5, 5], [15, 5], [25, 5]]);
+    expect(carrot).toMatchObject({ targetPercentage: 80, actualCount: 2 });
+    expect(carrot?.actualPercentage).toBeCloseTo(200 / 3);
+    expect(onion).toMatchObject({ targetPercentage: 20, actualCount: 1 });
+    expect(onion?.actualPercentage).toBeCloseTo(100 / 3);
+    expect(result.conflicts).toEqual([]);
+    expect(result.omissions).toEqual([]);
+  });
+
+  it("chooses target pressure over a soft caution when the competing crop is due", () => {
+    const cautionRelation: CompanionRelation = {
+      cropIds: ["marchew", "cebula"],
+      status: "caution",
+      relationshipType: "disease_risk",
+      confidence: "medium",
+      rationale: "Testowe miękkie ostrzeżenie nieblokujące wyboru.",
+      sourceIds: ["S2"],
+      hardBlock: false,
+    };
+    const result = generateGardenLayout({
+      spaces: [{ id: "two-cells", widthCm: 20, lengthCm: 10 }],
+      crops: [
+        { crop: compactCrop("marchew", 10, 10), proportion: 80 },
+        { crop: compactCrop("cebula", 10, 10), proportion: 20 },
+      ],
+      relations: [cautionRelation],
+    });
+
+    expect(result.spaces[0]?.positions.map((position) => position.cropId)).toEqual(["marchew", "cebula"]);
+    expect(result.metrics.cautionNeighbors).toBe(1);
+    expect(result.spaces[0]?.positions[1]?.placementReason?.category).toBe("target_mix");
+  });
+
   it("does not hard-block a nonnegative relation when its hardBlock flag is inconsistent", () => {
     const inconsistentRelation: CompanionRelation = {
       cropIds: ["marchew", "cebula"],
@@ -430,6 +554,123 @@ describe("garden layout engine", () => {
       actualCount: 0,
       dataConfidence: null,
       spacingStage: null,
+    });
+  });
+
+  it.each([
+    ["zero minimum", { inRowCm: { min: 0, max: 10 }, betweenRowsCm: { min: 10, max: 10 } }],
+    ["NaN minimum", { inRowCm: { min: Number.NaN, max: 10 }, betweenRowsCm: { min: 10, max: 10 } }],
+    ["infinite minimum", { inRowCm: { min: Number.POSITIVE_INFINITY, max: 10 }, betweenRowsCm: { min: 10, max: 10 } }],
+    ["missing axis", { inRowCm: { min: 10, max: 10 }, betweenRowsCm: null }],
+  ] as const)("marks %s final spacing as invalid", (_label, axes) => {
+    const base = compactCrop("marchew");
+    const invalidCrop: CropCatalogEntry = {
+      ...base,
+      spacing: { ...base.spacing!, ...axes },
+    };
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
+      crops: [{ crop: invalidCrop, proportion: 100 }],
+      relations: [],
+    });
+
+    expect(result.spaces[0]?.positions).toEqual([]);
+    expect(result.omissions).toContainEqual(
+      expect.objectContaining({ cropId: "marchew", reason: "invalid_spacing" }),
+    );
+    expect(result.cropSummaries[0]).toMatchObject({ dataConfidence: "medium", spacingStage: "final_planting" });
+  });
+
+  it("omits positive verified axes when they describe a non-final planting stage", () => {
+    const base = compactCrop("marchew");
+    const nonFinalCrop: CropCatalogEntry = {
+      ...base,
+      spacing: { ...base.spacing!, isFinalPlanting: false, stage: "sowing" },
+    };
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
+      crops: [{ crop: nonFinalCrop, proportion: 100 }],
+      relations: [],
+    });
+
+    expect(result.spaces[0]?.positions).toEqual([]);
+    expect(result.omissions).toContainEqual(
+      expect.objectContaining({ cropId: "marchew", reason: "non_final_spacing" }),
+    );
+  });
+
+  it("preserves low confidence and post-thinning stage through positions and summaries", () => {
+    const base = compactCrop("marchew", 10, 20);
+    const lowConfidenceCrop: CropCatalogEntry = {
+      ...base,
+      spacing: { ...base.spacing!, confidence: "low", stage: "thinning" },
+    };
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 30, lengthCm: 20 }],
+      crops: [{ crop: lowConfidenceCrop, proportion: 100 }],
+      relations: [],
+    });
+
+    expect(result.spaces[0]?.positions.length).toBeGreaterThan(0);
+    expect(result.spaces[0]?.positions.every((position) => position.confidence === "low" && position.stage === "thinning")).toBe(true);
+    expect(result.cropSummaries[0]).toMatchObject({ dataConfidence: "low", spacingStage: "thinning" });
+  });
+
+  it("checks production carrot, onion, and broccoli spacing independently in a mixed layout", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "mixed-bed", widthCm: 200, lengthCm: 100 }],
+      crops: [
+        { crop: crop("marchew"), proportion: 30 },
+        { crop: crop("cebula"), proportion: 30 },
+        { crop: crop("brokul"), proportion: 40 },
+      ],
+    });
+    const expectedSpacing: Record<string, { inRowCm: number; betweenRowsCm: number }> = {
+      marchew: { inRowCm: 7, betweenRowsCm: 20 },
+      cebula: { inRowCm: 5, betweenRowsCm: 30 },
+      brokul: { inRowCm: 40, betweenRowsCm: 50 },
+    };
+    const positions = result.spaces.flatMap((space) => space.positions);
+
+    expect(positions.length).toBeGreaterThan(0);
+    for (const spaceResult of result.spaces) {
+      const { space, positions: spacePositions } = spaceResult;
+      for (const position of spacePositions) {
+        const spacing = expectedSpacing[position.cropId];
+        if (!spacing) throw new Error("Missing independent spacing fixture");
+        expect(position.xCm).toBeGreaterThanOrEqual(spacing.inRowCm / 2);
+        expect(position.xCm).toBeLessThanOrEqual(space.widthCm - spacing.inRowCm / 2);
+        expect(position.yCm).toBeGreaterThanOrEqual(spacing.betweenRowsCm / 2);
+        expect(position.yCm).toBeLessThanOrEqual(space.lengthCm - spacing.betweenRowsCm / 2);
+        expect(position.spacing).toEqual(spacing);
+      }
+      for (const [leftIndex, left] of spacePositions.entries()) {
+        for (const right of spacePositions.slice(leftIndex + 1)) {
+          const leftSpacing = expectedSpacing[left.cropId];
+          const rightSpacing = expectedSpacing[right.cropId];
+          if (!leftSpacing || !rightSpacing) throw new Error("Missing independent spacing fixture");
+          const dx = Math.abs(left.xCm - right.xCm);
+          const dy = Math.abs(left.yCm - right.yCm);
+          expect(
+            dx >= Math.max(leftSpacing.inRowCm, rightSpacing.inRowCm) ||
+              dy >= Math.max(leftSpacing.betweenRowsCm, rightSpacing.betweenRowsCm),
+          ).toBe(true);
+        }
+      }
+    }
+
+    expect(result.cropSummaries.map((summary) => summary.targetPercentage)).toEqual([40, 30, 30]);
+    expect(result.cropSummaries.reduce((sum, summary) => sum + summary.actualCount, 0)).toBe(positions.length);
+    expect(result.cropSummaries.reduce((sum, summary) => sum + summary.actualPercentage, 0)).toBeCloseTo(100);
+    expect(
+      positions
+        .filter((position) => position.cropId === "marchew")
+        .every((position) => position.confidence === "low" && position.stage === "thinning"),
+    ).toBe(true);
+    expect(result.cropSummaries.find((summary) => summary.cropId === "marchew")).toMatchObject({
+      targetPercentage: 30,
+      dataConfidence: "low",
+      spacingStage: "thinning",
     });
   });
 

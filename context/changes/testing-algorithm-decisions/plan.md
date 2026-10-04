@@ -189,18 +189,18 @@ Bez migracji SQL/backfillu. Wersja algorytmu 3 zmienia fingerprint, starszy wyni
 
 #### Automated
 
-- [x] 1.1 Ręczne przypadki obu osi, dokładnego dopasowania, braku miejsca i 15×15 przechodzą z marginesem połowy rozstawy.
-- [x] 1.2 Snapshot wersji 2 jest stale wobec wersji 3; bieżący jest current, starszy wynik pozostaje czytelny.
-- [x] 1.3 `npm run test:unit`, `npx astro check` i `npm run lint` przechodzą po zmianie marginesu.
+- [x] 1.1 Ręczne przypadki obu osi, dokładnego dopasowania, braku miejsca i 15×15 przechodzą z marginesem połowy rozstawy. — a3ce5a0
+- [x] 1.2 Snapshot wersji 2 jest stale wobec wersji 3; bieżący jest current, starszy wynik pozostaje czytelny. — a3ce5a0
+- [x] 1.3 `npm run test:unit`, `npx astro check` i `npm run lint` przechodzą po zmianie marginesu. — a3ce5a0
 
 ### Phase 2: Testy decyzji i danych
 
 #### Automated
 
-- [ ] 2.1 Niezależne fixture dowodzą progów par, granic obu osi i rozdziału geometrii od lokalnego sąsiedztwa.
-- [ ] 2.2 Przypadki 80/20 i caution dowodzą wyniku 2/1 bez konfliktu samego zaokrąglenia; dotychczasowe priorytety i limity pozostają chronione.
-- [ ] 2.3 invalid_spacing, non_final_spacing, final low i odwzorowanie katalogu mają znaczące asercje z niezależnymi oczekiwaniami.
-- [ ] 2.4 Produkcyjna marchew i miks 30/30/40 zachowują dwie osie, marginesy i niepewność danych; `npm run test:unit` przechodzi.
+- [x] 2.1 Niezależne fixture dowodzą progów par, granic obu osi i rozdziału geometrii od lokalnego sąsiedztwa.
+- [x] 2.2 Przypadki 80/20 i caution dowodzą wyniku 2/1 bez konfliktu samego zaokrąglenia; dotychczasowe priorytety i limity pozostają chronione.
+- [x] 2.3 invalid_spacing, non_final_spacing, final low i odwzorowanie katalogu mają znaczące asercje z niezależnymi oczekiwaniami.
+- [x] 2.4 Produkcyjna marchew i miks 30/30/40 zachowują dwie osie, marginesy i niepewność danych; `npm run test:unit` przechodzi.
 
 ### Phase 3: Weryfikacja i instrukcje
 
