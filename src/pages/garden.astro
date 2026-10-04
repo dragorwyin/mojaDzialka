@@ -150,6 +150,7 @@ const cropNames: Record<string, string> = Object.fromEntries(
             widthCm: String(space.width_cm),
             lengthCm: String(space.length_cm),
           }))}
+          hasSavedPlan={currentPlan !== null || currentPlanLoadError}
           error={error}
           saved={saved}
           client:load

@@ -32,12 +32,14 @@ export const POST: APIRoute = async (context) => {
 
   const form = await context.request.formData();
   const names = getStrings(form, "spaceName");
+  const ids = getStrings(form, "spaceId");
   const types = getStrings(form, "spaceType");
   const widths = getStrings(form, "widthCm");
   const lengths = getStrings(form, "lengthCm");
 
   if (
     !names.length ||
+    names.length !== ids.length ||
     names.length !== types.length ||
     names.length !== widths.length ||
     names.length !== lengths.length
@@ -47,6 +49,7 @@ export const POST: APIRoute = async (context) => {
 
   const spaces = names.map((rawName, index) => {
     const name = rawName.trim();
+    const id = ids[index].trim() || null;
     const width = parseDimension(widths[index]);
     const length = parseDimension(lengths[index]);
     const spaceType = types[index];
@@ -55,6 +58,7 @@ export const POST: APIRoute = async (context) => {
       !name ||
       name.length > MAX_NAME_LENGTH ||
       !VALID_SPACE_TYPES.has(spaceType) ||
+      (id !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) ||
       width === null ||
       length === null
     ) {
@@ -62,6 +66,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     return {
+      id,
       name,
       space_type: spaceType,
       width_cm: width,
@@ -70,6 +75,8 @@ export const POST: APIRoute = async (context) => {
   });
 
   if (spaces.some((space) => space === null)) return redirectWithError(context, "invalid_spaces");
+  const submittedIds = spaces.flatMap((space) => (space?.id ? [space.id] : []));
+  if (new Set(submittedIds).size !== submittedIds.length) return redirectWithError(context, "invalid_spaces");
 
   const { error } = await supabase.rpc("save_garden_spaces", { p_spaces: spaces });
   if (error) {

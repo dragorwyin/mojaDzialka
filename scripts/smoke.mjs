@@ -11,6 +11,7 @@ const secondEmail = `smoke-secondary-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 const secondJar = new Map();
+let savedSpaceId = null;
 // POSTs opt into retries only when repeating them preserves the same resource state.
 const MAX_RETRIES = 2;
 const RETRY_DELAYS_MS = [500, 1_000];
@@ -262,7 +263,13 @@ const steps = [
     () =>
       request("/api/garden", {
         method: "POST",
-        form: { spaceName: "Skrzynia testowa", spaceType: "bed", widthCm: "120", lengthCm: "80" },
+        form: {
+          spaceId: "",
+          spaceName: "Skrzynia testowa",
+          spaceType: "bed",
+          widthCm: "120",
+          lengthCm: "80",
+        },
       }),
     { status: 302, location: "/garden?saved=1" },
   ],
@@ -316,6 +323,81 @@ const steps = [
     { status: 200, includes: ["garden-plan-ssr", 'data-plan-status="current"', "Układ działki"] },
   ],
   [
+    "garden form exposes the stable ID of its saved space",
+    async () => {
+      const result = await request("/garden");
+      savedSpaceId = result.body.match(/name="spaceId" value="([0-9a-f-]+)"/i)?.[1] ?? null;
+      return result;
+    },
+    { status: 200, includes: 'name="spaceId"' },
+  ],
+  [
+    "updating dimensions preserves the current plan and space ID",
+    () => {
+      if (!savedSpaceId) throw new Error("saved garden space ID missing from SSR form");
+      return request("/api/garden", {
+        method: "POST",
+        form: {
+          spaceId: savedSpaceId,
+          spaceName: "Skrzynia testowa",
+          spaceType: "bed",
+          widthCm: "121",
+          lengthCm: "80",
+        },
+      });
+    },
+    { status: 302, location: "/garden?saved=1" },
+  ],
+  [
+    "dimension changes keep the previous plan visible as stale",
+    () => request("/garden"),
+    { status: 200, includes: ['data-plan-status="stale"', "Plan nieaktualny", "Układ działki"] },
+  ],
+  [
+    "adding a space through the endpoint clears the saved plan",
+    () => {
+      if (!savedSpaceId) throw new Error("saved garden space ID missing from SSR form");
+      const form = new URLSearchParams();
+      form.append("spaceId", savedSpaceId);
+      form.append("spaceName", "Skrzynia testowa");
+      form.append("spaceType", "bed");
+      form.append("widthCm", "120");
+      form.append("lengthCm", "80");
+      form.append("spaceId", "");
+      form.append("spaceName", "Sektor testowy");
+      form.append("spaceType", "sector");
+      form.append("widthCm", "160");
+      form.append("lengthCm", "100");
+      return request("/api/garden", { method: "POST", form });
+    },
+    { status: 302, location: "/garden?saved=1" },
+  ],
+  [
+    "structural space changes remove the plan and retain existing space IDs",
+    async () => {
+      const result = await request("/garden");
+      const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
+        (match) => match[1],
+      );
+      if (currentSpaceIds[0] !== savedSpaceId) throw new Error("saved space ID changed after adding another space");
+      return result;
+    },
+    {
+      status: 200,
+      includes: ['data-plan-status="empty"', "Skrzynia testowa", "Sektor testowy"],
+    },
+  ],
+  [
+    "garden plan can be regenerated after a structural space change",
+    () => request("/api/garden-plan", { method: "POST", json: {} }),
+    { status: 200, includes: ['"saved":true', '"inputFingerprint"', '"plan"'] },
+  ],
+  [
+    "regenerated plan reflects the saved structural change",
+    () => request("/garden"),
+    { status: 200, includes: ['data-plan-status="current"', "Sektor testowy"] },
+  ],
+  [
     "a separate signed-in account can be created for private plan isolation",
     () =>
       request("/api/auth/signup", {
@@ -352,6 +434,14 @@ const steps = [
         json: { crops: [{ cropId: "pomidor", proportion: 100 }] },
       }),
     { status: 422, includes: '"error":"missing_crops"' },
+  ],
+  [
+    "failed plan generation leaves the previous plan visible as stale",
+    () => request("/garden"),
+    {
+      status: 200,
+      includes: ['data-plan-status="stale"', "Plan nieaktualny", "Układ działki"],
+    },
   ],
   [
     "garden crop mix can be changed after the saved plan becomes stale",

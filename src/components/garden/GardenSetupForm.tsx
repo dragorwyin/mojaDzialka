@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 
 type SpaceType = "bed" | "sector";
@@ -13,8 +13,13 @@ interface GardenSpace {
 
 interface Props {
   initialSpaces: GardenSpace[];
+  hasSavedPlan: boolean;
   error: string | null;
   saved: boolean;
+}
+
+interface EditableGardenSpace extends GardenSpace {
+  persistedId: string | null;
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -33,23 +38,47 @@ function createSpace(index: number): GardenSpace {
   };
 }
 
-export default function GardenSetupForm({ initialSpaces, error, saved }: Props) {
-  const [spaces, setSpaces] = useState<GardenSpace[]>(initialSpaces.length ? initialSpaces : [createSpace(1)]);
+export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, saved }: Props) {
+  const [spaces, setSpaces] = useState<EditableGardenSpace[]>(
+    initialSpaces.length
+      ? initialSpaces.map((space) => ({ ...space, persistedId: space.id }))
+      : [{ ...createSpace(1), persistedId: null }],
+  );
 
-  function updateSpace(index: number, patch: Partial<GardenSpace>) {
+  function updateSpace(index: number, patch: Partial<EditableGardenSpace>) {
     setSpaces((current) => current.map((space, spaceIndex) => (spaceIndex === index ? { ...space, ...patch } : space)));
   }
 
   function addSpace() {
-    setSpaces((current) => [...current, { ...createSpace(current.length + 1), id: crypto.randomUUID() }]);
+    setSpaces((current) => [
+      ...current,
+      { ...createSpace(current.length + 1), id: crypto.randomUUID(), persistedId: null },
+    ]);
   }
 
   function removeSpace(index: number) {
     setSpaces((current) => (current.length === 1 ? current : current.filter((_, spaceIndex) => spaceIndex !== index)));
   }
 
+  function confirmStructuralChange(event: SubmitEvent<HTMLFormElement>) {
+    const hasAddedSpace = spaces.some((space) => space.persistedId === null);
+    const hasRemovedSpace = initialSpaces.some(
+      (initialSpace) => !spaces.some((space) => space.persistedId === initialSpace.id),
+    );
+
+    if (
+      hasSavedPlan &&
+      (hasAddedSpace || hasRemovedSpace) &&
+      !window.confirm(
+        "Dodanie lub usunięcie skrzyni albo sektora usunie zapisany układ. Po zapisaniu zmian możesz wygenerować nowy plan. Czy kontynuować?",
+      )
+    ) {
+      event.preventDefault();
+    }
+  }
+
   return (
-    <form method="POST" action="/api/garden" className="space-y-6">
+    <form method="POST" action="/api/garden" onSubmit={confirmStructuralChange} className="space-y-6">
       {saved && (
         <p
           className="border-garden-success-border/30 bg-garden-success-surface/10 text-garden-success rounded-lg border px-4 py-3 text-sm"
@@ -71,6 +100,7 @@ export default function GardenSetupForm({ initialSpaces, error, saved }: Props) 
         {spaces.map((space, index) => (
           <fieldset key={space.id} className="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4">
             <legend className="text-garden-muted px-2 text-sm font-semibold">Przestrzeń {index + 1}</legend>
+            <input type="hidden" name="spaceId" value={space.persistedId ?? ""} />
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-garden-muted/80 space-y-2 text-sm">
                 <span>Nazwa</span>
