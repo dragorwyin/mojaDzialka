@@ -129,14 +129,14 @@ Dodać migrację zastępującą funkcję `save_garden_spaces`. Dotychczasowe rek
 
 #### Automated
 
-- [x] 1.1 Testy SQL potwierdzają zachowanie ID przy edycji, prawidłowe wykrywanie dodania/usunięcia, czyszczenie planu tylko dla zmiany zestawu przestrzeni oraz odrzucenie ID należącego do innego użytkownika.
-- [x] 1.2 Test SQL potwierdza, że błąd zapisu nie usuwa planu ani nie częściowo zmienia przestrzeni.
-- [x] 1.3 Testy smoke potwierdzają, że zapis wymiarów lub upraw oznacza poprzedni plan jako stale, ponowne przeliczenie tworzy jeden bieżący wynik, a błędny/nieudany przebieg nie oznacza starego wyniku jako current.
-- [x] 1.4 `npm run test:unit`, `npm run test:db`, `npx astro check`, `npm run lint`, `npm run build` i `npm run smoke` przechodzą.
+- [x] 1.1 Testy SQL potwierdzają zachowanie ID przy edycji, prawidłowe wykrywanie dodania/usunięcia, czyszczenie planu tylko dla zmiany zestawu przestrzeni oraz odrzucenie ID należącego do innego użytkownika. — c5ac94e
+- [x] 1.2 Test SQL potwierdza, że błąd zapisu nie usuwa planu ani nie częściowo zmienia przestrzeni. — c5ac94e
+- [x] 1.3 Testy smoke potwierdzają, że zapis wymiarów lub upraw oznacza poprzedni plan jako stale, ponowne przeliczenie tworzy jeden bieżący wynik, a błędny/nieudany przebieg nie oznacza starego wyniku jako current. — c5ac94e
+- [x] 1.4 `npm run test:unit`, `npm run test:db`, `npx astro check`, `npm run lint`, `npm run build` i `npm run smoke` przechodzą. — c5ac94e
 
 #### Manual
 
-- [x] 1.5 Przy istniejącym planie dodanie lub usunięcie skrzyni albo sektora pyta o potwierdzenie; anulowanie pozostawia wpisane zmiany i zapisany plan, a potwierdzenie zapisuje przestrzenie i usuwa plan.
-- [x] 1.6 Gdy planu nie ma, dodanie/usunięcie przestrzeni nie pokazuje ostrzeżenia o utracie nieistniejącego wyniku.
-- [x] 1.7 Zmiana samych wymiarów, upraw lub proporcji zapisuje dane bez dialogu utraty; diagram jest widoczny jako nieaktualny, a CTA pozwala przeliczyć plan.
-- [x] 1.8 Po ponownym przeliczeniu widać nowy wynik; po błędzie wcześniejszy plan pozostaje oznaczony jako nieaktualny lub — jeśli został usunięty przez potwierdzoną zmianę przestrzeni — widok pokazuje brak planu.
+- [x] 1.5 Przy istniejącym planie dodanie lub usunięcie skrzyni albo sektora pyta o potwierdzenie; anulowanie pozostawia wpisane zmiany i zapisany plan, a potwierdzenie zapisuje przestrzenie i usuwa plan. — c5ac94e
+- [x] 1.6 Gdy planu nie ma, dodanie/usunięcie przestrzeni nie pokazuje ostrzeżenia o utracie nieistniejącego wyniku. — c5ac94e
+- [x] 1.7 Zmiana samych wymiarów, upraw lub proporcji zapisuje dane bez dialogu utraty; diagram jest widoczny jako nieaktualny, a CTA pozwala przeliczyć plan. — c5ac94e
+- [x] 1.8 Po ponownym przeliczeniu widać nowy wynik; po błędzie wcześniejszy plan pozostaje oznaczony jako nieaktualny lub — jeśli został usunięty przez potwierdzoną zmianę przestrzeni — widok pokazuje brak planu. — c5ac94e
