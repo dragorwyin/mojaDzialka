@@ -23,6 +23,7 @@ PR: https://github.com/dragorwyin/mojaDzialka/pull/1
 - Green hosted run after the CI workflow landed: https://github.com/dragorwyin/mojaDzialka/actions/runs/37237780709 — both `ci` and `smoke` passed.
 - Controlled failure run: https://github.com/dragorwyin/mojaDzialka/actions/runs/37238401746 — `ci` passed; `smoke` failed on the temporary E2E probe in both viewports; the failure-artifact upload step and Supabase cleanup passed. GitHub lists the unexpired `playwright-failure-artifacts` artifact (694 KB): https://github.com/dragorwyin/mojaDzialka/actions/runs/37238401746/artifacts/11315574647.
 - Final green run after reverting the probe: https://github.com/dragorwyin/mojaDzialka/actions/runs/37238895670 — both jobs passed; logs show all 56 smoke steps, 22 E2E tests, browser artifact upload, and Supabase cleanup. The controlled probe commit was `1392043`; its removal is commit `3983fac`.
+- Final green run after the epilogue commit `390bf3d`: https://github.com/dragorwyin/mojaDzialka/actions/runs/37239991616 — both `ci` and `smoke` passed on the final branch tip.
 
 The workflow installs Chromium with Linux dependencies, runs smoke followed by E2E against the loopback preview, uploads Playwright report/results on completion, and is triggered by pull requests to `main`.
 

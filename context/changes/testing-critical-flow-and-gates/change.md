@@ -1,7 +1,7 @@
 ---
 change_id: testing-critical-flow-and-gates
 title: Krytyczny przepływ przeglądarkowy i bramki jakości
-status: implemented
+status: impl_reviewed
 created: 2026-10-04
 updated: 2026-10-05
 archived_at: null
