@@ -55,9 +55,16 @@ export const POST: APIRoute = async (context) => {
   } = await supabase.auth.getUser();
   if (!user) return jsonResponse({ error: "unauthorized" }, 401);
 
-  const { data: garden, error: gardenError } = await supabase.from("gardens").select("id").maybeSingle();
+  const { data: garden, error: gardenError } = await supabase
+    .from("gardens")
+    .select("id, input_revision")
+    .maybeSingle();
   if (gardenError) return jsonResponse({ error: "load_failed" }, 500);
   if (!garden) return jsonResponse({ error: "missing_garden" }, 422);
+  const expectedInputRevision = Number(garden.input_revision);
+  if (!Number.isSafeInteger(expectedInputRevision) || expectedInputRevision < 0) {
+    return jsonResponse({ error: "load_failed" }, 500);
+  }
 
   const [{ data: spaceRows, error: spacesError }, { data: cropRows, error: cropsError }] = await Promise.all([
     supabase
@@ -115,17 +122,16 @@ export const POST: APIRoute = async (context) => {
   }
   const generatedAt = new Date().toISOString();
 
-  const { error: saveError } = await supabase.from("garden_plans").upsert(
-    {
-      garden_id: garden.id,
-      plan,
-      input_snapshot: snapshot,
-      input_fingerprint: inputFingerprint,
-      generated_at: generatedAt,
-    },
-    { onConflict: "garden_id" },
-  );
-  if (saveError) return jsonResponse({ error: "save_failed" }, 500);
+  const saveResult = await supabase.rpc("save_garden_plan_if_current", {
+    p_expected_input_revision: expectedInputRevision,
+    p_plan: plan,
+    p_input_snapshot: snapshot,
+    p_input_fingerprint: inputFingerprint,
+    p_generated_at: generatedAt,
+  });
+  if (saveResult.error) return jsonResponse({ error: "save_failed" }, 500);
+  const saved: unknown = saveResult.data;
+  if (saved !== true) return jsonResponse({ error: "inputs_changed" }, 409);
 
   return jsonResponse({ saved: true, inputFingerprint, generatedAt, plan }, 200);
 };

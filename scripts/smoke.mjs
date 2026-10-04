@@ -12,6 +12,7 @@ const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 const secondJar = new Map();
 let savedSpaceId = null;
+let savedSectorId = null;
 // POSTs opt into retries only when repeating them preserves the same resource state.
 const MAX_RETRIES = 2;
 const RETRY_DELAYS_MS = [500, 1_000];
@@ -380,6 +381,8 @@ const steps = [
         (match) => match[1],
       );
       if (currentSpaceIds[0] !== savedSpaceId) throw new Error("saved space ID changed after adding another space");
+      if (currentSpaceIds.length !== 2) throw new Error("expected the saved garden to contain two spaces");
+      savedSectorId = currentSpaceIds[1];
       return result;
     },
     {
@@ -396,6 +399,47 @@ const steps = [
     "regenerated plan reflects the saved structural change",
     () => request("/garden"),
     { status: 200, includes: ['data-plan-status="current"', "Sektor testowy"] },
+  ],
+  [
+    "removing a space through the endpoint clears the saved plan",
+    () => {
+      if (!savedSpaceId || !savedSectorId) throw new Error("saved garden space IDs missing from smoke session");
+      return request("/api/garden", {
+        method: "POST",
+        form: {
+          spaceId: savedSpaceId,
+          spaceName: "Skrzynia testowa",
+          spaceType: "bed",
+          widthCm: "120",
+          lengthCm: "80",
+        },
+      });
+    },
+    { status: 302, location: "/garden?saved=1" },
+  ],
+  [
+    "structural space removal keeps only the retained ID and leaves no plan",
+    async () => {
+      const result = await request("/garden");
+      const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
+        (match) => match[1],
+      );
+      if (currentSpaceIds.length !== 1 || currentSpaceIds[0] !== savedSpaceId) {
+        throw new Error("removing a space did not retain exactly the original space ID");
+      }
+      return result;
+    },
+    { status: 200, includes: ['data-plan-status="empty"', "Skrzynia testowa"], excludes: "Sektor testowy" },
+  ],
+  [
+    "garden plan can be regenerated after removing a structural space",
+    () => request("/api/garden-plan", { method: "POST", json: {} }),
+    { status: 200, includes: ['"saved":true', '"inputFingerprint"', '"plan"'] },
+  ],
+  [
+    "regenerated plan stays current after structural space removal",
+    () => request("/garden"),
+    { status: 200, includes: ['data-plan-status="current"', "Skrzynia testowa"], excludes: "Sektor testowy" },
   ],
   [
     "a separate signed-in account can be created for private plan isolation",

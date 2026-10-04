@@ -1,5 +1,6 @@
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { shouldBlockGardenSpaceSubmit } from "@/lib/garden-space-change";
 
 type SpaceType = "bed" | "sector";
 
@@ -61,18 +62,14 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
   }
 
   function confirmStructuralChange(event: SubmitEvent<HTMLFormElement>) {
-    const hasAddedSpace = spaces.some((space) => space.persistedId === null);
-    const hasRemovedSpace = initialSpaces.some(
-      (initialSpace) => !spaces.some((space) => space.persistedId === initialSpace.id),
-    );
+    const shouldBlockSubmit = shouldBlockGardenSpaceSubmit({
+      hasSavedPlan,
+      initialSpaceIds: initialSpaces.map((space) => space.id),
+      currentSpaces: spaces,
+      confirm: (message) => window.confirm(message),
+    });
 
-    if (
-      hasSavedPlan &&
-      (hasAddedSpace || hasRemovedSpace) &&
-      !window.confirm(
-        "Dodanie lub usunięcie skrzyni albo sektora usunie zapisany układ. Po zapisaniu zmian możesz wygenerować nowy plan. Czy kontynuować?",
-      )
-    ) {
+    if (shouldBlockSubmit) {
       event.preventDefault();
     }
   }
