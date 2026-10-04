@@ -3,7 +3,7 @@ project: MojaDziałka
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-10-04
+updated: 2026-10-05
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -45,7 +45,7 @@ Amator z własnym warzywnikiem ma mało czasu na naukę i planowanie, a pomyłki
 | S-03 | select-crops-and-proportions | Użytkownik może wybrać warzywa z ręcznie zweryfikowanego katalogu i przypisać im liczbowe proporcje. | F-01, S-01 | FR-004 | done |
 | S-04 | generate-garden-layout | Użytkownik może wygenerować graficzny układ z uwzględnieniem ograniczeń, konfliktów i wolnego miejsca. | F-01, S-02, S-03 | FR-006, FR-007, US-01 | done |
 | S-05 | update-and-recalculate-plan | Użytkownik może zmienić dane wejściowe, unieważnić nieaktualny układ i przeliczyć cały plan ponownie. | F-01, S-04 | FR-003, FR-005 | done |
-| S-06 | show-sowing-and-seedling-dates | Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac w sezonie. | F-01, S-03, S-04 | FR-008, US-01 | in-progress |
+| S-06 | show-sowing-and-seedling-dates | Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac w sezonie. | F-01, S-03, S-04 | FR-008, US-01 | done |
 
 ## Streams
 
@@ -158,7 +158,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
   - Jakie zweryfikowane źródła i okna miesięczne wyznaczają orientacyjne terminy dla warunków w Polsce? Research wskazał kandydatów, ale wymaga jeszcze adjudykacji źródeł przed zapisaniem danych produkcyjnych. — Owner: team. Block: yes.
   - W jaki sposób użytkownik otrzymuje przypomnienia o pracach? — Owner: user. Block: no.
 - **Risk:** Orientacyjne okna są zgodne z PRD i nie obiecują dokładności co do dnia; źródło danych musi być sprawdzone, zanim terminy trafią do użytkownika.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -199,3 +199,4 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 - **S-03: Użytkownik może wyszukać i wybrać warzywa z ograniczonego katalogu oraz wpisać dla każdego liczbowe proporcje.** — Archived 2026-09-27 → `context/archive/2026-09-27-select-crops-and-proportions/`. Lesson: —.
 - **S-04: Użytkownik może wygenerować graficzną propozycję rozmieszczenia, zobaczyć konflikty odstępów lub powierzchni oraz niewykorzystane miejsca.** — Archived 2026-10-03 → `context/archive/2026-09-28-generate-garden-layout/`. Lesson: —.
 - **S-05: Użytkownik może zmienić wymiary, wybrane warzywa lub proporcje; przy dodaniu albo usunięciu skrzyni dostaje ostrzeżenie, że dotychczasowy układ zostanie usunięty, a po zmianach może przeliczyć cały plan ponownie.** — Archived 2026-10-04 → `context/archive/2026-10-03-update-and-recalculate-plan/`. Lesson: —.
+- **S-06: Użytkownik może zobaczyć orientacyjne terminy siewu, przygotowania rozsady i prac sezonowych dla wybranych upraw w Polsce.** — Archived 2026-10-05 → `context/archive/2026-10-04-show-sowing-and-seedling-dates/`. Lesson: —.
