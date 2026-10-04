@@ -9,7 +9,7 @@ tags: [research, auth, latency]
 status: partial
 last_updated: 2026-10-04
 last_updated_by: Codex
-last_updated_note: "Dodano raportowane czasy produkcyjne i wyniki ochrony tras; mapowanie żądań oraz test starej sesji wymagają doprecyzowania"
+last_updated_note: "Potwierdzono aktywny projekt produkcyjny, zastosowano brakujące migracje i użytkownik potwierdził działanie logowania oraz /garden"
 ---
 
 # Research: opóźnienie signin
@@ -93,3 +93,25 @@ Read-only `wrangler deployments list --name moja-dzialka-prod --json` (telemetri
 Operator zgłosił dla produkcji następujący przebieg: pierwsze `signin` — 2,45 s; dalej `signin` — 377 ms, `signin failed` — 284 ms, ponowne `signin` — 326 ms, `/dashboard` — 338 ms. Dokładne powiązanie powtarzających się nazw z GET/POST i stanem sesji nie zostało podane, więc czasy zachowano jako zgłoszoną sekwencję, bez przypisywania ich do konkretnej fazy żądania. Żadna podana próba nie przekroczyła 20 s; operator nie dostarczył slow trace ani liczby/statusów wywołań `refresh_token`.
 
 Operator potwierdził, że pierwszy pomiar signin 2,45 s był wykonany ze starą sesją/cookie. Anonimowe wejście do `/dashboard` i `/garden` kierowało do signin; po poprawnym logowaniu działają `/dashboard` (338 ms) i `/garden`, oba z dobrą prędkością. Kody HTTP i dokładne mapowanie pozostałych czasów do żądań GET/POST nie zostały podane. Produkcja nadal działa na wersji z 2026-09-25, więc wyniki nie walidują commita `de0d70f`.
+
+## Uzupełnienie — 2026-10-04: produkcyjny projekt Supabase jest wstrzymany
+
+Użytkownik zgłasza, że produkcyjny signin pokazuje `Email or password is incorrect`, a signup `Could not create your account. Please try again.`; użytkownik doprecyzował, że problem występował również przed wdrożeniem poprawki opóźnienia, więc nie przypisujemy go temu deployowi i nie wykonujemy rollbacku na tej podstawie.
+
+Zrzut Supabase Dashboard dostarczony przez użytkownika pokazuje projekt `MojaDzialka` w stanie `paused`. Tekst UI informuje, że dane (w tym backupy i obiekty storage) pozostają bezpieczne oraz że można wznowić projekt z dashboardu do 2027-11-06. Nie widać na zrzucie project ref, dlatego nie potwierdzono, że to dokładnie projekt wskazany przez produkcyjny sekret `SUPABASE_URL`.
+
+Read-only `wrangler secret list --name moja-dzialka-prod` potwierdziło obecność nazw sekretów `SUPABASE_URL` i `SUPABASE_KEY`; ich wartości nie są odczytywalne tym poleceniem i nie zostały ujawnione. Podczas krótkiego podglądu bieżącego Workera odnotowano produkcyjny `POST /api/auth/signup` zakończony HTTP 302 bez wyjątku runtime. To nie oznacza powodzenia Auth: kod `src/pages/api/auth/signup.ts:32-35` przekierowuje do `signup_failed`, gdy `signUp()` zwraca błąd, a `src/pages/api/auth/signin.ts:24-28` mapuje błąd `signInWithPassword()` na ogólny kod `signin_failed`. Worker nie zapisuje obecnie kodu błędu Supabase, więc przyczyny z odpowiedzi Auth nie da się określić z tego śladu.
+
+Najlepiej wsparta diagnoza bieżącej niemożności auth jest warunkowa: jeśli projekt na zrzucie jest tym samym projektem, do którego wskazuje produkcyjny `SUPABASE_URL`, jego stan `paused` wyjaśnia niedostępność signup i signin. Zgodnie z dokumentacją Supabase Auth wyłączona rejestracja lub provider email może zwracać `signup_disabled` albo `email_provider_disabled`; błędny/nieistniejący użytkownik przy password sign-in może zwracać `invalid_credentials`. Zob. oficjalne [Auth error codes](https://github.com/supabase/auth/blob/master/_autodocs/api-reference/authentication.md) i [general configuration](https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/auth/general-configuration.mdx).
+
+W archiwalnym raporcie wdrożeniowym zapisano ręczne powodzenie produkcyjnego signup, dashboardu, signout i ponownego signin 2026-09-25 (`context/archive/2026-09-24-email-account-access/reviews/impl-review-phase-2.md`). To historyczny test, nie potwierdzenie aktualnego stanu projektu ani tego, że test korzystał z tego samego project ref co obecny sekret.
+
+W tym momencie nie potwierdzono jeszcze project ref ani testu po wznowieniu; ustalenia te zostały później uzupełnione poniżej.
+
+## Uzupełnienie — 2026-10-04: CLI, schemat produkcyjny i weryfikacja
+
+Zalogowane Supabase CLI zwróciło projekt `MojaDzialka`, ref `khygfcusgqawytxoabiy`, region `eu-west-1`, status `ACTIVE_HEALTHY`. Repozytorium zostało z nim podlinkowane. Przed zmianą `supabase migration list` wykazywało brak wszystkich sześciu lokalnych migracji po stronie zdalnej; `supabase db push --dry-run` potwierdziło ich zakres. Następnie za zgodą użytkownika wykonano `supabase db push`; ponowna lista potwierdziła zgodność lokalnych i zdalnych identyfikatorów migracji.
+
+Migracje tworzą schemat `gardens`, `garden_spaces`, `garden_crops`, `garden_plans`, polityki dostępu RLS i funkcje zapisu/ochrony planu. Brak schematu używanego przez `/garden` był przyczyną komunikatu „Zapisywanie działki jest chwilowo niedostępne” pojawiającego się już przy wejściu na stronę. Po zastosowaniu migracji użytkownik potwierdził, że `/garden` działa. Użytkownik potwierdził też, że signin działa z dobrą prędkością; wcześniejsze podane pomiary produkcyjne nie przekraczały 2,45 s.
+
+Dokładny mechanizm produkcyjnego requestu z pierwotnego zrzutu 25,46–25,49 s nie został uchwycony w slow trace, więc nie przypisujemy mu na pewno stanu pauzy Supabase. Lokalny trace potwierdza retry `refresh_token` jako przyczynę lokalnego opóźnienia, a zmiana fazy 1 usuwa oczekiwanie na odświeżanie sesji z publicznej ścieżki signin. Bieżące zachowanie produkcji jest poprawne według testu użytkownika; pozostała luka dotyczy historycznego, dokładnego rozkładu przyczyn requestu powyżej 20 s.
