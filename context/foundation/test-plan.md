@@ -50,7 +50,7 @@ Impact High: utrata/dostęp/publiczny błąd; Medium: degradacja; Low: kosmetyka
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Poprawność decyzji algorytmu | Dowieść geometrii/priorytetów/jawności braków. | #1, #5, #6 | unit + contract | change opened | context/changes/testing-algorithm-decisions/ |
+| 1 | Poprawność decyzji algorytmu | Dowieść geometrii/priorytetów/jawności braków. | #1, #5, #6 | unit + contract | complete | context/changes/testing-algorithm-decisions/ |
 | 2 | Bezpieczny zapis i dostęp | Chronić zapis/prywatność podczas błędów. | #2, #3, #4 | DB/API integration | not started | — |
 | 3 | Krytyczny przepływ i bramki | Domknąć interakcje/CI. | #1–#6 | e2e + gates | not started | — |
 
