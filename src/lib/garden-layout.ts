@@ -428,8 +428,10 @@ function makeCandidates(space: GardenLayoutSpace, crop: UsableCrop): CandidateGr
   const candidates: Candidate[] = [];
   const startX = crop.inRowCm / 2;
   const startY = crop.betweenRowsCm / 2;
-  const columns = Math.max(0, Math.floor((space.widthCm - startX) / crop.inRowCm) + 1);
-  const rows = Math.max(0, Math.floor((space.lengthCm - startY) / crop.betweenRowsCm) + 1);
+  const lastX = space.widthCm - crop.inRowCm / 2;
+  const lastY = space.lengthCm - crop.betweenRowsCm / 2;
+  const columns = Math.max(0, Math.floor((lastX - startX) / crop.inRowCm) + 1);
+  const rows = Math.max(0, Math.floor((lastY - startY) / crop.betweenRowsCm) + 1);
   const totalCandidates = columns * rows;
 
   // With no columns, the row loop would otherwise scan the entire (potentially huge) length.

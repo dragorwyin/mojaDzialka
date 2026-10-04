@@ -2,7 +2,7 @@ export const GARDEN_INPUT_SNAPSHOT_VERSION = 2 as const;
 
 // Bump these whenever catalog data/semantics or layout behavior changes.
 export const GARDEN_CROP_CATALOG_VERSION = 4 as const;
-export const GARDEN_LAYOUT_ALGORITHM_VERSION = 2 as const;
+export const GARDEN_LAYOUT_ALGORITHM_VERSION = 3 as const;
 
 export interface GardenSnapshotSpace {
   id: string;

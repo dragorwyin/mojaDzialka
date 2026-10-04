@@ -5,6 +5,7 @@ import {
   createGardenInputSnapshot,
   fingerprintGardenInputSnapshot,
   GARDEN_CROP_CATALOG_VERSION,
+  GARDEN_LAYOUT_ALGORITHM_VERSION,
   getGardenPlanFreshness,
   type GardenSnapshotCrop,
   type GardenSnapshotSpace,
@@ -45,10 +46,11 @@ describe("garden plan snapshots", () => {
       crops: current.crops,
     };
     const oldFingerprint = await fingerprintLegacySnapshot(oldSnapshot);
-    const oldAlgorithmFingerprint = await fingerprintGardenInputSnapshot({ ...current, algorithmVersion: 1 });
+    const oldAlgorithmFingerprint = await fingerprintGardenInputSnapshot({ ...current, algorithmVersion: 2 });
     const previousCatalogFingerprint = await fingerprintGardenInputSnapshot({ ...current, catalogVersion: 3 });
 
     expect(GARDEN_CROP_CATALOG_VERSION).toBe(4);
+    expect(GARDEN_LAYOUT_ALGORITHM_VERSION).toBe(3);
     expect(current.catalogVersion).toBe(4);
     expect(current.crops).toEqual([
       { cropId: "czosnek", proportion: "20" },

@@ -38,6 +38,30 @@ const spaces = [
 ] as const;
 
 describe("garden layout engine", () => {
+  it("keeps crop centers half a spacing from every edge on both axes", () => {
+    const coordinates = (widthCm: number, lengthCm: number, inRowCm = 10, betweenRowsCm = 20) =>
+      generateGardenLayout({
+        spaces: [{ id: "bed", widthCm, lengthCm }],
+        crops: [{ crop: compactCrop("marchew", inRowCm, betweenRowsCm), proportion: 100 }],
+        relations: [],
+      }).spaces[0]?.positions.map(({ xCm, yCm }) => [xCm, yCm]);
+
+    expect(coordinates(20, 40)).toEqual([
+      [5, 10],
+      [15, 10],
+      [5, 30],
+      [15, 30],
+    ]);
+    expect(coordinates(10, 20)).toEqual([[5, 10]]);
+    expect(coordinates(20, 10, 20, 10)).toEqual([[10, 5]]);
+    expect(coordinates(9, 20)).toEqual([]);
+    expect(coordinates(20, 19)).toEqual([]);
+    expect(coordinates(15, 15, 10, 10)).toEqual([[5, 5]]);
+    expect(coordinates(10, 10, 10, 10)).toEqual([[5, 5]]);
+    expect(coordinates(9, 10, 10, 10)).toEqual([]);
+    expect(coordinates(10, 9, 10, 10)).toEqual([]);
+  });
+
   it("uses the production carrot's final post-thinning spacing in the generated layout", () => {
     const result = generateGardenLayout({
       spaces: [{ id: "carrot-bed", widthCm: 200, lengthCm: 100 }],
