@@ -197,7 +197,7 @@ Brak planowanej migracji bazy. Runner i dependency są zmianą developerską; br
 
 #### Automated
 
-- [x] 3.1 `npm run test:unit`, `npm run test:db`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla końcowego stanu. — lokalnie, 2026-10-04
-- [x] 3.2 `npm run smoke` i `npm run test:e2e` przechodzą sekwencyjnie na lokalnym preview z lokalnym Supabase. — lokalnie, 2026-10-04
-- [ ] 3.3 Hosted CI na PR wykonuje e2e i dotychczasowe bramki; kontrolowana awaria testu daje niezerowy gate oraz dostępne artefakty porażki, a końcowy przebieg jest zielony.
-- [x] 3.4 Cookbook §6.5 wskazuje istniejące testy i sprawdzone komendy; rollout status odpowiada Progress i verification.md zawiera dowody. — lokalnie, 2026-10-04; hosted run pozostaje wymagany w 3.3
+- [x] 3.1 `npm run test:unit`, `npm run test:db`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla końcowego stanu. — lokalnie, 2026-10-04; 83fb575
+- [x] 3.2 `npm run smoke` i `npm run test:e2e` przechodzą sekwencyjnie na lokalnym preview z lokalnym Supabase. — lokalnie, 2026-10-04; 83fb575
+- [x] 3.3 Hosted CI na PR wykonuje e2e i dotychczasowe bramki; kontrolowana awaria testu daje niezerowy gate oraz dostępne artefakty porażki, a końcowy przebieg jest zielony. — PR #1: controlled-failure 37238401746 + artifact 11315574647; final green 37238895670
+- [x] 3.4 Cookbook §6.5 wskazuje istniejące testy i sprawdzone komendy; rollout status odpowiada Progress i verification.md zawiera dowody. — lokalnie, 2026-10-04; 83fb575
