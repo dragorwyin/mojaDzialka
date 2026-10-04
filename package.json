@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
     "test:api": "vitest run --config vitest.api.config.ts",
-    "test:unit": "vitest run src/data/crop-catalog.test.ts src/lib/crop-catalog.test.ts src/lib/garden-crop-selection.test.ts src/lib/garden-crop-percentages.test.ts src/lib/garden-layout.test.ts src/lib/garden-plan-snapshot.test.ts src/lib/garden-space-change.test.ts src/lib/season-work-schedule.test.ts && npm run test:api"
+    "test:unit": "vitest run --config vitest.unit.config.ts && npm run test:api",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@eslint/compat": "^2.1.1",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.63.0",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-astro": "^3.1.0",

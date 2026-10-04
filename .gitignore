@@ -26,3 +26,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# browser test sessions and failure artifacts
+.auth/
+playwright/.auth/
+playwright-report/
+test-results/

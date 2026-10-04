@@ -7,6 +7,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/pages/api/**/*.test.ts"],
+    include: ["src/lib/**/*.test.ts", "src/data/**/*.test.ts"],
   },
 });
