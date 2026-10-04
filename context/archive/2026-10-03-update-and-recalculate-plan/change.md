@@ -1,10 +1,10 @@
 ---
 change_id: update-and-recalculate-plan
 title: Zmiana danych i ponowne przeliczenie planu
-status: impl_reviewed
+status: archived
 created: 2026-10-03
 updated: 2026-10-04
-archived_at: null
+archived_at: 2026-10-04T13:06:36Z
 ---
 
 ## Notes
