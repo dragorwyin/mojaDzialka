@@ -61,13 +61,13 @@
           "references/starter-registry.yaml"
         ],
         "contentHashes": {
-          "SKILL.md": "0ac09c4df52ee326daa36af744f0ef3e9578216ff248c34ed6b2b6d9a263cc44",
+          "SKILL.md": "2519fc4e74ca5df4e1ac4401644e749ff6d7a05e03ec4b109d6b3af5252da6cf",
           "references/agent-friendly-criteria.md": "04e0cd99f1e64dd6dffe37a68844ddd8efb593057584afbe0fed308724eb0cad",
-          "references/decision-flow.md": "8f88998ae05601eb52d8d7038af4310a7b558d8c14ac091668e148b06de4fffd",
-          "references/eval-cases.md": "1bd474bd52bfb7a7efd5fa9a4f50f31f1a123f6acd6d0b5f2e9fd310b32fb920",
-          "references/handoff-schema.md": "157c5b8546b32c115b4e4ad05e29546bc6adda2a3739e30148bf391c9de167b2",
-          "references/residual-interview.md": "6b2b3f2b5975745e7c68e26748e7c2aaf4300de00e415f7c712fb8fac0272d95",
-          "references/starter-registry.yaml": "620a9b26b308f697b56cc0ef9a589c545c0d3054dd8fff49fd02b4f5dbd49b17"
+          "references/decision-flow.md": "6d4cbb39cef8008194bb4b17fdab2b613efb1ce8ebb5d0e7d523ac942d142c45",
+          "references/eval-cases.md": "c0d78806f4870d08a845c6ecacea11652ebb32ead9ae0c7d9704a155d3621930",
+          "references/handoff-schema.md": "6151895f9a345e1878a103f5c2a8a5e2644dbc34c4742df015c267b6cda27177",
+          "references/residual-interview.md": "26486c8dcc22a2abd93a113fbb2cf62a2d802cd38facb1bef7ed379823a2ebbb",
+          "references/starter-registry.yaml": "e5659c5e0fafe3383cea18103cc13292504dd333579c2dd52001f37502554bf1"
         }
       },
       "10x-stack-assess": {
@@ -81,13 +81,13 @@
           "references/starter-registry.yaml"
         ],
         "contentHashes": {
-          "SKILL.md": "a8a64a969c2fcd90edda20ae66988593be089f175895fc57278b918db54c2b9a",
+          "SKILL.md": "6fc2d4e4c1a06abe81af1aa66ca8dd3defa618078c2a1afa388423e34883d843",
           "references/agent-friendly-criteria.md": "04e0cd99f1e64dd6dffe37a68844ddd8efb593057584afbe0fed308724eb0cad",
-          "references/decision-flow.md": "8f88998ae05601eb52d8d7038af4310a7b558d8c14ac091668e148b06de4fffd",
-          "references/eval-cases.md": "1bd474bd52bfb7a7efd5fa9a4f50f31f1a123f6acd6d0b5f2e9fd310b32fb920",
-          "references/handoff-schema.md": "157c5b8546b32c115b4e4ad05e29546bc6adda2a3739e30148bf391c9de167b2",
-          "references/residual-interview.md": "6b2b3f2b5975745e7c68e26748e7c2aaf4300de00e415f7c712fb8fac0272d95",
-          "references/starter-registry.yaml": "620a9b26b308f697b56cc0ef9a589c545c0d3054dd8fff49fd02b4f5dbd49b17"
+          "references/decision-flow.md": "6d4cbb39cef8008194bb4b17fdab2b613efb1ce8ebb5d0e7d523ac942d142c45",
+          "references/eval-cases.md": "c0d78806f4870d08a845c6ecacea11652ebb32ead9ae0c7d9704a155d3621930",
+          "references/handoff-schema.md": "6151895f9a345e1878a103f5c2a8a5e2644dbc34c4742df015c267b6cda27177",
+          "references/residual-interview.md": "26486c8dcc22a2abd93a113fbb2cf62a2d802cd38facb1bef7ed379823a2ebbb",
+          "references/starter-registry.yaml": "e5659c5e0fafe3383cea18103cc13292504dd333579c2dd52001f37502554bf1"
         }
       },
       "10x-bootstrapper": {
@@ -102,14 +102,14 @@
           "references/verification-log-schema.md"
         ],
         "contentHashes": {
-          "SKILL.md": "39ab6e69a66c19251f1ec870e8b8593db7cb22a7310d0a78492cabd52d06ae3f",
-          "references/bootstrapper-config.yaml": "49c89560aed35e2eb694592f0cb90ab41f425d1effc4b94682bd601b024842c1",
-          "references/handoff-consumer.md": "3029b1ffdff09f85b840cfcc97a5ed50cabb6a6b8b0e6465032792227184917b",
+          "SKILL.md": "b2bffe8d8ca14bfbf324916d85962db95259d0f9042219fe5e482b69e3884697",
+          "references/bootstrapper-config.yaml": "e328ec20a69b53547feb3c3919704fc889eb33c739278b5e165eb743bab205e1",
+          "references/handoff-consumer.md": "43fde1a2166bf3e6337dc3345e49163deb853821949859bf8bd148a60369232d",
           "references/post-scaffold-verification.md": "9b2915667ff937c8630d9d58e45e6643169078e428cc7c2b7cb721d7ab9ec666",
           "references/pre-scaffold-verification.md": "8154ab886d22d21cdd23c1cc26069644932b6155cc1bee614ec6991306695708",
-          "references/refusal-protocol.md": "a4a5cb111659ab24dc88d9587d158f37896bbac618ec645c622ce680a685a8f1",
-          "references/scaffold-merge.md": "33454bd846edf024d62bae30c8604ca26caafb391b08eaf4163d61e566d9f252",
-          "references/verification-log-schema.md": "eaa89efa5fc4eaf3aa242f0b172757778dea44a42e3ac53e44057a828b40a458"
+          "references/refusal-protocol.md": "a210af689313070a6231741014c40165990a21a933c161c040e0fa58dc181fd1",
+          "references/scaffold-merge.md": "81695a4acd4ffb71370e65cfb8758b371ac3ba8140aa7da85e8811acce1192eb",
+          "references/verification-log-schema.md": "6935d472d4737871344e1b81713df30eaaaa7d389b24878a1394288938e749b0"
         }
       },
       "10x-health-check": {
@@ -1498,15 +1498,7 @@
         "m1l5-3-extend-prerequisites.md",
         "m1l5-4-store-plan.md"
       ],
-      "configs": [],
-      "representation": {
-        "lang": "en",
-        "tool": "codex",
-        "courseRules": true,
-        "rules": true
-      },
-      "installedReleaseId": "r-d1f9bce872e7d91757645310e888811d078b3fea9992467260294498106ccf12",
-      "installedManifestHash": "b6bb453e3356ab8804d39712908ca55c920ba8221c1e64041976d19f1ef57832"
+      "configs": []
     }
   },
   "managedRules": {
