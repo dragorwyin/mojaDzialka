@@ -32,6 +32,11 @@ function compactCrop(id: string, inRowCm = 30, betweenRowsCm = 30): CropCatalogE
   };
 }
 
+function spacingData(entry: CropCatalogEntry) {
+  if (entry.spacing === null) throw new Error(`Missing spacing fixture for ${entry.id}`);
+  return entry.spacing;
+}
+
 const spaces = [
   { id: "bed-a", name: "Skrzynia A", widthCm: 200, lengthCm: 100 },
   { id: "bed-b", name: "Skrzynia B", widthCm: 200, lengthCm: 100 },
@@ -103,13 +108,9 @@ describe("garden layout engine", () => {
     });
 
     expect(tooNarrow.spaces[0]?.positions).toEqual([]);
-    expect(tooNarrow.omissions).toContainEqual(
-      expect.objectContaining({ cropId: "marchew", reason: "no_fit" }),
-    );
+    expect(tooNarrow.omissions).toContainEqual(expect.objectContaining({ cropId: "marchew", reason: "no_fit" }));
     expect(tooShort.spaces[0]?.positions).toEqual([]);
-    expect(tooShort.omissions).toContainEqual(
-      expect.objectContaining({ cropId: "marchew", reason: "no_fit" }),
-    );
+    expect(tooShort.omissions).toContainEqual(expect.objectContaining({ cropId: "marchew", reason: "no_fit" }));
 
     for (const rowPositions of positionsByRow.values()) {
       const orderedPositions = [...rowPositions].sort((left, right) => left.xCm - right.xCm);
@@ -154,17 +155,19 @@ describe("garden layout engine", () => {
         expect(position.yCm).toBeLessThanOrEqual(space.space.lengthCm);
       }
 
-      const inputSpacingByCrop: Record<string, { inRowCm: number; betweenRowsCm: number }> = {
-        marchew: { inRowCm: 30, betweenRowsCm: 30 },
-        cebula: { inRowCm: 30, betweenRowsCm: 30 },
-        brokul: { inRowCm: 40, betweenRowsCm: 30 },
-        czosnek: { inRowCm: 30, betweenRowsCm: 30 },
-      };
+      const inputSpacingByCrop = new Map([
+        ["marchew", { inRowCm: 30, betweenRowsCm: 30 }],
+        ["cebula", { inRowCm: 30, betweenRowsCm: 30 }],
+        ["brokul", { inRowCm: 40, betweenRowsCm: 30 }],
+        ["czosnek", { inRowCm: 30, betweenRowsCm: 30 }],
+      ]);
       for (const [leftIndex, left] of space.positions.entries()) {
         for (const right of space.positions.slice(leftIndex + 1)) {
-          const leftSpacing = inputSpacingByCrop[left.cropId];
-          const rightSpacing = inputSpacingByCrop[right.cropId];
-          if (!leftSpacing || !rightSpacing) throw new Error("Missing independent spacing fixture");
+          const leftSpacing = inputSpacingByCrop.get(left.cropId);
+          const rightSpacing = inputSpacingByCrop.get(right.cropId);
+          if (leftSpacing === undefined || rightSpacing === undefined) {
+            throw new Error("Missing independent spacing fixture");
+          }
           const dx = Math.abs(left.xCm - right.xCm);
           const dy = Math.abs(left.yCm - right.yCm);
           expect(
@@ -394,9 +397,7 @@ describe("garden layout engine", () => {
 
     expect(belowThreshold.spaces[0]?.positions).toMatchObject([{ cropId: "marchew", xCm: 10, yCm: 10 }]);
     expect(belowThreshold.spaces[0]?.positions).toHaveLength(1);
-    expect(belowThreshold.omissions).toContainEqual(
-      expect.objectContaining({ cropId: "cebula", reason: "no_fit" }),
-    );
+    expect(belowThreshold.omissions).toContainEqual(expect.objectContaining({ cropId: "cebula", reason: "no_fit" }));
   });
 
   it("keeps an 80/20 target with three discrete positions as 2/1 without a rounding conflict", () => {
@@ -413,7 +414,11 @@ describe("garden layout engine", () => {
     const onion = result.cropSummaries.find((summary) => summary.cropId === "cebula");
 
     expect(positions.map((position) => position.cropId)).toEqual(["marchew", "cebula", "marchew"]);
-    expect(positions.map(({ xCm, yCm }) => [xCm, yCm])).toEqual([[5, 5], [15, 5], [25, 5]]);
+    expect(positions.map(({ xCm, yCm }) => [xCm, yCm])).toEqual([
+      [5, 5],
+      [15, 5],
+      [25, 5],
+    ]);
     expect(carrot).toMatchObject({ targetPercentage: 80, actualCount: 2 });
     expect(carrot?.actualPercentage).toBeCloseTo(200 / 3);
     expect(onion).toMatchObject({ targetPercentage: 20, actualCount: 1 });
@@ -566,7 +571,7 @@ describe("garden layout engine", () => {
     const base = compactCrop("marchew");
     const invalidCrop: CropCatalogEntry = {
       ...base,
-      spacing: { ...base.spacing!, ...axes },
+      spacing: { ...spacingData(base), ...axes },
     };
     const result = generateGardenLayout({
       spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
@@ -575,9 +580,7 @@ describe("garden layout engine", () => {
     });
 
     expect(result.spaces[0]?.positions).toEqual([]);
-    expect(result.omissions).toContainEqual(
-      expect.objectContaining({ cropId: "marchew", reason: "invalid_spacing" }),
-    );
+    expect(result.omissions).toContainEqual(expect.objectContaining({ cropId: "marchew", reason: "invalid_spacing" }));
     expect(result.cropSummaries[0]).toMatchObject({ dataConfidence: "medium", spacingStage: "final_planting" });
   });
 
@@ -585,7 +588,7 @@ describe("garden layout engine", () => {
     const base = compactCrop("marchew");
     const nonFinalCrop: CropCatalogEntry = {
       ...base,
-      spacing: { ...base.spacing!, isFinalPlanting: false, stage: "sowing" },
+      spacing: { ...spacingData(base), isFinalPlanting: false, stage: "sowing" },
     };
     const result = generateGardenLayout({
       spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
@@ -603,7 +606,7 @@ describe("garden layout engine", () => {
     const base = compactCrop("marchew", 10, 20);
     const lowConfidenceCrop: CropCatalogEntry = {
       ...base,
-      spacing: { ...base.spacing!, confidence: "low", stage: "thinning" },
+      spacing: { ...spacingData(base), confidence: "low", stage: "thinning" },
     };
     const result = generateGardenLayout({
       spaces: [{ id: "bed", widthCm: 30, lengthCm: 20 }],
@@ -612,7 +615,9 @@ describe("garden layout engine", () => {
     });
 
     expect(result.spaces[0]?.positions.length).toBeGreaterThan(0);
-    expect(result.spaces[0]?.positions.every((position) => position.confidence === "low" && position.stage === "thinning")).toBe(true);
+    expect(
+      result.spaces[0]?.positions.every((position) => position.confidence === "low" && position.stage === "thinning"),
+    ).toBe(true);
     expect(result.cropSummaries[0]).toMatchObject({ dataConfidence: "low", spacingStage: "thinning" });
   });
 
@@ -625,19 +630,19 @@ describe("garden layout engine", () => {
         { crop: crop("brokul"), proportion: 40 },
       ],
     });
-    const expectedSpacing: Record<string, { inRowCm: number; betweenRowsCm: number }> = {
-      marchew: { inRowCm: 7, betweenRowsCm: 20 },
-      cebula: { inRowCm: 5, betweenRowsCm: 30 },
-      brokul: { inRowCm: 40, betweenRowsCm: 50 },
-    };
+    const expectedSpacing = new Map([
+      ["marchew", { inRowCm: 7, betweenRowsCm: 20 }],
+      ["cebula", { inRowCm: 5, betweenRowsCm: 30 }],
+      ["brokul", { inRowCm: 40, betweenRowsCm: 50 }],
+    ]);
     const positions = result.spaces.flatMap((space) => space.positions);
 
     expect(positions.length).toBeGreaterThan(0);
     for (const spaceResult of result.spaces) {
       const { space, positions: spacePositions } = spaceResult;
       for (const position of spacePositions) {
-        const spacing = expectedSpacing[position.cropId];
-        if (!spacing) throw new Error("Missing independent spacing fixture");
+        const spacing = expectedSpacing.get(position.cropId);
+        if (spacing === undefined) throw new Error("Missing independent spacing fixture");
         expect(position.xCm).toBeGreaterThanOrEqual(spacing.inRowCm / 2);
         expect(position.xCm).toBeLessThanOrEqual(space.widthCm - spacing.inRowCm / 2);
         expect(position.yCm).toBeGreaterThanOrEqual(spacing.betweenRowsCm / 2);
@@ -646,9 +651,11 @@ describe("garden layout engine", () => {
       }
       for (const [leftIndex, left] of spacePositions.entries()) {
         for (const right of spacePositions.slice(leftIndex + 1)) {
-          const leftSpacing = expectedSpacing[left.cropId];
-          const rightSpacing = expectedSpacing[right.cropId];
-          if (!leftSpacing || !rightSpacing) throw new Error("Missing independent spacing fixture");
+          const leftSpacing = expectedSpacing.get(left.cropId);
+          const rightSpacing = expectedSpacing.get(right.cropId);
+          if (leftSpacing === undefined || rightSpacing === undefined) {
+            throw new Error("Missing independent spacing fixture");
+          }
           const dx = Math.abs(left.xCm - right.xCm);
           const dy = Math.abs(left.yCm - right.yCm);
           expect(
