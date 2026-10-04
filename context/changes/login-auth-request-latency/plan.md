@@ -183,6 +183,6 @@ Brak migracji danych. Usuwane są wyłącznie cookie sesji bieżącego projektu 
 
 #### Manual
 
-- [x] 2.1 Operator potwierdza signin, błąd hasła, zachowanie zastanej sesji i ochronę tras na koncie testowym.
-- [x] 2.2 Wynik produkcyjny zapisuje bezpieczne czasy/statusy albo jawnie pozostawia brak slow trace.
-- [x] 2.3 Anonimowy request produkcyjny do chronionej trasy jest przekierowany, a zalogowany ma dostęp.
+- [x] 2.1 Operator potwierdza signin, błąd hasła, zachowanie zastanej sesji i ochronę tras na koncie testowym. — 959ad9c
+- [x] 2.2 Wynik produkcyjny zapisuje bezpieczne czasy/statusy albo jawnie pozostawia brak slow trace. — 959ad9c
+- [x] 2.3 Anonimowy request produkcyjny do chronionej trasy jest przekierowany, a zalogowany ma dostęp. — 959ad9c
