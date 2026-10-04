@@ -187,16 +187,16 @@ Plan bazowo nie zmienia schematu. Ewentualna wykazana poprawka SQL trafia do now
 
 #### Automated
 
-- [x] 2.1 `npm run test:api` przechodzi i uruchamia wszystkie trzy pliki testów POST.
-- [x] 2.2 Kontrolowane awarie odczytu/zapisu i konflikt rewizji dają oczekiwane odpowiedzi, bez fałszywego sukcesu i bez ujawnienia szczegółów błędu.
-- [x] 2.3 `npm run lint` oraz `npx astro check` przechodzą po dodaniu testów i ewentualnych minimalnych poprawek.
-- [x] 2.4 Każdy faktycznie wykryty błąd ma reprodukcję, test regresyjny, stan naprawy i handoff do 10x flow w bugs.md.
+- [x] 2.1 `npm run test:api` przechodzi i uruchamia wszystkie trzy pliki testów POST. — 5013f9e
+- [x] 2.2 Kontrolowane awarie odczytu/zapisu i konflikt rewizji dają oczekiwane odpowiedzi, bez fałszywego sukcesu i bez ujawnienia szczegółów błędu. — 5013f9e
+- [x] 2.3 `npm run lint` oraz `npx astro check` przechodzą po dodaniu testów i ewentualnych minimalnych poprawek. — 5013f9e
+- [x] 2.4 Każdy faktycznie wykryty błąd ma reprodukcję, test regresyjny, stan naprawy i handoff do 10x flow w bugs.md. — 5013f9e
 
 ### Phase 3: Weryfikacja i dokumentacja
 
 #### Automated
 
-- [ ] 3.1 `npm run test:unit` wykonuje dotychczasowe unit oraz wszystkie testy API i przechodzi.
-- [ ] 3.2 `npm run test:db`, `npm run lint`, `npx astro check` oraz `npm run build` przechodzą dla końcowego stanu.
-- [ ] 3.3 `npm run smoke` przechodzi na lokalnym preview skonfigurowanym z lokalną bazą Supabase.
-- [ ] 3.4 Cookbook §6.3–§6.4 wskazuje istniejące referencyjne testy i poprawne komendy, a §3 Phase 2 wskazuje tę zmianę i stan wynikający z Progress.
+- [x] 3.1 `npm run test:unit` wykonuje dotychczasowe unit oraz wszystkie testy API i przechodzi.
+- [x] 3.2 `npm run test:db`, `npm run lint`, `npx astro check` oraz `npm run build` przechodzą dla końcowego stanu.
+- [x] 3.3 `npm run smoke` przechodzi na lokalnym preview skonfigurowanym z lokalną bazą Supabase.
+- [x] 3.4 Cookbook §6.3–§6.4 wskazuje istniejące referencyjne testy i poprawne komendy, a §3 Phase 2 wskazuje tę zmianę i stan wynikający z Progress.

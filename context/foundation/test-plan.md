@@ -51,7 +51,7 @@ Impact High: utrata/dostęp/publiczny błąd; Medium: degradacja; Low: kosmetyka
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Poprawność decyzji algorytmu | Dowieść geometrii/priorytetów/jawności braków. | #1, #5, #6 | unit + contract | complete | context/changes/testing-algorithm-decisions/ |
-| 2 | Bezpieczny zapis i dostęp | Chronić zapis/prywatność podczas błędów. | #2, #3, #4 | DB/API integration | not started | — |
+| 2 | Bezpieczny zapis i dostęp | Chronić zapis/prywatność podczas błędów. | #2, #3, #4 | DB/API integration | complete | context/changes/testing-safe-garden-storage/ |
 | 3 | Krytyczny przepływ i bramki | Domknąć interakcje/CI. | #1–#6 | e2e + gates | not started | — |
 
 Kolejność: obawa → trwałość → interakcje. Każdy etap aktualizuje §6. #4 sprawdza reakcję aplikacji, nie zapobiega zatrzymaniu usługi.
@@ -101,11 +101,22 @@ Phase 3 domyka odkrywanie testów/CI: obecna lista unit jest ograniczona.
 
 ### 6.3 Prywatność i atomowość zapisu
 
-TBD — see §3 Phase 2. Dwa konta, anon, anulowanie, błędy, równoczesne zmiany; lokalizacja, naming, referencja, komenda.
+- **Lokalizacje:** `supabase/tests/garden_spaces.test.sql`, `garden_crops.test.sql`, `garden_plans.test.sql` i `garden_plan_revision.test.sql` w tym samym katalogu.
+- **Nazewnictwo:** opisuj odmowę i zachowanie pełnego stanu, np. rollback, niezmieniony plan obcego konta lub odrzucony wynik starej rewizji.
+- **Referencje:** rollback zapisu przestrzeni/upraw po poprawnym pierwszym i błędnym późniejszym elemencie; odrzucenie planu po zmianie proporcji upraw; zachowanie pełnego rekordu planu po nieaktualnej rewizji.
+- **Komenda:** `npm run test:db` — resetuje wyłącznie lokalną bazę testową i wykonuje pgTAP. Wymaga lokalnego Docker/Supabase.
+- **Wzorzec:** dwa konta i anon, role/JWT jak w istniejących fixture; po odmowie odczytaj dane jako właściciel. Porównuj pełne wiersze wejść, kolejność, input_revision oraz JSON planu, snapshot, fingerprint i generated_at. Testy są wycofywane transakcyjnie.
+- **Granice dowodu:** sekwencyjna zmiana wejść i odrzucenie starej rewizji sprawdzają kontrakt RPC, nie harmonogram współbieżnych transakcji. RLS właściciela pozwala na bezpośrednie mutacje; ochrona rewizji dotyczy aplikacyjnego guarded RPC. Anulowanie w UI pozostaje do §3 Phase 3.
 
 ### 6.4 Awaria zewnętrznej bazy
 
-TBD — see §3 Phase 2. Kontrolowana awaria na granicy usługi; asercje odpowiedzi i zachowanego stanu, bez mockowania wnętrza aplikacji.
+- **Lokalizacje:** `src/pages/api/garden.test.ts`, `garden-crops.test.ts`, `garden-plan.test.ts`; wspólny fixture `src/test/garden-api-fixture.ts`, konfiguracja `vitest.api.config.ts`.
+- **Nazewnictwo:** nazwij obserwowalną odpowiedź i brak fałszywego sukcesu, np. `reports RPC failure without false success or private database details`.
+- **Referencje:** `reports %s read failure instead of treating the garden as empty`, `reports a conflict if inputs change between reading and conditional save`, `waits for conditional save before returning success`, `rejects malformed multipart without attempting a write`.
+- **Komendy:** `npm run test:api` osobno; `npm run test:unit` wykonuje unit i następnie API z propagacją błędu. Istniejący krok CI `test:unit` obejmuje oba zestawy bez nowego YAML.
+- **Wzorzec:** hoisted mock zastępuje wyłącznie eksport createClient. Request/Response, parser, walidacja, generator, snapshot i fingerprint są rzeczywiste. Resetuj mocki między testami; dla czasu generacji zamroź Date i przywróć zegar. Oczekiwany snapshot jest literalny, hash liczony niezależnie.
+- **Asercje:** 401/503, 500 load_failed/save_failed, 409 inputs_changed versus 422 brak danych; przekierowania formularza; no-store JSON; brak szczegółów wstrzykniętego błędu; brak RPC po błędzie odczytu; sukces dopiero po true.
+- **Granice dowodu:** mock dowodzi odpowiedzi handlera i braku próby zapisu, nie trwałości ani atomowości bazy. Te właściwości sprawdza §6.3. Zachowanie adaptera HTTP i sesji sprawdza osobny `npm run smoke` na lokalnym preview. Wykryte błędy dokumentuj z reprodukcją i statusem w `context/changes/testing-safe-garden-storage/bugs.md`.
 
 ### 6.5 Krytyczna interakcja w przeglądarce
 
