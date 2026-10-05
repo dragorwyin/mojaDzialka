@@ -1,7 +1,13 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function generatePlan(page: Page) {
-  await page.getByRole("button", { name: /^(Wygeneruj plan|Wygeneruj ponownie)$/ }).click();
+  const button = page.getByRole("button", { name: /^(Wygeneruj plan|Wygeneruj ponownie)$/ });
+  const plannerIsland = page.locator('astro-island[component-export="default"]').filter({ has: button });
+
+  // Server-rendered controls are actionable before React attaches their handlers.
+  // Wait for this island to hydrate, as visibility/actionability alone is insufficient.
+  await expect(plannerIsland).not.toHaveAttribute("ssr", "");
+  await button.click();
   await expect(page.getByRole("region", { name: "Układ działki", exact: true })).toHaveAttribute(
     "data-plan-status",
     "current",

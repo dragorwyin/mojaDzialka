@@ -1,187 +1,91 @@
-# 10x Astro Starter
+# MojaDziałka
 
-![](./public/template.png)
+MojaDziałka pomaga zaplanować sezonowy warzywnik. Użytkownik zapisuje wymiary
+skrzyń lub sektorów, wybiera warzywa i ich docelowe proporcje, a planer
+przygotowuje graficzny układ z uwzględnieniem rozstaw, sąsiedztwa i dostępnej
+powierzchni. Aplikacja pokazuje konflikty, wolne miejsca, ograniczenia danych
+oraz orientacyjne terminy siewu i przygotowania rozsady dla Polski.
 
-A modern, opinionated starter template for building fast, accessible web applications.
+## Funkcje
 
-## Tech Stack
+- Konto użytkownika i prywatny zapis jednej działki.
+- Konfiguracja wymiarów skrzyń i sektorów.
+- Kuratorowany katalog warzyw oraz ustawianie proporcji upraw.
+- Generowanie układu z konfliktami, niewykorzystanym miejscem i informacją o
+  pewności danych.
+- Oznaczanie planu jako nieaktualnego po zmianie danych oraz ponowne
+  przeliczanie.
+- Orientacyjny kalendarz siewu, rozsady i prac sezonowych.
 
-- [Astro](https://astro.build/) v7 - Modern web framework with server-first rendering
-- [React](https://react.dev/) v19 - UI library for interactive components
-- [TypeScript](https://www.typescriptlang.org/) v6 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
-- [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
-- [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
+## Stos technologiczny
 
-## Prerequisites
+- Astro, React i TypeScript
+- Supabase Auth oraz PostgreSQL
+- Cloudflare Workers
+- Vitest, pgTAP i Playwright
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+## Uruchomienie lokalne
 
-## Getting Started
+Wymagany jest Node.js 22.14 lub nowszy, npm i Docker.
 
-1. Clone the repository:
+1. Zainstaluj zależności:
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+   ```sh
+   npm ci
+   ```
 
-2. Install dependencies:
+2. Uruchom lokalny Supabase:
 
-```bash
-npm install
-```
+   ```sh
+   npx supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+   ```
 
-3. Set up Supabase and configure environment variables — see [Supabase Configuration](#supabase-configuration) below.
+3. Ustaw lokalne wartości `SUPABASE_URL` i `SUPABASE_KEY` w plikach `.env` oraz
+   `.dev.vars`, korzystając z danych wyświetlonych przez Supabase CLI. Nie
+   zapisuj sekretów w repozytorium.
 
-4. Create a `.dev.vars` file for local Cloudflare dev secrets:
+4. Uruchom aplikację:
 
-```bash
-cp .env.example .dev.vars
-```
+   ```sh
+   npm run dev
+   ```
 
-5. Run the development server:
+Zatrzymaj lokalne usługi poleceniem `npx supabase stop`.
 
-```bash
-npm run dev
-```
+## Testy i kontrole
 
-## Available Scripts
-
-- `npm run dev` - Start development server (Cloudflare workerd runtime)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint with type-checked rules
-- `npm run lint:fix` - Auto-fix ESLint issues
-- `npm run format` - Run Prettier
-- `npm run smoke` - Smoke test the auth flow against a running server (`BASE_URL`, defaults to `http://localhost:4321`)
-
-## Project Structure
-
-```md
-.
-├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-├── wrangler.jsonc # Cloudflare Workers config
-```
-
-## Supabase Configuration
-
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
-
-### First-time setup (local, no cloud project needed)
-
-Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
-
-1. Create your `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
-
-```bash
-npx supabase init
-```
-
-3. Start the local stack (downloads Docker images on first run):
-
-```bash
-npx supabase start
-```
-
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
-
-```
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_KEY=<anon key from CLI output>
-```
-
-5. To stop the stack when done:
-
-```bash
-npx supabase stop
-```
-
-The local Studio UI is available at `http://localhost:54323`.
-
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
-
-### Using a cloud Supabase project instead
-
-If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
-
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
-
-```
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_KEY=<anon-key>
-```
-
-### Email confirmation
-
-The current signup flow does not require email confirmation: after a successful signup, the user is signed in and sent to the dashboard. The local Supabase configuration disables confirmations. Hosted Supabase must also have email confirmation disabled for this flow to work as intended.
-
-No confirmation email or SMTP provider is used by the current auth flow.
-
-### Auth routes
-
-| Route          | Description                                                             |
-| -------------- | ----------------------------------------------------------------------- |
-| `/auth/signin` | Email/password sign-in form                                             |
-| `/auth/signup` | Email/password sign-up form                                             |
-| `/dashboard`   | Example protected page (redirects to `/auth/signin` if unauthenticated) |
-
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
-
-## Deployment
-
-This project deploys to [Cloudflare Workers](https://workers.cloudflare.com/).
-
-1. Build the project:
-
-```bash
+```sh
+npm run test:unit    # testy unit i API
+npm run test:db      # testy SQL/pgTAP na lokalnej bazie (resetuje ją)
+npm run lint
+npx astro check
 npm run build
+npm run test:e2e     # wymaga lokalnego Supabase i konfiguracji .env/.dev.vars
 ```
 
-2. Deploy with Wrangler:
+Testy e2e tworzą syntetyczne konta i dane w lokalnym Supabase. Nie kieruj ich
+na produkcyjną bazę. GitHub Actions uruchamia testy unit/API, lint, kontrolę
+Astro, build oraz testy bazy i przeglądarki na każdej zmianie do `main`.
 
-```bash
+## Wdrożenie
+
+Aplikacja działa jako Astro SSR na Cloudflare Workers. Wdrożenie wymaga
+skonfigurowania sekretów `SUPABASE_URL` i `SUPABASE_KEY` w ustawieniach Workera
+oraz lokalnego uwierzytelnienia Cloudflare przez Wrangler.
+
+```sh
+npm run build
 npx wrangler deploy
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
+Nie umieszczaj wartości sekretów w repozytorium ani w zrzutach ekranu.
 
-## Smoke test
+## Układ repozytorium
 
-`scripts/smoke.mjs` is a dependency-free Node script that walks the whole auth flow (sign-up, sign-in, protected page, sign-out) over HTTP. Run it against the dev server or the production preview after dependency upgrades:
-
-```bash
-npm run dev            # or: npm run build && npm run preview
-BASE_URL=http://localhost:4321 npm run smoke
-```
-
-It needs a reachable Supabase instance (local or cloud) with email confirmation disabled.
-
-> **Note:** this script exists primarily to guard the development of the starter itself — it is a fast sanity check that dependency upgrades did not break the build, the Cloudflare adapter or the Supabase auth flow. It is **not** a substitute for a real test suite. Once you build your own product on top of this starter, add proper tests (unit, integration, end-to-end) suited to your application.
-
-## CI
-
-GitHub Actions runs two jobs on every push and PR to `master`:
-
-- **ci** — lint, `astro check` and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
-- **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No secrets required.
-
-## License
-
-MIT
+- `src/pages/` — strony i endpointy aplikacji
+- `src/components/garden/` — formularze i widoki planera
+- `src/lib/` — logika planowania i harmonogram prac
+- `src/data/` — katalog upraw
+- `supabase/` — migracje i testy bazy
+- `tests/e2e/` — testy przepływów przeglądarkowych
+- `context/` — PRD, roadmapa, plany testów i historia zmian

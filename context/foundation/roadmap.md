@@ -9,7 +9,7 @@ main_goal: speed
 top_blocker: time
 milestone_id: first-season-garden-plan
 milestone_seq: 1
-milestone_status: open
+milestone_status: done
 ---
 
 # Roadmap: MojaDziałka
@@ -20,7 +20,7 @@ milestone_status: open
 
 ## Milestone
 
-**M-1: Pierwszy działający plan warzywnika na sezon** — Status: open
+**M-1: Pierwszy działający plan warzywnika na sezon** — Status: done
 
 - **Intent:** Dostarczyć użytkownikowi prywatny, zapisany plan sezonu, który przelicza jego skrzynie i wybrane uprawy na graficzny układ, ujawnia konflikty i pokazuje podstawowe terminy prac.
 - **Source materials:** `context/foundation/prd.md` (v1)
@@ -189,7 +189,7 @@ Stan kodu z 2026-09-22, potwierdzony przez użytkownika. Fundamenty poniżej nie
 
 ## Milestone History
 
-(Brak zamkniętych milestone’ów — to pierwszy milestone.)
+- **M-1: Pierwszy działający plan warzywnika na sezon** (`first-season-garden-plan`) — opened 2026-09-22; closed 2026-10-05. Source: `context/foundation/prd.md` (v1). Covered: FR-001–FR-008, US-01. Completed: F-01, S-01–S-06 (7/7). Zamknięcie potwierdzone przez użytkownika.
 
 ## Done
 
