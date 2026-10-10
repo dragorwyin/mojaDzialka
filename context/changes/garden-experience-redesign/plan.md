@@ -210,7 +210,7 @@ Odebrać cały publiczny→auth→dashboard flow na realnym renderze i uzupełni
 
 #### 1. Screenshoty i macierz stanów
 
-**File**: `src/pages/dev/garden-planner-kitchen-sink.astro`, `src/pages/dev/crop-selection-kitchen-sink.astro`, `context/changes/garden-experience-redesign/change.md`
+**File**: `src/components/Welcome.astro`, `src/pages/dev/garden-planner-kitchen-sink.astro`, `src/pages/dev/crop-selection-kitchen-sink.astro`, `context/changes/garden-experience-redesign/change.md`
 
 **Intent**: Użyć istniejących deterministycznych fixture i zapisać wynik odbioru tej zmiany, która pokrywa także wcześniej nieukończony wizualny przegląd garden UI.
 
@@ -304,23 +304,23 @@ Brak migracji bazy, zmian schematu ani konwersji danych. Zmiana adresu kanoniczn
 
 #### Automated
 
-- [x] 4.1 `npm run build` przechodzi po zmianie dashboardu.
-- [x] 4.2 `npm run lint` przechodzi, a garden UI token scan nie raportuje niezapisanych wyjątków.
+- [x] 4.1 `npm run build` przechodzi po zmianie dashboardu. — dcd50fe
+- [x] 4.2 `npm run lint` przechodzi, a garden UI token scan nie raportuje niezapisanych wyjątków. — dcd50fe
 
 #### Manual
 
-- [x] 4.3 Po zalogowaniu `/dashboard` pokazuje plan grządek i małe podsumowanie sezonu; zakładki Sektory i Warzywa nadal pozwalają edytować i zapisać dane.
-- [x] 4.4 Widoczne stany planu (aktualny, nieaktualny, pusty, niedostępny/błąd, częściowy) pozostają rozróżnialne; diagram i harmonogram są czytelne na desktopie i telefonie.
-- [x] 4.5 Zapisy zachowują wybór zakładki Sektory oraz prawidłowe komunikaty sukcesu/błędu; zmieniają się wyłącznie redirecty adresu kanonicznego, a prywatność planu i payloady API pozostają niezmienione.
+- [x] 4.3 Po zalogowaniu `/dashboard` pokazuje plan grządek i małe podsumowanie sezonu; zakładki Sektory i Warzywa nadal pozwalają edytować i zapisać dane. — dcd50fe
+- [x] 4.4 Widoczne stany planu (aktualny, nieaktualny, pusty, niedostępny/błąd, częściowy) pozostają rozróżnialne; diagram i harmonogram są czytelne na desktopie i telefonie. — dcd50fe
+- [x] 4.5 Zapisy zachowują wybór zakładki Sektory oraz prawidłowe komunikaty sukcesu/błędu; zmieniają się wyłącznie redirecty adresu kanonicznego, a prywatność planu i payloady API pozostają niezmienione. — dcd50fe
 
 ### Phase 5: Całościowy odbiór wizualny
 
 #### Automated
 
-- [ ] 5.1 Końcowe `npm run lint` przechodzi dla wszystkich objętych ekranów.
-- [ ] 5.2 Końcowe `npm run build` przechodzi.
+- [x] 5.1 Końcowe `npm run lint` przechodzi dla wszystkich objętych ekranów.
+- [x] 5.2 Końcowe `npm run build` przechodzi.
 
 #### Manual
 
-- [ ] 5.3 Landing, signin/signup, dashboard i kitchen sinki zostały obejrzane przy desktopowym i mobilnym viewportcie; wszystkie interaktywne stany mają widoczny focus, czytelny kontrast i brak poziomego overflow.
-- [ ] 5.4 Użytkownik akceptuje finalny zestaw screenshotów, a obserwacje z odbioru są odnotowane w artefakcie zmiany.
+- [x] 5.3 Landing, signin/signup, dashboard i kitchen sinki zostały obejrzane przy desktopowym i mobilnym viewportcie; wszystkie interaktywne stany mają widoczny focus, czytelny kontrast i brak poziomego overflow.
+- [x] 5.4 Użytkownik akceptuje finalny zestaw screenshotów, a obserwacje z odbioru są odnotowane w artefakcie zmiany.
