@@ -1,7 +1,7 @@
 ---
 change_id: garden-experience-redesign
 title: Spójne doświadczenie Moja Działka od strony publicznej po planer
-status: implementing
+status: implemented
 created: 2026-10-10
 updated: 2026-10-11
 archived_at: null

@@ -317,10 +317,10 @@ Brak migracji bazy, zmian schematu ani konwersji danych. Zmiana adresu kanoniczn
 
 #### Automated
 
-- [x] 5.1 Końcowe `npm run lint` przechodzi dla wszystkich objętych ekranów.
-- [x] 5.2 Końcowe `npm run build` przechodzi.
+- [x] 5.1 Końcowe `npm run lint` przechodzi dla wszystkich objętych ekranów. — 9318cf4
+- [x] 5.2 Końcowe `npm run build` przechodzi. — 9318cf4
 
 #### Manual
 
-- [x] 5.3 Landing, signin/signup, dashboard i kitchen sinki zostały obejrzane przy desktopowym i mobilnym viewportcie; wszystkie interaktywne stany mają widoczny focus, czytelny kontrast i brak poziomego overflow.
-- [x] 5.4 Użytkownik akceptuje finalny zestaw screenshotów, a obserwacje z odbioru są odnotowane w artefakcie zmiany.
+- [x] 5.3 Landing, signin/signup, dashboard i kitchen sinki zostały obejrzane przy desktopowym i mobilnym viewportcie; wszystkie interaktywne stany mają widoczny focus, czytelny kontrast i brak poziomego overflow. — 9318cf4
+- [x] 5.4 Użytkownik akceptuje finalny zestaw screenshotów, a obserwacje z odbioru są odnotowane w artefakcie zmiany. — 9318cf4
