@@ -116,7 +116,7 @@ export default function GardenPlanner({
       });
 
       if (response.status === 401) {
-        window.location.assign("/auth/signin?returnTo=%2Fgarden");
+        window.location.assign("/auth/signin?returnTo=%2Fdashboard");
         return;
       }
 

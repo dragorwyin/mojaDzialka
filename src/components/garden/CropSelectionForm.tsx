@@ -274,7 +274,7 @@ export default function CropSelectionForm({
       });
 
       if (response.status === 401) {
-        window.location.assign("/auth/signin?returnTo=%2Fgarden");
+        window.location.assign("/auth/signin?returnTo=%2Fdashboard%3Ftab%3Dcrops");
         return;
       }
       if (!response.ok) {

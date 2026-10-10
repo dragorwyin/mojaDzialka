@@ -4,30 +4,38 @@
 
 Przebudować publiczne wejście, logowanie/rejestrację i dashboard w jeden lekki, ilustracyjny język ogrodniczy. Najpierw przygotować podglądy landingu, auth i dashboardu do oceny przez użytkownika; żadna produkcyjna zmiana wyglądu nie zaczyna się przed zaakceptowaniem kierunku.
 
-## Current State Analysis
+## Initial State Analysis (przy otwarciu zmiany)
 
 - `/` nadal renderuje angielski ekran „10x Astro Starter”, a domyślny Layout ustawia `lang="en"` i tytuł startera (`src/pages/index.astro:1-8`, `src/components/Welcome.astro:20-111`, `src/layouts/Layout.astro:11-20`).
 - Sign-in i signup mają własne angielskie formularze w niebiesko-fioletowej, cosmic oprawie (`src/pages/auth/signin.astro:10-23`, `signup.astro:9-22`, `src/components/auth/FormField.tsx:5-54`, `SubmitButton.tsx:15-30`).
 - Niekompletny working-tree redesign przemianował w `src/styles/global.css` utility `bg-cosmic` na `bg-garden-page`, pozostawiając pięć użyć starej nazwy w landing/auth i dev kitchen sinkach. To jest źródłowa przyczyna braku tła w bieżącym kodzie (`global.css:178-183`; szczegóły w `research.md`).
-- Semantyczne role ogrodu, wspólny `Button`, `ViewTabs`, formularze, SSR, endpointy i deterministyczny garden planner kitchen sink już istnieją. Zmiana `natural-garden-dashboard` nie ma ukończonego odbioru screenshotów (`context/changes/natural-garden-dashboard/plan.md:26-32`).
+- Semantyczne role ogrodu, wspólny `Button`, formularze, SSR, endpointy i deterministyczny garden planner kitchen sink już istnieją. `GardenDashboard.astro` i `ViewTabs.astro` nie należą do zatwierdzonej bazy; poprzedni plan błędnie potraktował robocze komponenty jako obecny kod. Zmiana `natural-garden-dashboard` nie ma ukończonego odbioru screenshotów (`context/changes/natural-garden-dashboard/plan.md:26-32`).
+- Obecny `/dashboard` to ekran powitalny z linkiem do `/garden`; `/garden` wykonuje SSR prywatnych danych i składa konfigurację przestrzeni, wybór upraw i planer w trzech kolejnych sekcjach (`src/pages/dashboard.astro`, `src/pages/garden.astro:37-181`). Użytkownik zdecydował, że `/dashboard` stanie się głównym widokiem, a `/garden` przekieruje do niego.
 - Ustalone w PRD: produkt służy prywatnemu planowaniu sezonu, konto zachowuje działkę między sesjami, a widok ma być responsywny (`context/foundation/prd.md`, „Vision & Problem Statement”, FR-001–008, „Non-Functional Requirements”).
+
+## Current State Before Phase 4
+
+- Fazy 2 i 3 zostały zatwierdzone commitami `7dd3895` i `6c717ba`; użytkownik potwierdził manualny odbiór landing/auth. Zatwierdzony interfejs korzysta z jasnych tokenów botanicznych, a publiczna strona i formularze auth mają polski copy.
+- Dashboard nadal nie realizuje zaakceptowanej koncepcji: zatwierdzony `/dashboard` jest ekranem powitalnym, a SSR ogrodu działa na `/garden` w pionowym układzie formularzy i planera.
+- `GardenDashboard.astro` i `ViewTabs.astro` były niezatwierdzonymi plikami roboczymi i zostały usunięte; nowa faza zaczyna się od bieżących `dashboard.astro`, `garden.astro` i istniejących wysp.
 
 ## Desired End State
 
 Polskojęzyczna, jasna ścieżka prowadzi od charakterystycznego landingu pokazującego przykładowy plan, przez czytelne logowanie/rejestrację, do dashboardu, w którym wygenerowany ogród jest główną treścią. Botanika i własne ilustracje dodają ciepła, a typografia, nawigacja, focus i komunikaty pozostają czytelne na desktopie i telefonie.
 
-Po zalogowaniu dashboard domyślnie pokazuje duży plan grządek z małym podsumowaniem sezonu; konfiguracja sektorów i warzyw pozostaje w osobnych zakładkach. Prywatne dane, istniejący formularz auth, `returnTo`, SSR, zapisy, generator i obsługa aktualnego/nieaktualnego/błędnego/pustego planu zachowują swoje kontrakty.
+Po zalogowaniu `/dashboard` domyślnie pokazuje duży plan grządek z małym podsumowaniem sezonu; konfiguracja sektorów i warzyw pozostaje w osobnych zakładkach. `/garden` przekierowuje do `/dashboard`. Prywatne dane, istniejący formularz auth, `returnTo`, SSR, zapisy, generator i obsługa aktualnego/nieaktualnego/błędnego/pustego planu zachowują swoje kontrakty.
 
 ### Key Discoveries:
 
 - Niedziałający `bg-cosmic` jest wynikiem rozjazdu między bieżącym arkuszem a klasami w landing/auth, a nie braku tras auth (`src/styles/global.css:178-183`, `src/pages/auth/signin.astro:11`, `src/components/Welcome.astro:5`; `src/middleware.ts:4-29`).
-- Dashboard i `/garden` współdzielą w working tree `GardenDashboard.astro`; redirecty zapisów nadal kierują na `/garden?saved=1` lub `/garden?error=...` (`src/components/garden/GardenDashboard.astro:37-215`, `src/pages/api/garden.ts:10-12,83-92`).
+- Bieżący SSR danych działa w `/garden`, natomiast `/dashboard` jest ekranem powitalnym. Istniejące wyspy `GardenSetupForm`, `CropSelectionForm` i `GardenPlanner` są montowane z `/garden` i muszą zachować props/eventy przy zmianie kompozycji (`src/pages/garden.astro:37-181`).
+- Zapis konfiguracji przez `/api/garden` obecnie wraca na `/garden?saved=1` lub `/garden?error=...`; po zmianie routingu redirecty mają zachować komunikaty i otworzyć zakładkę Sektory (`src/pages/api/garden.ts:10-12,83-92`).
 - W repo są katalogowe ilustracje crop atlasu, ale brak zatwierdzonej ilustracji marki/hero; referencja MniamPiśnik wyznacza nastrój, nie dostarcza assetu/licencji (`public/crops/crop-atlas.webp`, `context/changes/garden-experience-redesign/research.md`).
 - Poprzedni garden kitchen sink ma fixture stanów, ale wcześniejsza zmiana nie przeszła odbioru wizualnego; sam source-level audit nie dowodzi, że obecne screenshoty renderują poprawnie.
 
 ## What We're NOT Doing
 
-- Zmiana Supabase, sesji, ochrony tras, bazy, API, prywatności danych lub logiki wyliczania i zapisu planu.
+- Zmiana Supabase, sesji, schematu bazy, payloadów API, prywatności danych lub logiki wyliczania i zapisu planu; dozwolone są redirecty prezentacyjne do kanonicznego `/dashboard`.
 - Ręczne przypisywanie upraw do sektorów, edycja algorytmu, nowe funkcje ogrodnicze lub wiele działek na konto.
 - Udostępnianie na publicznym landingu rzeczywistego prywatnego ogrodu; podgląd używa deterministycznych, fikcyjnych danych.
 - Kopiowanie logotypu, ilustracji ani assetów MniamPiśnika; kierunek zostanie zinterpretowany na nowo dla Mojej Działki.
@@ -35,13 +43,13 @@ Po zalogowaniu dashboard domyślnie pokazuje duży plan grządek z małym podsum
 
 ## Implementation Approach
 
-Prowadzić jedną zmianę przez pięć zatwierdzonych faz. Faza 1 dostarcza reviewable mockup trzech ekranów na desktopie i mobile, z fikcyjnym planem ogrodu, po czym zatrzymuje się na akceptację użytkownika. Dopiero po niej naprawić i ujednolicić semantyczny system stylów, odświeżyć landing/auth, potem dashboard i na końcu odebrać komplet widoków. Rozszerzyć istniejący checker UI na zmienione widoki i użyć istniejących prymitywów; zachować renderowanie Astro/React oraz API bez zmian.
+Prowadzić jedną zmianę przez pięć faz. Fazy koncepcji, tokenów i landing/auth są odebrane. Faza 4 przenosi kanoniczny SSR ogrodu na `/dashboard`, tworzy osobne zakładki na bazie aktualnych routów i formularzy oraz zmienia `/garden` w alias. Faza 5 odbiera komplet widoków na realnym renderze. Używać istniejących prymitywów i zachować payloady API, renderowanie SSR/React, auth i prywatność; można skorygować wyłącznie redirecty do adresu kanonicznego.
 
 ## Critical Implementation Details
 
 ### User experience spec
 
-Przed akceptacją mockupu fazy 1 nie zmieniać produkcyjnego UI. Mockup i publiczny podgląd planu używają wyłącznie stabilnych, fikcyjnych danych, ponieważ dane ogrodu należą do prywatnego konta. Przekierowanie po zapisie sektora nadal musi otworzyć zakładkę „Sektory”, a wejście do chronionego dashboardu bez sesji nadal zachowuje `returnTo`.
+Przed akceptacją mockupu fazy 1 nie zmieniać produkcyjnego UI. Mockup i publiczny podgląd planu używają wyłącznie stabilnych, fikcyjnych danych, ponieważ dane ogrodu należą do prywatnego konta. Po zapisie konfiguracji ekran ma wrócić na `/dashboard` do zakładki „Sektory” z komunikatem. `/garden` ma przekierować do `/dashboard`; wejście anonimowe na chroniony adres nadal zachowuje bezpieczne `returnTo`.
 
 ## Faza 1: Koncepcja wizualna do akceptacji
 
@@ -161,13 +169,13 @@ Dopracować zalogowany dashboard w zaakceptowanym języku wizualnym, umieszczaj�
 
 ### Changes Required:
 
-#### 1. Główny widok i konfiguracja
+#### 1. Główny widok, alias i konfiguracja
 
-**File**: `src/components/garden/GardenDashboard.astro`, `src/components/ui/ViewTabs.astro`, `src/components/Topbar.astro`
+**File**: `src/pages/dashboard.astro`, `src/pages/garden.astro`, `src/pages/api/garden.ts`, `src/pages/api/garden.test.ts`, `src/pages/api/garden-plan.ts`, `src/middleware.ts`, `src/components/garden/GardenSetupForm.tsx`, `src/components/garden/CropSelectionForm.tsx`, `src/components/Topbar.astro`, istniejące komponenty UI po inspekcji
 
-**Intent**: Poprawić hierarchię, rytm, ilustracyjny charakter i responsywność bez zmiany znaczenia trzech istniejących widoków.
+**Intent**: Przenieść kanoniczny SSR prywatnego ogrodu na `/dashboard`; ułożyć plan, sektory i warzywa w zaakceptowane zakładki oraz przekierować `/garden` do kanonicznego widoku. Dopasować rytm, ilustracyjność i responsywność do zaakceptowanego mockupu.
 
-**Contract**: „Mój ogród” pozostaje domyślnym panelem z czytelnym planem, „Sektory” i „Warzywa” pozostają odrębnymi zakładkami. SSR i `client:load` islands zachowują istniejące props/eventy; redirect `saved`/`error` nadal wybiera Sektory.
+**Contract**: „Mój ogród” pozostaje domyślną zakładką z czytelnym planem; „Sektory” i „Warzywa” pozostają odrębnymi, edytowalnymi zakładkami. Przenieść istniejący SSR read z `/garden` bez zmiany zapytań ani prywatności, zachować props/eventy wysp `client:load`, a `/garden` kierować do `/dashboard`. Redirecty po zapisie konfiguracji zachowują `saved`/`error` i wskazują zakładkę Sektory; redirecty auth dla generatora i middleware wracają do kanonicznego dashboardu. Nie przywracać niezatwierdzonych komponentów `GardenDashboard.astro` ani `ViewTabs.astro`.
 
 #### 2. Diagram oraz stany planera
 
@@ -188,7 +196,7 @@ Dopracować zalogowany dashboard w zaakceptowanym języku wizualnym, umieszczaj�
 
 - Po zalogowaniu pierwszy widok pokazuje plan grządek i małe podsumowanie sezonu; zakładki Sektory i Warzywa nadal pozwalają edytować i zapisać dane.
 - Widoczne stany planu (aktualny, nieaktualny, pusty, niedostępny/błąd, częściowy) pozostają rozróżnialne; diagram i harmonogram są czytelne na desktopie i telefonie.
-- Zapisy zachowują wybór zakładki Sektory oraz prawidłowe komunikaty sukcesu/błędu; niezmienione pozostają API i prywatność planu.
+- Zapisy sektorów otwierają `/dashboard` na zakładce Sektory z prawidłowym komunikatem sukcesu/błędu; `/garden` przekierowuje do głównego widoku, a auth nadal zachowuje `returnTo`. Payloady API, SSR i prywatność planu pozostają niezmienione.
 
 **Implementation Note**: Zatrzymać się po Fazie 4 na odbiór dashboardu, zanim przejdzie się do końcowej rundy wszystkich ekranów.
 
@@ -206,7 +214,7 @@ Odebrać cały publiczny→auth→dashboard flow na realnym renderze i uzupełni
 
 **Intent**: Użyć istniejących deterministycznych fixture i zapisać wynik odbioru tej zmiany, która pokrywa także wcześniej nieukończony wizualny przegląd garden UI.
 
-**Contract**: Zrobić podglądy dla landing, signin, signup, trzech zakładek dashboardu oraz istniejących kitchen sinków w desktopie i jednym mobilnym viewportcie. Rzeczywiste dane kont nie trafiają do zrzutów. W siedmiostanowej macierzy 10x-ui zaznaczyć każdy mający zastosowanie stan; dla stanu N/A wpisać powód. Zgłosić i poprawić widoczne problemy przed końcową akceptacją użytkownika.
+**Contract**: Zrobić podglądy dla landing, signin, signup, `/dashboard` z trzema zakładkami, przekierowania `/garden` oraz istniejących kitchen sinków w desktopie i jednym mobilnym viewportcie. Rzeczywiste dane kont nie trafiają do zrzutów. W siedmiostanowej macierzy 10x-ui zaznaczyć każdy mający zastosowanie stan; dla stanu N/A wpisać powód. Zgłosić i poprawić widoczne problemy przed końcową akceptacją użytkownika.
 
 ### Success Criteria:
 
@@ -235,9 +243,9 @@ Odebrać cały publiczny→auth→dashboard flow na realnym renderze i uzupełni
 ### Manual Testing Steps:
 
 1. Obejrzeć i zaakceptować projektowe podglądy landing/auth/dashboard przed modyfikacją produkcyjnego UI.
-2. Sprawdzić `/`, `/auth/signin`, `/auth/signup`, `/dashboard` i alias `/garden` na desktopie oraz telefonie.
+2. Sprawdzić `/`, `/auth/signin`, `/auth/signup`, `/dashboard` oraz przekierowanie aliasu `/garden` na desktopie i telefonie.
 3. Sprawdzić login/signup, błąd walidacji i odpowiedzi, pending, show/hide password, `returnTo`, signout oraz linki Topbar.
-4. Na dashboardzie sprawdzić przełączanie zakładek, zapis sektorów/warzyw, błędy i status planu; w kitchen sink obejrzeć siedem stanów opisanych przez 10x-ui.
+4. Na dashboardzie sprawdzić przełączanie zakładek, zapis sektorów/warzyw, redirect po zapisie, błędy i status planu; w kitchen sink obejrzeć siedem stanów opisanych przez 10x-ui.
 5. Zapisać zrzuty po anonimizacji lub z deterministycznymi danymi; poprosić użytkownika o końcowy odbiór.
 
 ## Performance Considerations
@@ -246,7 +254,7 @@ Nie dodawać dużej biblioteki UI ani ciężkiego tła wideo/animacji. Preferowa
 
 ## Migration Notes
 
-Brak migracji bazy, zmiany API lub jednorazowej konwersji. Praca korzysta z istniejącego, niezacommitowanego `natural-garden-dashboard` jako bieżącej podstawy; nie resetować ani nie nadpisywać zmian użytkownika.
+Brak migracji bazy, zmian schematu ani konwersji danych. Zmiana adresu kanonicznego wymaga aktualizacji wyłącznie redirectów prezentacyjnych po zapisie/auth, bez zmiany kształtu payloadów API. Bazą są obecne, zatwierdzone `src/pages/dashboard.astro` i `src/pages/garden.astro`; nie przywracać dawnych plików roboczych dashboardu/tabów.
 
 ## References
 
@@ -254,7 +262,7 @@ Brak migracji bazy, zmiany API lub jednorazowej konwersji. Praca korzysta z istn
 - Research: `context/changes/garden-experience-redesign/research.md`
 - Istniejąca praca dashboardu: `context/changes/natural-garden-dashboard/plan.md`
 - PRD: `context/foundation/prd.md`
-- Implementacje: `src/components/garden/GardenDashboard.astro`, `src/pages/auth/signin.astro`, `src/components/Welcome.astro`
+- Implementacje: `src/pages/dashboard.astro`, `src/pages/garden.astro`, `src/components/garden/GardenPlanner.tsx`, `src/pages/auth/signin.astro`, `src/components/Welcome.astro`
 
 ## Progress
 
@@ -283,27 +291,27 @@ Brak migracji bazy, zmiany API lub jednorazowej konwersji. Praca korzysta z istn
 
 #### Automated
 
-- [x] 3.1 `npm run build` przechodzi po zmianie landing/auth.
-- [x] 3.2 `npm run lint` przechodzi dla poszerzonego zakresu skanera UI.
+- [x] 3.1 `npm run build` przechodzi po zmianie landing/auth. — 6c717ba
+- [x] 3.2 `npm run lint` przechodzi dla poszerzonego zakresu skanera UI. — 6c717ba
 
 #### Manual
 
-- [x] 3.3 `/` pokazuje polską stronę produktu z ogrodniczym przykładem i działającymi linkami do konta; nie wyświetla starterowego copy.
-- [x] 3.4 Signin i signup mają czytelne etykiety, pola, fokus i błędy; formularze wysyłają te same payloady co przed zmianą.
-- [x] 3.5 Wejście anonimowe na chroniony cel prowadzi przez signin i po powodzeniu wraca na zachowane `returnTo`; użytkownik może przejść signin ↔ signup.
+- [x] 3.3 `/` pokazuje polską stronę produktu z ogrodniczym przykładem i działającymi linkami do konta; nie wyświetla starterowego copy. — 6c717ba
+- [x] 3.4 Signin i signup mają czytelne etykiety, pola, fokus i błędy; formularze wysyłają te same payloady co przed zmianą. — 6c717ba
+- [x] 3.5 Wejście anonimowe na chroniony cel prowadzi przez signin i po powodzeniu wraca na zachowane `returnTo`; użytkownik może przejść signin ↔ signup. — 6c717ba
 
 ### Phase 4: Dashboard ogrodu na pierwszym planie
 
 #### Automated
 
-- [ ] 4.1 `npm run build` przechodzi po zmianie dashboardu.
-- [ ] 4.2 `npm run lint` przechodzi, a garden UI token scan nie raportuje niezapisanych wyjątków.
+- [x] 4.1 `npm run build` przechodzi po zmianie dashboardu.
+- [x] 4.2 `npm run lint` przechodzi, a garden UI token scan nie raportuje niezapisanych wyjątków.
 
 #### Manual
 
-- [ ] 4.3 Po zalogowaniu pierwszy widok pokazuje plan grządek i małe podsumowanie sezonu; zakładki Sektory i Warzywa nadal pozwalają edytować i zapisać dane.
-- [ ] 4.4 Widoczne stany planu (aktualny, nieaktualny, pusty, niedostępny/błąd, częściowy) pozostają rozróżnialne; diagram i harmonogram są czytelne na desktopie i telefonie.
-- [ ] 4.5 Zapisy zachowują wybór zakładki Sektory oraz prawidłowe komunikaty sukcesu/błędu; niezmienione pozostają API i prywatność planu.
+- [x] 4.3 Po zalogowaniu `/dashboard` pokazuje plan grządek i małe podsumowanie sezonu; zakładki Sektory i Warzywa nadal pozwalają edytować i zapisać dane.
+- [x] 4.4 Widoczne stany planu (aktualny, nieaktualny, pusty, niedostępny/błąd, częściowy) pozostają rozróżnialne; diagram i harmonogram są czytelne na desktopie i telefonie.
+- [x] 4.5 Zapisy zachowują wybór zakładki Sektory oraz prawidłowe komunikaty sukcesu/błędu; zmieniają się wyłącznie redirecty adresu kanonicznego, a prywatność planu i payloady API pozostają niezmienione.
 
 ### Phase 5: Całościowy odbiór wizualny
 
