@@ -271,26 +271,26 @@ Brak migracji bazy, zmiany API lub jednorazowej konwersji. Praca korzysta z istn
 
 #### Automated
 
-- [x] 2.1 `npm run lint` przechodzi, a checker obejmuje publiczne/auth widoki oraz oba dev kitchen sinki.
-- [x] 2.2 W aktywnych widokach nie ma nieobsłużonych odniesień do dawnych klas cosmic ani niezatokenizowanych kolorów objętych checkerem.
+- [x] 2.1 `npm run lint` przechodzi, a checker obejmuje publiczne/auth widoki oraz oba dev kitchen sinki. — 7dd3895
+- [x] 2.2 W aktywnych widokach nie ma nieobsłużonych odniesień do dawnych klas cosmic ani niezatokenizowanych kolorów objętych checkerem. — 7dd3895
 
 #### Manual
 
-- [x] 2.3 Tło strony, pola, tekst, focus, błędy i CTA są czytelne na jasnej powierzchni w signin/signup, obu kitchen sinkach i Topbarze.
-- [x] 2.4 Linki topbara prowadzą odpowiednio do signin/signup lub dashboardu; wszystkie widoczne etykiety wspólnej nawigacji są po polsku.
+- [x] 2.3 Tło strony, pola, tekst, focus, błędy i CTA są czytelne na jasnej powierzchni w signin/signup, obu kitchen sinkach i Topbarze. — 7dd3895
+- [x] 2.4 Linki topbara prowadzą odpowiednio do signin/signup lub dashboardu; wszystkie widoczne etykiety wspólnej nawigacji są po polsku. — 7dd3895
 
 ### Phase 3: Landing oraz ścieżka auth
 
 #### Automated
 
-- [ ] 3.1 `npm run build` przechodzi po zmianie landing/auth.
-- [ ] 3.2 `npm run lint` przechodzi dla poszerzonego zakresu skanera UI.
+- [x] 3.1 `npm run build` przechodzi po zmianie landing/auth.
+- [x] 3.2 `npm run lint` przechodzi dla poszerzonego zakresu skanera UI.
 
 #### Manual
 
-- [ ] 3.3 `/` pokazuje polską stronę produktu z ogrodniczym przykładem i działającymi linkami do konta; nie wyświetla starterowego copy.
-- [ ] 3.4 Signin i signup mają czytelne etykiety, pola, fokus i błędy; formularze wysyłają te same payloady co przed zmianą.
-- [ ] 3.5 Wejście anonimowe na chroniony cel prowadzi przez signin i po powodzeniu wraca na zachowane `returnTo`; użytkownik może przejść signin ↔ signup.
+- [x] 3.3 `/` pokazuje polską stronę produktu z ogrodniczym przykładem i działającymi linkami do konta; nie wyświetla starterowego copy.
+- [x] 3.4 Signin i signup mają czytelne etykiety, pola, fokus i błędy; formularze wysyłają te same payloady co przed zmianą.
+- [x] 3.5 Wejście anonimowe na chroniony cel prowadzi przez signin i po powodzeniu wraca na zachowane `returnTo`; użytkownik może przejść signin ↔ signup.
 
 ### Phase 4: Dashboard ogrodu na pierwszym planie
 

@@ -13,6 +13,9 @@
   --app-border: #dce3d5;
   --app-input: #fffefa;
   --app-accent: #4d7147;
+  --app-soft: #eaf0e3;
+  --app-soil: #b08a62;
+  --app-sun: #d7aa58;
   --app-accent-strong: #315737;
   --app-accent-hover: #416e45;
   --app-accent-foreground: #fffefa;
@@ -119,6 +122,9 @@
   --color-app-border: var(--app-border);
   --color-app-input: var(--app-input);
   --color-app-accent: var(--app-accent);
+  --color-app-soft: var(--app-soft);
+  --color-app-soil: var(--app-soil);
+  --color-app-sun: var(--app-sun);
   --color-app-accent-strong: var(--app-accent-strong);
   --color-app-accent-hover: var(--app-accent-hover);
   --color-app-accent-foreground: var(--app-accent-foreground);
