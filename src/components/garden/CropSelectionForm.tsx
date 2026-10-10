@@ -98,11 +98,11 @@ function CropDetails({ crop }: { crop: CropCatalogEntry }) {
   const finalSpacing = crop.finalSpacing;
 
   return (
-    <details className="border-garden-surface/10 mt-2 rounded-lg border px-3 py-2">
+    <details className="border-app-border mt-2 rounded-lg border px-3 py-2">
       <summary className="text-garden-accent focus-visible:outline-garden-focus cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2">
         Informacje o rozstawie, siewie i terminach
       </summary>
-      <div className="text-garden-muted/80 mt-3 space-y-4 text-xs leading-relaxed">
+      <div className="text-garden-muted mt-3 space-y-4 text-xs leading-relaxed">
         <p>Pewność danych katalogowych: {CONFIDENCE_LABELS[crop.catalogConfidence]}.</p>
         <section aria-label={`Końcowa rozstawa: ${crop.commonNamePl}`}>
           <h4 className="text-garden-foreground font-semibold">Końcowa obsada</h4>
@@ -163,7 +163,7 @@ function CropDetails({ crop }: { crop: CropCatalogEntry }) {
         </section>
 
         {crop.needsLocalValidation && crop.validationNotes && (
-          <p className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-md border p-2">
+          <p className="border-garden-warning-border bg-garden-warning-surface text-garden-warning rounded-md border p-2">
             Wymaga lokalnej weryfikacji: {crop.validationNotes}
           </p>
         )}
@@ -309,7 +309,7 @@ export default function CropSelectionForm({
         <h2 id={titleId} className="text-garden-foreground text-2xl font-bold">
           Wybór warzyw i udziałów procentowych
         </h2>
-        <p className="text-garden-muted/75 mt-3">
+        <p className="text-garden-muted mt-3">
           Określ, jaki procent planowanej liczby roślin na całej działce ma przypadać na każdą uprawę. Algorytm później
           dobierze dla nich grządki; tutaj nie przypisujesz upraw do konkretnych skrzyń.
         </p>
@@ -317,7 +317,7 @@ export default function CropSelectionForm({
 
       {unavailable && (
         <p
-          className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+          className="border-garden-danger-border bg-garden-danger-surface text-garden-danger rounded-lg border px-4 py-3 text-sm"
           role="alert"
         >
           Nie udało się odczytać zapisanego wyboru upraw. Odśwież stronę później; formularz jest tymczasowo wyłączony,
@@ -326,7 +326,7 @@ export default function CropSelectionForm({
       )}
 
       <div className="max-w-2xl space-y-3">
-        <label htmlFor={searchId} className="text-garden-muted/80 block space-y-2 text-sm">
+        <label htmlFor={searchId} className="text-garden-muted block space-y-2 text-sm">
           <span>Wyszukaj warzywo po nazwie lub aliasie</span>
           <input
             id={searchId}
@@ -338,15 +338,15 @@ export default function CropSelectionForm({
             placeholder="Np. pomidor, ogórek albo rocket"
             autoComplete="off"
             disabled={unavailable || status === "saving"}
-            className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground placeholder:text-garden-muted/40 focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
+            className="border-app-border bg-garden-input text-garden-foreground placeholder:text-garden-muted focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
           />
         </label>
-        <p className="text-garden-muted/60 text-xs">Wyszukiwanie uwzględnia aliasy i nie wymaga polskich znaków.</p>
+        <p className="text-garden-muted text-xs">Wyszukiwanie uwzględnia aliasy i nie wymaga polskich znaków.</p>
 
         {query.trim() && searchResults.length > 0 && (
           <ul
             aria-label="Wyniki wyszukiwania"
-            className="divide-garden-surface/10 border-garden-surface/10 divide-y rounded-xl border"
+            className="divide-app-border border-app-border divide-y rounded-xl border"
           >
             {searchResults.map((crop) => (
               <li key={crop.id} className="flex items-center justify-between gap-4 px-4 py-3">
@@ -358,7 +358,7 @@ export default function CropSelectionForm({
                   }}
                   disabled={unavailable || status === "saving"}
                   variant="outline"
-                  className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium shadow-none transition-colors"
+                  className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium shadow-none transition-colors"
                   aria-label={`Dodaj ${crop.commonNamePl}`}
                 >
                   Dodaj
@@ -369,7 +369,7 @@ export default function CropSelectionForm({
         )}
 
         {query.trim() && searchResults.length === 0 && (
-          <p className="text-garden-muted/70 text-sm" role="status">
+          <p className="text-garden-muted text-sm" role="status">
             Nie znaleziono nowych warzyw dla tej frazy.
           </p>
         )}
@@ -380,7 +380,7 @@ export default function CropSelectionForm({
           <h3 className="text-garden-foreground text-lg font-semibold">Wybrane warzywa</h3>
           {unresolvedSelections.length > 0 && (
             <p
-              className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger mt-3 rounded-lg border px-4 py-3 text-sm"
+              className="border-garden-danger-border bg-garden-danger-surface text-garden-danger mt-3 rounded-lg border px-4 py-3 text-sm"
               role="alert"
             >
               Zapis zawiera wycofaną lub nierozpoznaną pozycję. Usuń ją albo dodaj aktywny zamiennik przed zapisem i
@@ -388,7 +388,7 @@ export default function CropSelectionForm({
             </p>
           )}
           {selection.length === 0 ? (
-            <p className="text-garden-muted/70 mt-2 text-sm">
+            <p className="text-garden-muted mt-2 text-sm">
               Nie wybrano jeszcze warzyw. Zapis pustej listy wyczyści wybór.
             </p>
           ) : (
@@ -403,7 +403,7 @@ export default function CropSelectionForm({
                 return (
                   <li
                     key={crop.cropId}
-                    className="border-garden-surface/10 bg-garden-surface/5 grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_10rem_auto] sm:items-end"
+                    className="border-app-border bg-garden-surface grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_10rem_auto] sm:items-end"
                   >
                     <div className="min-w-0">
                       <p className="text-garden-foreground font-medium">{cropName}</p>
@@ -419,7 +419,7 @@ export default function CropSelectionForm({
                       )}
                       {resolution.status === "active" && cropDetails && <CropDetails crop={cropDetails} />}
                     </div>
-                    <label htmlFor={proportionId} className="text-garden-muted/80 space-y-2 text-sm">
+                    <label htmlFor={proportionId} className="text-garden-muted space-y-2 text-sm">
                       <span>Udział (%)</span>
                       <input
                         id={proportionId}
@@ -441,7 +441,7 @@ export default function CropSelectionForm({
                           resolution.status !== "active" || proportionHundredths === null || proportionHundredths <= 0
                         }
                         aria-describedby={mixGuidanceId}
-                        className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
+                        className="border-app-border bg-garden-input text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2 disabled:opacity-50"
                       />
                     </label>
                     <Button
@@ -451,7 +451,7 @@ export default function CropSelectionForm({
                       }}
                       disabled={unavailable || status === "saving"}
                       variant="ghost"
-                      className="text-garden-danger-muted hover:bg-garden-danger-surface/10 hover:text-garden-danger focus-visible:ring-garden-focus rounded-lg px-3 py-2 text-sm transition-colors"
+                      className="text-garden-danger-muted hover:bg-garden-danger-surface hover:text-garden-danger focus-visible:ring-garden-focus rounded-lg px-3 py-2 text-sm transition-colors"
                       aria-label={`Usuń ${cropName}`}
                     >
                       Usuń
@@ -480,7 +480,7 @@ export default function CropSelectionForm({
 
         {status === "error" && (
           <p
-            className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+            className="border-garden-danger-border bg-garden-danger-surface text-garden-danger rounded-lg border px-4 py-3 text-sm"
             role="alert"
           >
             {message}
@@ -488,7 +488,7 @@ export default function CropSelectionForm({
         )}
         {status === "saved" && (
           <p
-            className="border-garden-success-border/30 bg-garden-success-surface/10 text-garden-success rounded-lg border px-4 py-3 text-sm"
+            className="border-garden-success-border bg-garden-success-surface text-garden-success rounded-lg border px-4 py-3 text-sm"
             role="status"
           >
             {message}

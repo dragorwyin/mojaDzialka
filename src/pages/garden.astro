@@ -129,16 +129,16 @@ const cropNames: Record<string, string> = Object.fromEntries(
 ---
 
 <Layout title="Moja działka" lang="pl">
-  <main class="bg-cosmic min-h-screen p-4 text-garden-foreground md:p-8">
+  <main class="bg-garden-workspace min-h-screen p-4 text-garden-foreground md:p-8">
     <div class="mx-auto max-w-4xl">
       <Topbar />
-      <section class="rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+      <section class="rounded-2xl border border-app-border bg-app-surface p-6 shadow-sm md:p-8">
         <div class="mb-8 max-w-2xl">
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-garden-accent">
             S-02 · Prywatna konfiguracja
           </p>
           <h1 class="text-3xl font-bold text-garden-foreground">Zdefiniuj swoją działkę</h1>
-          <p class="mt-3 text-garden-muted/75">
+          <p class="mt-3 text-garden-muted">
             Dodaj skrzynie lub sektory i podaj ich wymiary. Te dane zostaną użyte jako wejście do planowania upraw.
           </p>
         </div>
@@ -157,13 +157,13 @@ const cropNames: Record<string, string> = Object.fromEntries(
         />
       </section>
 
-      <section class="mt-8 rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+      <section class="mt-8 rounded-2xl border border-app-border bg-app-surface p-6 shadow-sm md:p-8">
         <CropSelectionForm initialSelection={initialCrops} unavailable={cropsLoadError} client:load />
       </section>
 
       <section
         id="garden-plan-ssr"
-        class="mt-8 rounded-2xl border border-garden-surface/10 bg-garden-surface/10 p-6 shadow-2xl backdrop-blur-xl md:p-8"
+        class="mt-8 rounded-2xl border border-app-border bg-app-surface p-6 shadow-sm md:p-8"
         data-plan-fingerprint={currentPlan?.input_fingerprint ?? ""}
         data-plan-generated-at={currentPlan?.generated_at ?? ""}
         data-plan-position-count={currentPlan ? String(currentPlanPositionCount) : ""}

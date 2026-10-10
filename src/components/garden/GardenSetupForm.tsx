@@ -90,7 +90,7 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
     <form method="POST" action="/api/garden" onSubmit={confirmStructuralChange} className="space-y-6">
       {saved && (
         <p
-          className="border-garden-success-border/30 bg-garden-success-surface/10 text-garden-success rounded-lg border px-4 py-3 text-sm"
+          className="border-garden-success-border bg-garden-success-surface text-garden-success rounded-lg border px-4 py-3 text-sm"
           role="status"
         >
           Działka została zapisana.
@@ -98,7 +98,7 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
       )}
       {error && (
         <p
-          className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+          className="border-garden-danger-border bg-garden-danger-surface text-garden-danger rounded-lg border px-4 py-3 text-sm"
           role="alert"
         >
           {ERROR_MESSAGES[error] ?? "Nie udało się zapisać danych. Sprawdź formularz i spróbuj ponownie."}
@@ -107,11 +107,11 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
 
       <div className="space-y-4">
         {spaces.map((space, index) => (
-          <fieldset key={space.id} className="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4">
+          <fieldset key={space.id} className="border-app-border bg-garden-surface rounded-xl border p-4">
             <legend className="text-garden-muted px-2 text-sm font-semibold">Przestrzeń {index + 1}</legend>
             <input type="hidden" name="spaceId" value={space.persistedId ?? ""} />
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="text-garden-muted/80 space-y-2 text-sm">
+              <label className="text-garden-muted space-y-2 text-sm">
                 <span>Nazwa</span>
                 <input
                   name="spaceName"
@@ -121,10 +121,10 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
                   }}
                   maxLength={80}
                   required
-                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
+                  className="border-app-border bg-garden-input text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
-              <label className="text-garden-muted/80 space-y-2 text-sm">
+              <label className="text-garden-muted space-y-2 text-sm">
                 <span>Typ</span>
                 <select
                   name="spaceType"
@@ -132,13 +132,13 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
                   onChange={(event) => {
                     updateSpace(index, { spaceType: event.target.value as SpaceType });
                   }}
-                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
+                  className="border-app-border bg-garden-input text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 >
                   <option value="bed">Skrzynia</option>
                   <option value="sector">Sektor</option>
                 </select>
               </label>
-              <label className="text-garden-muted/80 space-y-2 text-sm">
+              <label className="text-garden-muted space-y-2 text-sm">
                 <span>Szerokość (cm)</span>
                 <input
                   name="widthCm"
@@ -151,10 +151,10 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
                     updateSpace(index, { widthCm: event.target.value });
                   }}
                   required
-                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
+                  className="border-app-border bg-garden-input text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
-              <label className="text-garden-muted/80 space-y-2 text-sm">
+              <label className="text-garden-muted space-y-2 text-sm">
                 <span>Długość (cm)</span>
                 <input
                   name="lengthCm"
@@ -167,7 +167,7 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
                     updateSpace(index, { lengthCm: event.target.value });
                   }}
                   required
-                  className="border-garden-surface/15 bg-garden-input/40 text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
+                  className="border-app-border bg-garden-input text-garden-foreground focus:border-garden-accent-hover focus-visible:ring-garden-focus w-full rounded-lg border px-3 py-2 outline-none focus-visible:ring-2"
                 />
               </label>
             </div>
@@ -191,7 +191,7 @@ export default function GardenSetupForm({ initialSpaces, hasSavedPlan, error, sa
           type="button"
           onClick={addSpace}
           variant="outline"
-          className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus rounded-lg px-4 py-2 text-sm font-medium shadow-none transition-colors"
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus rounded-lg px-4 py-2 text-sm font-medium shadow-none transition-colors"
         >
           + Dodaj skrzynię lub sektor
         </Button>
