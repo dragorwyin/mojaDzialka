@@ -1,9 +1,21 @@
 import { defineMiddleware } from "astro:middleware";
 import { createClient } from "@/lib/supabase";
 
-const PROTECTED_ROUTES = ["/dashboard", "/garden"];
+const PROTECTED_ROUTES = ["/dashboard"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.url.pathname === "/garden") {
+    const destination = new URL("/dashboard", context.url);
+    for (const key of ["saved", "error", "tab"]) {
+      const value = context.url.searchParams.get(key);
+      if (value !== null) destination.searchParams.set(key, value);
+    }
+    if (destination.searchParams.has("saved") || destination.searchParams.has("error")) {
+      destination.searchParams.set("tab", "sectors");
+    }
+    return context.redirect(`${destination.pathname}${destination.search}`, 308);
+  }
+
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => context.url.pathname.startsWith(route));
 
   if (!isProtectedRoute) {

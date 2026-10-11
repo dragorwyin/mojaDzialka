@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Dwa kierunki ilustracji skrzynki ogrodowej</title>
+  <desc id="desc">Porównanie rzutu z góry z drewnianą ramą i lekkiej izometrii skrzynki z roślinami.</desc>
+  <defs>
+    <pattern id="soil" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="1.5" fill="#c5a27d" opacity=".4"/><circle cx="17" cy="16" r="1" fill="#d0b492" opacity=".3"/></pattern>
+    <g id="lettuce"><circle r="17" fill="#779654"/><circle cx="-7" cy="-3" r="9" fill="#9bb477"/><circle cx="7" cy="-7" r="10" fill="#aac183"/><circle cx="7" cy="6" r="10" fill="#89a761"/><path d="M-3 12Q0 3 4-5" fill="none" stroke="#e7edcf" stroke-width="2"/></g>
+    <g id="tomato"><circle cy="2" r="13" fill="#cb6049"/><path d="M0-12l3 7 8-4-5 7 8 2-9 2 1 7-6-6-7 4 3-7-7-4 9 1z" fill="#66884d"/></g>
+    <g id="carrot"><path d="M-8-5Q0-12 8-5L1 18Q0 21-2 18Z" fill="#e78638"/><path d="M0-5Q-11-14-12-20M0-6L-3-23M2-5Q12-14 13-20" fill="none" stroke="#688c4c" stroke-width="3.5" stroke-linecap="round"/></g>
+    <g id="iso-leaf"><path d="M0 0C-17-19-27-7-9 3C-26 0-24 15-4 10C-7 25 8 25 7 7C21 19 31 5 11 0C27-10 14-23 3-5C7-28-8-25-5-5Z" fill="#86a65a" stroke="#5c7844" stroke-width="2"/><path d="M0 9L-1-11M-1 3L-13-4M-1 4L13-4" stroke="#dce7c6" stroke-width="1.5" fill="none"/></g>
+    <g id="iso-tomato"><circle cx="4" cy="0" r="9" fill="#cb6049"/><path d="M3-10L7-4L14-7L11 0L16 3L8 4L6 10L2 4L-4 6L0 0L-4-5L2-4Z" fill="#6b8c4c"/></g>
+    <g id="iso-carrot"><path d="M-6-9Q0-15 7-9L0 15Z" fill="#e78638" stroke="#c76c28"/><path d="M0-10L-10-20M0-10L-1-23M1-10L11-20" stroke="#6c914a" stroke-width="3" stroke-linecap="round"/></g>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#33432e" flood-opacity=".08"/></filter>
+  </defs>
+  <rect width="1200" height="760" fill="#f5f7ef"/>
+  <text x="60" y="64" fill="#315737" font-family="Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="2">MOJA DZIAŁKA · KIERUNKI WIZUALNE</text>
+  <text x="60" y="112" fill="#263a2a" font-family="Georgia,serif" font-size="36">Skrzynki, które wyglądają jak ogród</text>
+  <text x="60" y="145" fill="#687766" font-family="Arial,sans-serif" font-size="16">Te same uprawy i proporcje · różny sposób pokazania skrzynki</text>
+  <g filter="url(#shadow)">
+    <rect x="54" y="183" width="536" height="510" rx="22" fill="#fffef9" stroke="#dce3d5"/>
+    <rect x="610" y="183" width="536" height="510" rx="22" fill="#fffef9" stroke="#dce3d5"/>
+  </g>
+  <text x="84" y="224" fill="#315737" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">WARIANT 01</text>
+  <text x="84" y="260" fill="#263a2a" font-family="Georgia,serif" font-size="26">Czytelny rzut z góry</text>
+  <text x="84" y="286" fill="#687766" font-family="Arial,sans-serif" font-size="14">Drewniana rama · ziemia · rozpoznawalne rzędy</text>
+  <rect x="99" y="325" width="446" height="270" rx="16" fill="#8c5b35"/>
+  <rect x="108" y="334" width="428" height="252" rx="12" fill="#d6a36b"/>
+  <rect x="121" y="347" width="402" height="226" rx="8" fill="#70543b"/>
+  <rect x="121" y="347" width="402" height="226" rx="8" fill="url(#soil)"/>
+  <path d="M121 403H523M121 460H523M121 517H523" stroke="#e1cba7" stroke-dasharray="3 8" opacity=".45"/>
+  <g transform="translate(166 376)"><use href="#lettuce"/><use href="#lettuce" x="76"/><use href="#lettuce" x="152"/><use href="#lettuce" x="228"/><use href="#lettuce" x="304"/></g>
+  <g transform="translate(166 432)"><use href="#carrot"/><use href="#carrot" x="76"/><use href="#carrot" x="152"/><use href="#carrot" x="228"/><use href="#carrot" x="304"/></g>
+  <g transform="translate(166 489)"><use href="#tomato"/><use href="#tomato" x="76"/><use href="#tomato" x="152"/><use href="#tomato" x="228"/><use href="#tomato" x="304"/></g>
+  <g transform="translate(166 545)"><use href="#lettuce"/><use href="#lettuce" x="76"/><use href="#lettuce" x="152"/><use href="#lettuce" x="228"/><use href="#lettuce" x="304"/></g>
+  <text x="84" y="632" fill="#687766" font-family="Arial,sans-serif" font-size="14">Najłatwiej odczytać układ i zachować dokładną siatkę.</text>
+  <text x="640" y="224" fill="#315737" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">WARIANT 02</text>
+  <text x="640" y="260" fill="#263a2a" font-family="Georgia,serif" font-size="26">Lekka izometria</text>
+  <text x="640" y="286" fill="#687766" font-family="Arial,sans-serif" font-size="14">Widoczna wysokość skrzynki · bardziej ilustracyjny ogród</text>
+  <ellipse cx="876" cy="598" rx="210" ry="22" fill="#34452e" opacity=".08"/>
+  <path d="M658 433L878 328L1098 433L878 539Z" fill="#8c5b35"/>
+  <path d="M658 433L878 539V577L658 471Z" fill="#8c5b35"/>
+  <path d="M878 539L1098 433V471L878 577Z" fill="#70482f"/>
+  <path d="M670 431L878 339L1086 431L878 529Z" fill="#d6a36b"/>
+  <path d="M691 431L878 349L1065 431L878 518Z" fill="#70543b"/>
+  <path d="M691 431L878 349L1065 431L878 518Z" fill="url(#soil)" opacity=".75"/>
+  <path d="M719 431L878 361L1037 431L878 505Z" fill="none" stroke="#e1cba7" stroke-dasharray="4 7" opacity=".65"/>
+  <g><use href="#iso-leaf" transform="translate(775 420) scale(.72)"/><use href="#iso-leaf" transform="translate(837 392) scale(.72)"/><use href="#iso-leaf" transform="translate(900 423) scale(.72)"/><use href="#iso-leaf" transform="translate(962 451) scale(.72)"/><use href="#iso-leaf" transform="translate(839 465) scale(.72)"/></g>
+  <g><use href="#iso-carrot" transform="translate(805 438) scale(.7)"/><use href="#iso-carrot" transform="translate(930 392) scale(.7)"/><use href="#iso-carrot" transform="translate(875 489) scale(.7)"/></g>
+  <g><use href="#iso-tomato" transform="translate(748 445) scale(.8)"/><use href="#iso-tomato" transform="translate(1006 426) scale(.8)"/><use href="#iso-tomato" transform="translate(891 385) scale(.8)"/></g>
+  <path d="M658 471L878 577L1098 471" fill="none" stroke="#deb17c" stroke-width="5" opacity=".8"/>
+  <text x="640" y="632" fill="#687766" font-family="Arial,sans-serif" font-size="14">Bardziej przestrzenny i charakterystyczny, mniej techniczny.</text>
+  <text x="60" y="731" fill="#687766" font-family="Arial,sans-serif" font-size="13">Makieta koncepcyjna · fikcyjne przykłady · bez zmian w działającej aplikacji</text>
+</svg>

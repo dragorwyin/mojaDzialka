@@ -26,7 +26,7 @@ describe("garden space POST", () => {
     vi.mocked(createClient).mockReturnValue(null);
     const response = await POST(createApiContext(gardenRequest("/api/garden", gardenSpaceForm())));
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/garden?error=unavailable");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&error=unavailable");
     expect(fixture.client.auth.getUser).not.toHaveBeenCalled();
     expect(fixture.client.rpc).not.toHaveBeenCalled();
   });
@@ -35,7 +35,7 @@ describe("garden space POST", () => {
     fixture.client.auth.getUser.mockResolvedValue({ data: { user: null }, error: null });
     const response = await POST(createApiContext(gardenRequest("/api/garden", gardenSpaceForm())));
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/auth/signin?returnTo=%2Fgarden");
+    expect(response.headers.get("Location")).toBe("/auth/signin?returnTo=%2Fdashboard%3Ftab%3Dsectors");
     expect(fixture.client.rpc).not.toHaveBeenCalled();
   });
 
@@ -43,7 +43,7 @@ describe("garden space POST", () => {
     const request = gardenRequest("/api/garden", "truncated multipart", "multipart/form-data");
     const response = await POST(createApiContext(request));
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/garden?error=invalid_spaces");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&error=invalid_spaces");
     expect(fixture.client.rpc).not.toHaveBeenCalled();
   });
 
@@ -53,7 +53,7 @@ describe("garden space POST", () => {
     ["missing name", { spaceName: "   " }],
   ])("rejects %s before attempting a write", async (_label, overrides) => {
     const response = await POST(createApiContext(gardenRequest("/api/garden", gardenSpaceForm(overrides))));
-    expect(response.headers.get("Location")).toBe("/garden?error=invalid_spaces");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&error=invalid_spaces");
     expect(fixture.client.rpc).not.toHaveBeenCalled();
   });
 
@@ -61,7 +61,7 @@ describe("garden space POST", () => {
     const form = gardenSpaceForm();
     form.append("spaceName", "Missing dimensions");
     const response = await POST(createApiContext(gardenRequest("/api/garden", form)));
-    expect(response.headers.get("Location")).toBe("/garden?error=invalid_spaces");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&error=invalid_spaces");
     expect(fixture.client.rpc).not.toHaveBeenCalled();
   });
 
@@ -69,7 +69,7 @@ describe("garden space POST", () => {
     fixture.client.rpc.mockResolvedValue({ data: null, error: PRIVATE_DATABASE_ERROR });
     const response = await POST(createApiContext(gardenRequest("/api/garden", gardenSpaceForm())));
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/garden?error=save_failed");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&error=save_failed");
     expect(await response.text()).not.toContain(PRIVATE_DATABASE_ERROR.message);
     expect(fixture.client.rpc).toHaveBeenCalledOnce();
   });
@@ -80,6 +80,6 @@ describe("garden space POST", () => {
       p_spaces: [{ id: SPACE_ID, name: "Test bed", space_type: "bed", width_cm: 20, length_cm: 30 }],
     });
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/garden?saved=1");
+    expect(response.headers.get("Location")).toBe("/dashboard?tab=sectors&saved=1");
   });
 });

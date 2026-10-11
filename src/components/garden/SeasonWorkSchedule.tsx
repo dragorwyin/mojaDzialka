@@ -97,14 +97,14 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
     <section
       aria-label="Przypomnienia o nadchodzących pracach sezonowych"
       aria-busy={referenceMonth === null}
-      className="border-garden-surface/10 bg-garden-surface/5 space-y-4 rounded-xl border p-4"
+      className="border-app-border bg-garden-surface space-y-4 rounded-xl border p-4"
     >
       <header className="space-y-1">
         <h3 className="text-garden-foreground text-lg font-semibold">Nadchodzące prace sezonowe</h3>
         {referenceMonth === null ? (
-          <p className="text-garden-muted/75 text-sm">Ustalanie aktualnego miesiąca…</p>
+          <p className="text-garden-muted text-sm">Ustalanie aktualnego miesiąca…</p>
         ) : (
-          <p className="text-garden-muted/75 text-sm">
+          <p className="text-garden-muted text-sm">
             Orientacyjne terminy na {monthLabels[0]} i {monthLabels[1]}.
           </p>
         )}
@@ -115,15 +115,15 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
           {workItems.map(({ cropId, cropNamePl, window, upcomingMonths }) => (
             <li
               key={`${cropId}-${window.method}-${window.startMonth}-${window.endMonth}-${window.condition}`}
-              className="border-garden-surface/10 border-t pt-3"
+              className="border-app-border border-t pt-3"
             >
               <p className="text-garden-foreground font-medium">
                 {cropNamePl} · {SOWING_METHOD_LABELS[window.method]}
               </p>
-              <p className="text-garden-muted/80 mt-1 text-sm">
+              <p className="text-garden-muted mt-1 text-sm">
                 {upcomingMonths.map((month) => MONTH_NAMES[month - 1]).join(" i ")} — {window.condition}
               </p>
-              <p className="text-garden-muted/70 mt-1 text-xs">
+              <p className="text-garden-muted mt-1 text-xs">
                 Okno: {MONTH_NAMES[window.startMonth - 1]}–{MONTH_NAMES[window.endMonth - 1]} · pewność danych:{" "}
                 {CONFIDENCE_LABELS[window.confidence]}.
               </p>
@@ -135,10 +135,10 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
 
       {referenceMonth !== null && workItems.length === 0 && (
         <>
-          <p className="text-garden-muted/80 text-sm">Brak potwierdzonych prac w bieżącym i kolejnym miesiącu.</p>
+          <p className="text-garden-muted text-sm">Brak potwierdzonych prac w bieżącym i kolejnym miesiącu.</p>
           {nextWork ? (
             <aside
-              className="border-garden-accent/30 bg-garden-accent/10 rounded-lg border p-3"
+              className="border-app-accent/30 bg-app-accent/10 rounded-lg border p-3"
               aria-label="Najbliższe późniejsze prace sezonowe"
             >
               <p className="text-garden-foreground text-sm font-semibold">
@@ -150,8 +150,8 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
                     <p className="text-garden-foreground text-sm font-medium">
                       {cropNamePl} · {SOWING_METHOD_LABELS[window.method]}
                     </p>
-                    <p className="text-garden-muted/80 mt-1 text-sm">{window.condition}</p>
-                    <p className="text-garden-muted/70 mt-1 text-xs">
+                    <p className="text-garden-muted mt-1 text-sm">{window.condition}</p>
+                    <p className="text-garden-muted mt-1 text-xs">
                       Okno: {MONTH_NAMES[window.startMonth - 1]}–{MONTH_NAMES[window.endMonth - 1]} · pewność danych:{" "}
                       {CONFIDENCE_LABELS[window.confidence]}.
                     </p>
@@ -161,15 +161,13 @@ export default function SeasonWorkSchedule({ cropSummaries }: { cropSummaries: r
               </ul>
             </aside>
           ) : (
-            <p className="text-garden-muted/70 text-sm">
-              Brak dalszych potwierdzonych terminów dla upraw z tego planu.
-            </p>
+            <p className="text-garden-muted text-sm">Brak dalszych potwierdzonych terminów dla upraw z tego planu.</p>
           )}
         </>
       )}
 
       {unverifiedCropNames.length > 0 && (
-        <p className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-md border p-3 text-sm">
+        <p className="border-garden-warning-border bg-garden-warning-surface text-garden-warning rounded-md border p-3 text-sm">
           Brak potwierdzonego terminu dla: {unverifiedCropNames.join(", ")}. Te uprawy wymagają weryfikacji i nie tworzą
           przypomnienia.
         </p>

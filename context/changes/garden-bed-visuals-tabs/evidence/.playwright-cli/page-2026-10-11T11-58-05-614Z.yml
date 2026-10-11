@@ -1,0 +1,221 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Widok deweloperski
+      - heading "Stany planera działki" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Deterministyczne dane demonstracyjne. Ta strona nie odczytuje prywatnych danych i nie wysyła żądań do API. Przyciski są przykładami stanów, nie wykonują zapisu ani generowania.
+    - region [ref=e8]:
+      - heading "Macierz interakcji" [level=2] [ref=e9]
+      - generic [ref=e10]:
+        - article [ref=e11]:
+          - heading "Default" [level=3] [ref=e12]
+          - paragraph [ref=e13]: Plan jest gotowy do wygenerowania.
+          - button "Wygeneruj plan" [ref=e14]
+        - article [ref=e15]:
+          - heading "Hover" [level=3] [ref=e16]
+          - paragraph [ref=e17]: Najedź kursorem, aby zobaczyć zmianę tła.
+          - button "Przycisk demonstracyjny" [ref=e18]
+        - article [ref=e19]:
+          - heading "Focus-visible" [level=3] [ref=e20]
+          - paragraph [ref=e21]: Użyj Tab, aby sprawdzić widoczny focus klawiatury.
+          - button "Przycisk dostępny z klawiatury" [ref=e22]
+        - article [ref=e23]:
+          - heading "Disabled" [level=3] [ref=e24]
+          - paragraph [ref=e25]: Brak zapisanej przestrzeni — generowanie jest niedostępne.
+          - button "Wygeneruj plan" [disabled]
+        - article [ref=e26]:
+          - heading "Error" [level=3] [ref=e27]
+          - alert [ref=e28]: Nie udało się odczytać planu. Spróbuj ponownie później.
+          - button "Spróbuj ponownie" [ref=e29]
+        - article [ref=e30]:
+          - heading "Empty" [level=3] [ref=e31]
+          - status [ref=e32]: Nie ma jeszcze planu. Po wygenerowaniu pojawią się tu diagram i zestawienie udziałów.
+        - article [ref=e33]:
+          - heading "Loading" [level=3] [ref=e34]
+          - status [ref=e35]: Trwa generowanie planu…
+          - button "Generowanie…" [disabled]
+    - region [ref=e36]:
+      - heading "Wyniki planowania" [level=2] [ref=e37]
+      - article [ref=e38]:
+        - heading "Success · aktualny plan" [level=3] [ref=e39]
+        - region "Szczegóły wygenerowanego układu" [ref=e41]:
+          - article [ref=e43]:
+            - generic [ref=e44]:
+              - heading "Skrzynia demonstracyjna" [level=3] [ref=e45]
+              - paragraph [ref=e46]: 120 × 80 cm · 2 pozycji
+            - generic [ref=e47]:
+              - paragraph [ref=e48]: Siatka co 10 cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+              - group "Diagram Skrzynia demonstracyjna w skali centymetrowej" [ref=e49]:
+                - img "01 · Marchew, pozycja 1, 1, 15 × 15 cm" [ref=e55]
+                - img "02 · Cebula, pozycja 1, 2, 45 × 15 cm" [ref=e59]
+            - group [ref=e63]:
+              - generic "Sąsiedzi i uzasadnienie pozycji (2)" [ref=e64] [cursor=pointer]
+          - region "Legenda diagramu" [ref=e65]:
+            - heading "Legenda upraw" [level=3] [ref=e66]
+            - list [ref=e67]:
+              - listitem [ref=e68]:
+                - generic [ref=e72]: 01 Marchew
+              - listitem [ref=e73]:
+                - generic [ref=e77]: 02 Cebula
+          - region [ref=e78]:
+            - generic [ref=e79]:
+              - heading "Cel i osiągnięty miks" [level=3] [ref=e80]
+              - paragraph [ref=e81]: Cel procentowy pochodzi z wyboru upraw. Liczba pozycji obsady i osiągnięty udział pokazują ten diagram; udział liczymy według jednostek sadzenia (np. jedna kępa szczypiorku to jedna pozycja). Kody upraw znajdziesz w legendzie, a szczegóły po wskazaniu pozycji.
+            - table [ref=e83]:
+              - rowgroup [ref=e84]:
+                - row [ref=e85]:
+                  - columnheader "Uprawa" [ref=e86]
+                  - columnheader "Cel" [ref=e87]
+                  - columnheader "Pozycje obsady" [ref=e88]
+                  - columnheader "Osiągnięto" [ref=e89]
+                  - columnheader "Odchylenie" [ref=e90]
+                  - columnheader "Pewność danych" [ref=e91]
+              - rowgroup [ref=e92]:
+                - row [ref=e93]:
+                  - rowheader "01 Marchew" [ref=e94]:
+                    - generic [ref=e95]: "01"
+                    - text: Marchew
+                  - cell "50,0%" [ref=e96]
+                  - cell "1" [ref=e97]
+                  - cell "50,0%" [ref=e98]
+                  - cell "0,0%" [ref=e99]
+                  - cell "średnia · po przerywce" [ref=e100]
+                - row [ref=e101]:
+                  - rowheader "02 Cebula" [ref=e102]:
+                    - generic [ref=e103]: "02"
+                    - text: Cebula
+                  - cell "50,0%" [ref=e104]
+                  - cell "1" [ref=e105]
+                  - cell "50,0%" [ref=e106]
+                  - cell "0,0%" [ref=e107]
+                  - cell "średnia · sadzenie" [ref=e108]
+          - paragraph [ref=e109]: "Sąsiedztwo w układzie: korzystne wskazówki 1, ostrzeżenia caution 0. Brak wpisu w katalogu jest neutralny; wskazówki nie są gwarancją plonu."
+      - article [ref=e110]:
+        - heading "Wynik częściowy · jawny brak danych" [level=3] [ref=e111]
+        - region "Szczegóły wygenerowanego układu" [ref=e113]:
+          - generic [ref=e114]:
+            - article [ref=e115]:
+              - generic [ref=e116]:
+                - heading "Skrzynia demonstracyjna" [level=3] [ref=e117]
+                - paragraph [ref=e118]: 120 × 80 cm · 2 pozycji
+              - alert [ref=e119]: Układ tej przestrzeni jest częściowy — osiągnięto limit obliczeń. Nie wszystkie pozycje musiały zostać sprawdzone.
+              - generic [ref=e120]:
+                - paragraph [ref=e121]: Siatka co 10 cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+                - group "Diagram Skrzynia demonstracyjna w skali centymetrowej" [ref=e122]:
+                  - img "01 · Marchew, pozycja 1, 1, 15 × 15 cm" [ref=e128]
+                  - img "02 · Cebula, pozycja 1, 2, 45 × 15 cm" [ref=e132]
+              - group [ref=e136]:
+                - generic "Sąsiedzi i uzasadnienie pozycji (2)" [ref=e137] [cursor=pointer]
+            - article [ref=e138]:
+              - generic [ref=e139]:
+                - heading "Skrzynia nieprzetworzona" [level=3] [ref=e140]
+                - paragraph [ref=e141]: 120 × 80 cm · 0 pozycji
+              - alert [ref=e142]: Ta przestrzeń nie została przetworzona z powodu limitu obliczeń; nie pokazujemy jej jako zaplanowanej.
+              - generic [ref=e143]:
+                - paragraph [ref=e144]: Siatka co 10 cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+                - group "Diagram Skrzynia nieprzetworzona w skali centymetrowej" [ref=e145]:
+                  - generic [ref=e151]: Brak wyznaczonych pozycji
+          - region "Legenda diagramu" [ref=e152]:
+            - heading "Legenda upraw" [level=3] [ref=e153]
+            - list [ref=e154]:
+              - listitem [ref=e155]:
+                - generic [ref=e159]: 01 Marchew
+              - listitem [ref=e160]:
+                - generic [ref=e164]: 02 Cebula
+          - region "Cel i osiągnięty miks" [ref=e165]:
+            - generic [ref=e166]:
+              - heading "Cel i osiągnięty miks" [level=3] [ref=e167]
+              - paragraph [ref=e168]: Cel procentowy pochodzi z wyboru upraw. Liczba pozycji obsady i osiągnięty udział pokazują ten diagram; udział liczymy według jednostek sadzenia (np. jedna kępa szczypiorku to jedna pozycja). Kody upraw znajdziesz w legendzie, a szczegóły po wskazaniu pozycji.
+            - table [ref=e170]:
+              - rowgroup [ref=e171]:
+                - row [ref=e172]:
+                  - columnheader "Uprawa" [ref=e173]
+                  - columnheader "Cel" [ref=e174]
+                  - columnheader "Pozycje obsady" [ref=e175]
+                  - columnheader "Osiągnięto" [ref=e176]
+                  - columnheader "Odchylenie" [ref=e177]
+                  - columnheader "Pewność danych" [ref=e178]
+              - rowgroup [ref=e179]:
+                - row [ref=e180]:
+                  - rowheader "01 Marchew" [ref=e181]:
+                    - generic [ref=e182]: "01"
+                    - text: Marchew
+                  - cell "50,0%" [ref=e183]
+                  - cell "1" [ref=e184]
+                  - cell "50,0%" [ref=e185]
+                  - cell "0,0%" [ref=e186]
+                  - cell "średnia · po przerywce" [ref=e187]
+                - row [ref=e188]:
+                  - rowheader "02 Cebula" [ref=e189]:
+                    - generic [ref=e190]: "02"
+                    - text: Cebula
+                  - cell "60,0%" [ref=e191]
+                  - cell "1" [ref=e192]
+                  - cell "50,0%" [ref=e193]
+                  - cell "-10,0%" [ref=e194]
+                  - cell "średnia · sadzenie" [ref=e195]
+          - region [ref=e196]:
+            - heading "Ograniczenia i braki" [level=3] [ref=e197]
+            - generic [ref=e198]:
+              - heading "Uprawy bez wyznaczonej pozycji" [level=4] [ref=e199]
+              - list [ref=e200]:
+                - listitem [ref=e201]: "pomidor Faworyt: brak rozstawy w katalogu"
+          - paragraph [ref=e202]: "Sąsiedztwo w układzie: korzystne wskazówki 1, ostrzeżenia caution 0. Brak wpisu w katalogu jest neutralny; wskazówki nie są gwarancją plonu."
+          - list [ref=e203]:
+            - listitem [ref=e204]: "Osiągnięto limit obliczeń; pokazano najlepszy znaleziony układ. Przestrzenie nieprzetworzone: Skrzynia nieprzetworzona. Bieżąca przestrzeń może zawierać układ częściowy."
+      - article [ref=e205]:
+        - heading "Plan nieaktualny · ostrzeżenie i CTA" [level=3] [ref=e206]
+        - region "Szczegóły wygenerowanego układu" [ref=e208]:
+          - alert [ref=e209]: Plan nieaktualny. Diagram i liczby poniżej opisują poprzedni zapisany układ, a nie bieżące wejścia.
+          - article [ref=e211]:
+            - generic [ref=e212]:
+              - heading "Skrzynia demonstracyjna" [level=3] [ref=e213]
+              - paragraph [ref=e214]: 120 × 80 cm · 2 pozycji
+            - generic [ref=e215]:
+              - paragraph [ref=e216]: Siatka co 10 cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+              - group "Diagram Skrzynia demonstracyjna w skali centymetrowej" [ref=e217]:
+                - img "01 · Marchew, pozycja 1, 1, 15 × 15 cm" [ref=e223]
+                - img "02 · Cebula, pozycja 1, 2, 45 × 15 cm" [ref=e227]
+            - group [ref=e231]:
+              - generic "Sąsiedzi i uzasadnienie pozycji (2)" [ref=e232] [cursor=pointer]
+          - region "Legenda diagramu" [ref=e233]:
+            - heading "Legenda upraw" [level=3] [ref=e234]
+            - list [ref=e235]:
+              - listitem [ref=e236]:
+                - generic [ref=e240]: 01 Marchew
+              - listitem [ref=e241]:
+                - generic [ref=e245]: 02 Cebula
+          - region "Cel i osiągnięty miks" [ref=e246]:
+            - generic [ref=e247]:
+              - heading "Cel i osiągnięty miks" [level=3] [ref=e248]
+              - paragraph [ref=e249]: Cel procentowy pochodzi z wyboru upraw. Liczba pozycji obsady i osiągnięty udział pokazują ten diagram; udział liczymy według jednostek sadzenia (np. jedna kępa szczypiorku to jedna pozycja). Kody upraw znajdziesz w legendzie, a szczegóły po wskazaniu pozycji.
+            - table [ref=e251]:
+              - rowgroup [ref=e252]:
+                - row [ref=e253]:
+                  - columnheader "Uprawa" [ref=e254]
+                  - columnheader "Cel" [ref=e255]
+                  - columnheader "Pozycje obsady" [ref=e256]
+                  - columnheader "Osiągnięto" [ref=e257]
+                  - columnheader "Odchylenie" [ref=e258]
+                  - columnheader "Pewność danych" [ref=e259]
+              - rowgroup [ref=e260]:
+                - row [ref=e261]:
+                  - rowheader "01 Marchew" [ref=e262]:
+                    - generic [ref=e263]: "01"
+                    - text: Marchew
+                  - cell "50,0%" [ref=e264]
+                  - cell "1" [ref=e265]
+                  - cell "50,0%" [ref=e266]
+                  - cell "0,0%" [ref=e267]
+                  - cell "średnia · po przerywce" [ref=e268]
+                - row [ref=e269]:
+                  - rowheader "02 Cebula" [ref=e270]:
+                    - generic [ref=e271]: "02"
+                    - text: Cebula
+                  - cell "50,0%" [ref=e272]
+                  - cell "1" [ref=e273]
+                  - cell "50,0%" [ref=e274]
+                  - cell "0,0%" [ref=e275]
+                  - cell "średnia · sadzenie" [ref=e276]
+          - paragraph [ref=e277]: "Sąsiedztwo w układzie: korzystne wskazówki 1, ostrzeżenia caution 0. Brak wpisu w katalogu jest neutralny; wskazówki nie są gwarancją plonu."
+        - button "Wygeneruj ponownie" [ref=e278]

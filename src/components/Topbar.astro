@@ -1,33 +1,49 @@
 ---
+import { Button } from "@/components/ui/button";
+
 const { user } = Astro.locals;
 ---
 
-<div class="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+<header class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-app-border bg-app-surface px-4 py-3 text-sm shadow-sm sm:px-5">
+  <a href="/" class="font-semibold tracking-tight text-app-foreground transition-colors hover:text-app-accent-strong">
+    moja działka
+  </a>
   {user ? (
-    <>
-      <span class="text-blue-100/70">{user.email}</span>
-      <div class="flex items-center gap-3">
-        <a href="/dashboard" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Dashboard
-        </a>
-        <form method="POST" action="/api/auth/signout">
-          <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-            Sign out
-          </button>
-        </form>
-      </div>
-    </>
+    <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+      <span class="max-w-48 truncate text-app-muted" title={user.email}>
+        {user.email}
+      </span>
+      <a
+        href="/dashboard"
+        class="font-medium text-app-accent-strong transition-colors hover:text-app-accent-hover hover:underline"
+      >
+        Mój ogród
+      </a>
+      <form method="POST" action="/api/auth/signout">
+        <Button
+          type="submit"
+          variant="ghost"
+          size="sm"
+          className="text-app-accent-strong hover:bg-app-page hover:text-app-accent-hover"
+        >
+          Wyloguj się
+        </Button>
+      </form>
+    </div>
   ) : (
-    <>
-      <span class="text-blue-100/70">Not signed in</span>
-      <div class="flex gap-3">
-        <a href="/auth/signin" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Sign in
-        </a>
-        <a href="/auth/signup" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Sign up
-        </a>
-      </div>
-    </>
+    <nav aria-label="Konto" class="flex items-center gap-2 sm:gap-4">
+      <a
+        href="/auth/signin"
+        class="font-medium text-app-accent-strong transition-colors hover:text-app-accent-hover hover:underline"
+      >
+        Zaloguj się
+      </a>
+      <a
+        href="/auth/signup"
+        class="rounded-full bg-app-accent-strong px-4 py-2 font-medium text-app-accent-foreground transition-colors hover:bg-app-accent-hover"
+      >
+        Załóż konto
+      </a>
+    </nav>
   )}
-</div>
+</header>

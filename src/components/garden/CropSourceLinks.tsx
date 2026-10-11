@@ -16,7 +16,7 @@ export default function CropSourceLinks({ sourceIds }: { sourceIds: readonly Sou
                 <a className="text-garden-accent underline underline-offset-2" href={source.url}>
                   {source.title}
                 </a>
-                <span className="text-garden-muted/70"> — {source.context}</span>
+                <span className="text-garden-muted"> — {source.context}</span>
               </>
             ) : (
               `Nieznane źródło ${sourceId}`

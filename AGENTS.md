@@ -90,6 +90,7 @@ Each handoff is a **STOP point**. The orchestrator copies the next command to th
 
 ## UI implementation guard
 
+- Use the shared `app-*` semantic roles for public/auth surfaces and the `garden-*` roles for planner states; both palettes live in `src/styles/global.css` and share the light botanical values.
 - Use semantic design tokens from `src/styles/global.css` and shared primitives from `src/components/ui`; use the existing `Button` for button controls.
 - Before adding a component or styling pattern, inspect `src/components/ui` and reuse an existing component when it fits. Do not add literal colors, palette-specific utility colors, or arbitrary Tailwind values in views; add a semantic token or a shared UI component when the design system is missing something.
 - Add a missing shared component under `src/components/ui` using the repository's existing component conventions, then use it from views rather than creating a local duplicate.

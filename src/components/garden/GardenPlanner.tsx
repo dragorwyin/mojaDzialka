@@ -116,7 +116,7 @@ export default function GardenPlanner({
       });
 
       if (response.status === 401) {
-        window.location.assign("/auth/signin?returnTo=%2Fgarden");
+        window.location.assign("/auth/signin?returnTo=%2Fdashboard");
         return;
       }
 
@@ -161,13 +161,13 @@ export default function GardenPlanner({
         <h2 id="garden-planner-title" className="text-garden-foreground text-2xl font-bold">
           Układ działki
         </h2>
-        <p className="text-garden-muted/75">
+        <p className="text-garden-muted">
           Algorytm rozkłada wybrane uprawy na wszystkich zapisanych skrzyniach i sektorach. Nie przypisujesz ich ręcznie
           do konkretnych przestrzeni.
         </p>
       </header>
 
-      <div className="border-garden-surface/10 bg-garden-surface/5 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4">
+      <div className="border-app-border bg-garden-surface flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4">
         <div className="min-w-0 space-y-1">
           <p
             className={`text-sm font-semibold ${planState.status === "stale" ? "text-garden-warning" : "text-garden-foreground"}`}
@@ -179,7 +179,7 @@ export default function GardenPlanner({
             </span>
             {STATUS_MESSAGES[planState.status]}
           </p>
-          {generatedAt && <p className="text-garden-muted/70 text-xs">Wygenerowano: {generatedAt}</p>}
+          {generatedAt && <p className="text-garden-muted text-xs">Wygenerowano: {generatedAt}</p>}
         </div>
 
         <Button
@@ -193,7 +193,7 @@ export default function GardenPlanner({
       </div>
 
       {!canGenerate && (
-        <p className="text-garden-muted/80 text-sm" role="note">
+        <p className="text-garden-muted text-sm" role="note">
           {inputsUnavailable
             ? "Generowanie jest wyłączone, ponieważ nie udało się odczytać wszystkich zapisanych danych."
             : !hasSpaces
@@ -206,7 +206,7 @@ export default function GardenPlanner({
 
       {generationError && (
         <p
-          className="border-garden-danger-border/30 bg-garden-danger-surface/10 text-garden-danger rounded-lg border px-4 py-3 text-sm"
+          className="border-garden-danger-border bg-garden-danger-surface text-garden-danger rounded-lg border px-4 py-3 text-sm"
           role="alert"
         >
           {generationError}
@@ -219,7 +219,7 @@ export default function GardenPlanner({
           <SeasonWorkSchedule cropSummaries={planState.plan.cropSummaries} />
         </>
       ) : (
-        <p className="border-garden-surface/10 bg-garden-surface/5 text-garden-muted/80 rounded-xl border px-4 py-5 text-sm">
+        <p className="border-app-border bg-garden-surface text-garden-muted rounded-xl border px-4 py-5 text-sm">
           {planState.status === "unavailable"
             ? "Zapisany diagram jest chwilowo niedostępny. Spróbuj odświeżyć stronę później."
             : "Po wygenerowaniu tutaj pojawią się diagram przestrzeni, liczby roślin i porównanie z celami procentowymi."}

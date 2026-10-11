@@ -8,7 +8,7 @@ const MAX_DIMENSION_CM = 100_000;
 const VALID_SPACE_TYPES = new Set(["bed", "sector"]);
 
 function redirectWithError(context: Parameters<APIRoute>[0], code: string) {
-  return context.redirect(`/garden?error=${encodeURIComponent(code)}`);
+  return context.redirect(`/dashboard?tab=sectors&error=${encodeURIComponent(code)}`);
 }
 
 function getStrings(form: FormData, key: string) {
@@ -28,7 +28,7 @@ export const POST: APIRoute = async (context) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return context.redirect("/auth/signin?returnTo=%2Fgarden");
+  if (!user) return context.redirect("/auth/signin?returnTo=%2Fdashboard%3Ftab%3Dsectors");
 
   let form: FormData;
   try {
@@ -88,5 +88,5 @@ export const POST: APIRoute = async (context) => {
     return redirectWithError(context, "save_failed");
   }
 
-  return context.redirect("/garden?saved=1");
+  return context.redirect("/dashboard?tab=sectors&saved=1");
 };

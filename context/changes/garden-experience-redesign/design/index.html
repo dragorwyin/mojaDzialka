@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f7ed" />
+    <title>Moja Działka — koncepcje</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f6f7ed;
+        --surface: #fffefa;
+        --surface-soft: #edf1df;
+        --ink: #213b2e;
+        --muted: #68776a;
+        --leaf: #38734c;
+        --leaf-deep: #245638;
+        --leaf-soft: #dce9cf;
+        --sun: #e6b65f;
+        --clay: #cf7958;
+        --line: #dfe5d4;
+        --shadow: 0 24px 70px rgb(49 73 48 / 12%);
+        --serif: Georgia, "Times New Roman", serif;
+        --sans: "Aptos", "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #e8ebdf; color: var(--ink); font: 15px/1.5 var(--sans); }
+      button, input { font: inherit; }
+      button { color: inherit; }
+      .board { max-width: 1440px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 56px) 64px; }
+      .board-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+      .eyebrow { margin: 0 0 6px; color: var(--leaf); font-size: 11px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+      .board-title { margin: 0; font: 32px/1.1 var(--serif); letter-spacing: -.035em; }
+      .board-note { max-width: 410px; margin: 0; color: #607064; font-size: 13px; }
+      .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border: 1px solid #d8ded0; border-radius: 18px 18px 0 0; background: #f7f8f2; }
+      .control-group { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+      .control-label { padding: 0 9px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+      .control-button { min-height: 36px; padding: 7px 13px; border: 0; border-radius: 11px; background: transparent; color: #5b695e; cursor: pointer; font-size: 13px; }
+      .control-button[aria-pressed="true"] { background: var(--ink); color: #fffefa; }
+      .preview-wrap { min-height: 760px; padding: 24px; border: 1px solid #d8ded0; border-top: 0; border-radius: 0 0 18px 18px; background-color: #e9eddf; background-image: radial-gradient(#c9d1bf 1px, transparent 1px); background-size: 18px 18px; }
+      .device { position: relative; width: 100%; max-width: 1320px; min-height: 710px; margin: 0 auto; overflow: hidden; border: 1px solid #d5dccc; border-radius: 20px; background: var(--paper); box-shadow: var(--shadow); transition: width .25s ease, min-height .25s ease; }
+      .device.mobile { width: min(100%, 390px); min-height: 780px; border-radius: 30px; }
+      .screen { display: none; min-height: inherit; }
+      .screen.active { display: block; }
+
+      .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); font-size: 17px; font-weight: 750; letter-spacing: -.04em; text-decoration: none; }
+      .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 12px 12px 12px 4px; background: var(--leaf); color: white; }
+      .brand-mark svg { width: 21px; height: 21px; }
+      .site-nav { display: flex; align-items: center; gap: 27px; }
+      .site-nav a { color: var(--muted); font-size: 13px; text-decoration: none; }
+      .site-nav .nav-cta { padding: 10px 16px; border-radius: 999px; background: var(--leaf-deep); color: white; font-weight: 650; }
+      .site-header { display: flex; align-items: center; justify-content: space-between; padding: 20px clamp(22px, 5vw, 72px); }
+      .landing { position: relative; min-height: 710px; overflow: hidden; background: var(--paper); }
+      .landing:before { position: absolute; top: -130px; right: -180px; width: 610px; height: 610px; border-radius: 50%; background: #e7ecd8; content: ""; }
+      .landing:after { position: absolute; bottom: -350px; left: -140px; width: 530px; height: 530px; border: 1px solid #e0e7d4; border-radius: 50%; content: ""; }
+      .hero { position: relative; z-index: 1; display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: 42px; max-width: 1180px; margin: 0 auto; padding: 68px 32px 84px; }
+      .hero-copy { padding-bottom: 16px; }
+      .hero-kicker { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; color: var(--leaf); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+      .hero-kicker:before { width: 24px; height: 1px; background: var(--leaf); content: ""; }
+      h1, h2, h3, p { margin-top: 0; }
+      .hero h1 { max-width: 510px; margin-bottom: 20px; font: 600 clamp(42px, 5.1vw, 72px)/.99 var(--serif); letter-spacing: -.055em; }
+      .hero h1 em { color: var(--leaf); font-weight: 500; }
+      .hero-text { max-width: 420px; margin-bottom: 30px; color: #667367; font-size: 17px; }
+      .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+      .primary { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--leaf-deep); color: white; font-weight: 700; text-decoration: none; }
+      .text-link { color: var(--leaf-deep); font-size: 14px; font-weight: 700; text-decoration: none; }
+      .fine-print { margin: 18px 0 0; color: #859083; font-size: 12px; }
+      .hero-art { position: relative; min-height: 430px; }
+      .garden-scene { position: absolute; inset: 2px 0 0; width: 100%; height: 100%; }
+      .art-caption { position: absolute; right: 7%; bottom: 2%; padding: 12px 16px; border: 1px solid #e4e8dd; border-radius: 14px; background: rgb(255 254 250 / 92%); box-shadow: 0 10px 25px rgb(49 73 48 / 8%); }
+      .art-caption strong { display: block; font: 17px var(--serif); }
+      .art-caption span { color: var(--muted); font-size: 11px; }
+      .landing-foot { position: relative; z-index: 2; display: flex; justify-content: center; gap: 38px; padding: 18px; color: #7a8678; font-size: 12px; }
+      .landing-foot span:before { margin-right: 8px; color: var(--leaf); content: "✳"; }
+
+      .auth-screen { min-height: 710px; padding: 22px clamp(18px, 4vw, 52px); background: var(--paper); }
+      .auth-top { display: flex; align-items: center; justify-content: space-between; }
+      .auth-top p { margin: 0; color: var(--muted); font-size: 13px; }
+      .auth-grid { display: grid; max-width: 1020px; min-height: 600px; grid-template-columns: 1fr .88fr; align-items: center; gap: clamp(35px, 7vw, 90px); margin: 15px auto 0; }
+      .auth-story { position: relative; min-height: 455px; overflow: hidden; padding: 43px 38px; border-radius: 46% 46% 24px 24px / 26% 26% 24px 24px; background: var(--leaf-soft); }
+      .auth-story h2 { position: relative; z-index: 1; max-width: 360px; margin: 0; font: 500 43px/1.03 var(--serif); letter-spacing: -.04em; }
+      .auth-story h2 em { color: var(--leaf-deep); }
+      .auth-story p { position: relative; z-index: 1; max-width: 300px; margin: 14px 0 0; color: #596d5b; }
+      .auth-art { position: absolute; right: -6%; bottom: -4%; width: 108%; height: 70%; }
+      .auth-card { max-width: 400px; }
+      .auth-tabs { display: inline-flex; gap: 5px; margin-bottom: 30px; padding: 4px; border-radius: 999px; background: #e9ecdf; }
+      .auth-tab { min-width: 96px; padding: 9px 13px; border: 0; border-radius: 999px; background: transparent; color: #657266; cursor: pointer; font-size: 13px; font-weight: 650; }
+      .auth-tab[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 8px rgb(49 73 48 / 10%); }
+      .auth-card h2 { margin-bottom: 7px; font: 500 38px/1.05 var(--serif); letter-spacing: -.04em; }
+      .auth-intro { margin-bottom: 24px; color: var(--muted); font-size: 14px; }
+      .field { display: grid; gap: 7px; margin-bottom: 16px; }
+      .field label { color: #435547; font-size: 12px; font-weight: 700; }
+      .field input { width: 100%; height: 48px; padding: 0 14px; border: 1px solid #d8dfd0; border-radius: 11px; outline: 0; background: var(--surface); color: var(--ink); }
+      .field input:focus { border-color: var(--leaf); box-shadow: 0 0 0 3px rgb(56 115 76 / 16%); }
+      .form-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 3px 0 20px; color: var(--muted); font-size: 12px; }
+      .form-row a, .auth-switch a { color: var(--leaf-deep); font-weight: 700; text-decoration: none; }
+      .remember { display: inline-flex; align-items: center; gap: 7px; }
+      .auth-submit { width: 100%; min-height: 50px; border: 0; border-radius: 12px; background: var(--leaf-deep); color: white; cursor: pointer; font-weight: 700; }
+      .auth-switch { margin: 19px 0 0; color: var(--muted); text-align: center; font-size: 13px; }
+      .auth-privacy { margin: 22px 0 0; color: #8a9587; text-align: center; font-size: 11px; }
+
+      .app-screen { min-height: 710px; background: #f4f5ec; }
+      .app-header { display: flex; height: 68px; align-items: center; justify-content: space-between; padding: 0 34px; border-bottom: 1px solid var(--line); background: #fffefa; }
+      .app-nav { display: flex; align-items: center; gap: 7px; margin-left: 35px; }
+      .app-nav span { padding: 8px 12px; border-radius: 999px; color: #718071; font-size: 12px; }
+      .app-nav span.current { background: var(--surface-soft); color: var(--leaf-deep); font-weight: 700; }
+      .user-chip { display: inline-flex; align-items: center; gap: 9px; color: #596a5d; font-size: 12px; }
+      .avatar { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: #e4b882; color: #60482b; font: 15px var(--serif); }
+      .app-content { max-width: 1260px; margin: 0 auto; padding: 32px clamp(18px, 4vw, 50px) 52px; }
+      .app-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+      .app-heading .eyebrow { margin-bottom: 5px; }
+      .app-heading h1 { margin: 0; font: 500 38px/1.05 var(--serif); letter-spacing: -.04em; }
+      .weather { display: flex; align-items: center; gap: 8px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: #677364; font-size: 11px; }
+      .weather b { color: #c18b37; font-size: 18px; }
+      .garden-tabs { display: flex; gap: 23px; margin-bottom: 22px; border-bottom: 1px solid #dce2d5; }
+      .garden-tab { position: relative; padding: 0 2px 12px; border: 0; background: transparent; color: #778276; cursor: pointer; font-size: 13px; }
+      .garden-tab[aria-selected="true"] { color: var(--leaf-deep); font-weight: 750; }
+      .garden-tab[aria-selected="true"]:after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--leaf); content: ""; }
+      .garden-layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(230px, .72fr); gap: 18px; }
+      .plot-card { min-height: 455px; overflow: hidden; padding: 20px; border: 1px solid #e0e5d9; border-radius: 18px; background: var(--surface); }
+      .plot-top { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+      .plot-top h2, .side-card h2 { margin: 0 0 5px; font: 500 22px var(--serif); letter-spacing: -.025em; }
+      .subtle { margin: 0; color: var(--muted); font-size: 11px; }
+      .status { padding: 6px 10px; border-radius: 999px; background: #e7efdd; color: var(--leaf-deep); font-size: 10px; font-weight: 700; }
+      .plot-art { display: block; width: 100%; height: 340px; margin-top: 12px; }
+      .plot-legend { display: flex; flex-wrap: wrap; gap: 15px; color: #778276; font-size: 10px; }
+      .plot-legend span:before { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--dot); content: ""; }
+      .plot-zoom-trigger { display: none; }
+      .zoom-modal { position: absolute; z-index: 10; inset: 0; display: flex; flex-direction: column; background: var(--paper); }
+      .zoom-modal[hidden] { display: none; }
+      .zoom-header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+      .zoom-header h2 { margin: 0; font: 500 22px var(--serif); }
+      .zoom-header p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+      .zoom-close { min-height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); cursor: pointer; font-size: 12px; font-weight: 650; }
+      .zoom-tools { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-bottom: 1px solid var(--line); }
+      .zoom-tools button { min-width: 38px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; font-weight: 700; }
+      .zoom-tools .zoom-reset { width: auto; padding: 0 12px; color: var(--leaf-deep); font-size: 11px; }
+      .zoom-value { min-width: 48px; color: var(--muted); text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; }
+      .zoom-hint { flex: 0 0 auto; margin: 0; padding: 11px 14px 0; color: var(--muted); text-align: center; font-size: 11px; }
+      .zoom-viewport { min-height: 0; flex: 1; overflow: auto; padding: 16px; overscroll-behavior: contain; touch-action: pan-x pan-y; }
+      .zoom-canvas { min-width: 100%; min-height: 100%; padding: 12px; border-radius: 14px; background: #eff2e8; }
+      .zoom-canvas svg { display: block; max-width: none; height: auto; }
+      .zoom-footer { flex: 0 0 auto; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); color: #7b887a; text-align: center; font-size: 10px; }
+      .side-column { display: grid; align-content: start; gap: 14px; }
+      .side-card { padding: 19px; border: 1px solid #e0e5d9; border-radius: 18px; background: var(--surface); }
+      .season-number { margin: 15px 0 2px; font: 44px/.95 var(--serif); letter-spacing: -.06em; }
+      .season-number small { color: var(--muted); font: 12px var(--sans); letter-spacing: 0; }
+      .progress-track { height: 7px; margin: 13px 0 8px; overflow: hidden; border-radius: 9px; background: #e9ede2; }
+      .progress-track i { display: block; width: 42%; height: 100%; border-radius: inherit; background: #83a36a; }
+      .task { display: flex; align-items: center; gap: 10px; margin-top: 13px; color: #566657; font-size: 12px; }
+      .task-mark { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border-radius: 9px; background: #eff2e8; color: var(--leaf); }
+      .task strong { display: block; color: var(--ink); font-size: 12px; }
+      .task small { color: #829081; font-size: 10px; }
+      .secondary-link { display: inline-block; margin-top: 16px; color: var(--leaf-deep); font-size: 11px; font-weight: 700; text-decoration: none; }
+      .alternate-panel { display: none; min-height: 390px; padding: 30px; border: 1px solid #e0e5d9; border-radius: 18px; background: var(--surface); }
+      .alternate-panel h2 { margin-bottom: 8px; font: 500 27px var(--serif); }
+      .mini-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 25px; }
+      .mini-bed { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfcf7; }
+      .mini-bed i { display: block; width: 100%; height: 95px; margin-bottom: 13px; border-radius: 9px; background: repeating-linear-gradient(90deg, #c9a878 0 10%, #d9c29f 10% 20%); }
+      .mini-bed strong { display: block; font-size: 12px; }
+      .mini-bed span { color: var(--muted); font-size: 10px; }
+      .crop-pills { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 23px; }
+      .crop-pill { padding: 10px 13px; border-radius: 999px; background: #eef2e6; color: #466347; font-size: 12px; }
+      .app-mobile-nav { display: none; }
+
+      .mobile .site-header { padding: 17px 18px; }
+      .mobile .site-nav { gap: 10px; }
+      .mobile .site-nav a:not(.nav-cta) { display: none; }
+      .mobile .site-nav .nav-cta { padding: 8px 12px; font-size: 11px; }
+      .mobile .landing { min-height: 760px; }
+      .mobile .hero { grid-template-columns: 1fr; gap: 0; padding: 43px 23px 14px; }
+      .mobile .hero h1 { max-width: 340px; font-size: 49px; }
+      .mobile .hero-text { max-width: 330px; font-size: 15px; }
+      .mobile .hero-art { min-height: 320px; margin: 1px -9px 0; }
+      .mobile .landing-foot { flex-wrap: wrap; gap: 9px 20px; justify-content: start; padding: 12px 23px 28px; font-size: 10px; }
+      .mobile .auth-screen { min-height: 780px; padding: 17px 19px 28px; }
+      .mobile .auth-top p { font-size: 10px; }
+      .mobile .auth-grid { display: flex; flex-direction: column; gap: 16px; margin-top: 27px; }
+      .mobile .auth-story { width: 100%; min-height: 215px; padding: 23px; border-radius: 42% 42% 18px 18px / 22% 22% 18px 18px; }
+      .mobile .auth-story h2 { max-width: 260px; font-size: 32px; }
+      .mobile .auth-story p { max-width: 220px; font-size: 12px; }
+      .mobile .auth-art { right: -9%; bottom: -13%; width: 71%; height: 92%; }
+      .mobile .auth-card { width: 100%; max-width: none; }
+      .mobile .auth-tabs { margin: 2px 0 18px; }
+      .mobile .auth-card h2 { font-size: 31px; }
+      .mobile .auth-intro { margin-bottom: 18px; font-size: 12px; }
+      .mobile .field { gap: 5px; margin-bottom: 12px; }
+      .mobile .field input { height: 44px; }
+      .mobile .auth-privacy { margin-top: 13px; }
+      .mobile .app-header { height: 58px; padding: 0 16px; }
+      .mobile .brand { font-size: 14px; }
+      .mobile .brand-mark { width: 29px; height: 29px; }
+      .mobile .app-nav { display: none; }
+      .mobile .user-chip { font-size: 0; }
+      .mobile .user-chip .avatar { font-size: 14px; }
+      .mobile .app-content { padding: 25px 17px 84px; }
+      .mobile .app-heading { align-items: start; margin-bottom: 20px; }
+      .mobile .app-heading h1 { font-size: 31px; }
+      .mobile .weather { padding: 7px 9px; font-size: 9px; }
+      .mobile .garden-tabs { justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+      .mobile .garden-tab { padding-bottom: 11px; font-size: 11px; }
+      .mobile .garden-layout { grid-template-columns: 1fr; gap: 12px; }
+      .mobile .plot-card { min-height: 360px; padding: 15px; }
+      .mobile .plot-top h2, .mobile .side-card h2 { font-size: 19px; }
+      .mobile .plot-art { height: 255px; margin-top: 8px; }
+      .mobile .plot-legend { gap: 9px; font-size: 9px; }
+      .mobile .plot-zoom-trigger { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 8px; margin-top: 13px; padding: 0 13px; border: 1px solid #d9e1d1; border-radius: 999px; background: #f4f6ed; color: var(--leaf-deep); cursor: pointer; font-size: 11px; font-weight: 700; }
+      .mobile .zoom-header { padding: 14px 13px; }
+      .mobile .zoom-header h2 { font-size: 19px; }
+      .mobile .zoom-header p { max-width: 230px; font-size: 10px; }
+      .mobile .zoom-close { min-height: 36px; padding: 0 11px; font-size: 11px; }
+      .mobile .zoom-viewport { padding: 11px; }
+      .mobile .zoom-canvas { padding: 8px; }
+      .mobile .side-column { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .mobile .side-card { padding: 13px; }
+      .mobile .season-number { font-size: 34px; }
+      .mobile .season-number small { font-size: 10px; }
+      .mobile .task { gap: 6px; margin-top: 9px; font-size: 10px; }
+      .mobile .task-mark { width: 23px; height: 23px; flex-basis: 23px; }
+      .mobile .task strong { font-size: 10px; }
+      .mobile .task small { font-size: 9px; }
+      .mobile .app-mobile-nav { position: absolute; right: 0; bottom: 0; left: 0; display: flex; height: 58px; align-items: center; justify-content: space-around; border-top: 1px solid var(--line); background: #fffefa; color: #68776a; font-size: 10px; }
+      .mobile .app-screen { position: relative; min-height: 780px; padding-bottom: 58px; }
+      .mobile .mini-list { grid-template-columns: 1fr; }
+      .mobile .mini-bed { display: flex; align-items: center; gap: 12px; }
+      .mobile .mini-bed i { width: 65px; height: 48px; flex: 0 0 65px; margin: 0; }
+      .mobile .alternate-panel { min-height: 0; padding: 20px; }
+
+      @media (prefers-reduced-motion: reduce) { *, *:before, *:after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+      @media (max-width: 720px) { .board { padding: 18px 12px 35px; } .board-head { display: block; } .board-note { margin-top: 10px; } .preview-wrap { min-height: 0; padding: 10px; } .controls { align-items: start; } .control-label { width: 100%; padding: 3px 6px; } }
+    </style>
+  </head>
+  <body>
+    <main class="board">
+      <header class="board-head">
+        <div><p class="eyebrow">Koncepcja · 10 października 2026</p><h1 class="board-title">Moja Działka — nowy kierunek</h1></div>
+        <p class="board-note">Lekka, redakcyjna oprawa z własną ilustracją ogrodu. Wybierz ekran i szerokość podglądu — fikcyjne dane, bez połączenia z aplikacją.</p>
+      </header>
+      <nav class="controls" aria-label="Sterowanie podglądem">
+        <div class="control-group" aria-label="Ekran">
+          <span class="control-label">Ekran</span>
+          <button class="control-button" data-screen="landing" aria-pressed="true">Strona główna</button>
+          <button class="control-button" data-screen="auth" aria-pressed="false">Logowanie</button>
+          <button class="control-button" data-screen="garden" aria-pressed="false">Mój ogród</button>
+        </div>
+        <div class="control-group" aria-label="Szerokość">
+          <span class="control-label">Widok</span>
+          <button class="control-button" data-size="desktop" aria-pressed="true">Desktop</button>
+          <button class="control-button" data-size="mobile" aria-pressed="false">Telefon</button>
+        </div>
+      </nav>
+      <div class="preview-wrap">
+        <div class="device" id="device">
+          <section class="screen landing active" data-view="landing" aria-label="Koncepcja strony głównej">
+            <header class="site-header">
+              <a class="brand" href="#" aria-label="Moja Działka — strona główna"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20v-8m0 3c-4.8 0-7.2-2.5-7.2-6.8 4.2 0 7.2 2 7.2 6.8Zm0-3.2c0-4.2 2.3-6.7 7.2-6.7 0 4.3-2.4 6.7-7.2 6.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>moja działka</a>
+              <nav class="site-nav"><a href="#jak-dziala">Jak to działa</a><a href="#ogrod">O planerze</a><a class="nav-cta" href="#konto" data-go="auth">Zaloguj się <span aria-hidden="true">↗</span></a></nav>
+            </header>
+            <div class="hero">
+              <div class="hero-copy"><div class="hero-kicker">Twój warzywnik, dobry plan</div><h1>Więcej ogrodu. <em>Mniej zgadywania.</em></h1><p class="hero-text">Zaplanuj grządki, dobierz warzywa i zobacz, co warto zrobić w tym sezonie. Spokojnie, krok po kroku.</p><div class="actions"><a class="primary" href="#konto" data-go="auth">Zaplanuj swój ogród <span aria-hidden="true">→</span></a><a class="text-link" href="#ogrod">Zobacz, jak to działa</a></div><p class="fine-print">Twój plan jest prywatny i zawsze pod ręką.</p></div>
+              <div class="hero-art" aria-label="Ilustracja przykładowego warzywnika"><svg class="garden-scene" viewBox="0 0 650 490" role="img" aria-label="Ilustrowany plan grządek z warzywami">
+                <defs><linearGradient id="hill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dce9cf"/><stop offset="1" stop-color="#f1e8d2"/></linearGradient><linearGradient id="bed" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#cba879"/><stop offset="1" stop-color="#a7794e"/></linearGradient></defs>
+                <ellipse cx="330" cy="414" rx="278" ry="39" fill="#dce1d2"/><path d="M60 337c71-87 105-112 173-123 88-15 151 36 225 10 64-23 95-13 137 24v118H60Z" fill="url(#hill)"/>
+                <path d="M124 255c42-42 76-55 119-48m-69-17c10-38 32-61 67-74m252 86c-4-45 14-74 51-93m-47 136c25-43 57-58 99-56" fill="none" stroke="#77936a" stroke-width="4" stroke-linecap="round"/>
+                <g fill="#729565"><ellipse cx="160" cy="186" rx="10" ry="23" transform="rotate(-43 160 186)"/><ellipse cx="218" cy="147" rx="11" ry="25" transform="rotate(24 218 147)"/><ellipse cx="489" cy="163" rx="10" ry="25" transform="rotate(-30 489 163)"/><ellipse cx="547" cy="206" rx="11" ry="25" transform="rotate(45 547 206)"/><ellipse cx="195" cy="235" rx="9" ry="21" transform="rotate(52 195 235)"/><ellipse cx="520" cy="244" rx="9" ry="21" transform="rotate(-55 520 244)"/></g>
+                <path d="m122 313 217-89 201 63-217 99-201-73Z" fill="#986d47"/><path d="m139 300 199-81 170 66-197 85-172-70Z" fill="url(#bed)" stroke="#8b684a" stroke-width="2"/><path d="m139 300 172 70v18l-172-72Zm369-15-197 85v18l197-86Z" fill="#aa8054"/>
+                <path d="m169 301 171-69 138 54-173 71-136-56Z" fill="#695540" opacity=".45"/>
+                <g stroke="#f6f0df" stroke-width="3" opacity=".85"><path d="m173 303 135 55m25-120 143 57m-216 80 173-71m-129 89 173-71"/></g>
+                <g><g transform="translate(203 293)"><path d="M0 22V5m0 10c-14 0-19-8-19-20 11 0 19 5 19 20Zm0-7c0-12 7-19 19-19 0 12-7 19-19 19Z" fill="#71925f"/><circle cy="5" r="4" fill="#e5ba61"/></g><g transform="translate(278 265)"><path d="M0 24V4m0 12c-13 0-19-8-19-19 12 0 19 5 19 19Zm0-8c0-12 7-19 19-19 0 12-7 19-19 19Z" fill="#66885b"/><circle cy="4" r="4" fill="#ce7958"/></g><g transform="translate(367 279)"><path d="M0 24V2m0 14c-14 0-21-7-21-19 12 0 21 6 21 19Zm0-8c0-12 8-19 20-19 0 12-8 19-20 19Z" fill="#71925f"/><circle cy="2" r="4" fill="#e5ba61"/></g><g transform="translate(445 301)"><path d="M0 22V4m0 12c-12 0-19-7-19-18 11 0 19 6 19 18Zm0-7c0-11 7-18 18-18 0 11-7 18-18 18Z" fill="#66885b"/><circle cy="4" r="4" fill="#ce7958"/></g></g>
+                <g fill="#fbfaf2" stroke="#dfe5d4"><rect x="60" y="350" width="94" height="51" rx="14"/><rect x="477" y="349" width="100" height="51" rx="14"/></g><g fill="#445746" font-family="Segoe UI, sans-serif" font-size="11"><text x="77" y="372">4 grządki</text><text x="77" y="389" fill="#819080">gotowe do planu</text><text x="493" y="372">Maj w ogrodzie</text><text x="493" y="389" fill="#819080">czas na rozsady</text></g>
+                <circle cx="529" cy="96" r="31" fill="#e7b85f"/><path d="M529 52v-10m0 108v-10m44-44h10m-108 0h10m75-31 8-8m-78 78 8-8m62 0 8 8m-78-78 8 8" stroke="#dbad56" stroke-width="3" stroke-linecap="round"/>
+              </svg><div class="art-caption"><strong>Od nasion do planu</strong><span>Twój sezon, poukładany po swojemu</span></div></div>
+            </div>
+            <footer class="landing-foot"><span>Plan dopasowany do Twojej działki</span><span>Warzywa, które lubisz</span><span>Sezon pod kontrolą</span></footer>
+          </section>
+
+          <section class="screen auth-screen" data-view="auth" aria-label="Koncepcja logowania i rejestracji">
+            <header class="auth-top"><a class="brand" href="#" data-go="landing"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20v-8m0 3c-4.8 0-7.2-2.5-7.2-6.8 4.2 0 7.2 2 7.2 6.8Zm0-3.2c0-4.2 2.3-6.7 7.2-6.7 0 4.3-2.4 6.7-7.2 6.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>moja działka</a><p>Masz już konto? <a class="text-link" href="#zaloguj">Zaloguj się</a></p></header>
+            <div class="auth-grid"><aside class="auth-story"><h2>Każdy sezon zaczyna się od <em>dobrego planu.</em></h2><p>Wróć do swojego ogrodu i zobacz, co rośnie dalej.</p><svg class="auth-art" viewBox="0 0 520 360" aria-hidden="true"><ellipse cx="270" cy="321" rx="230" ry="27" fill="#c7d8ba"/><path d="m83 226 176-93 190 72-174 99-192-78Z" fill="#a87e53"/><path d="m101 217 158-81 165 64-151 80-172-63Z" fill="#c9a574"/><path d="m122 215 137-69 130 50-127 68-140-49Z" fill="#655341" opacity=".44"/><g stroke="#f4eddd" stroke-width="3"><path d="m129 217 131 46m-2-113 136 54m-201 32 126-66m-94 78 128-65"/></g><g fill="#69885c" stroke="#69885c" stroke-width="5" stroke-linecap="round"><path d="M164 205v-39m0 17c-18 0-26-10-26-27 16 0 26 8 26 27Zm0-10c0-18 10-28 27-28 0 17-10 28-27 28Z"/><path d="M247 174v-39m0 16c-18 0-26-10-26-27 16 0 26 8 26 27Zm0-10c0-18 10-28 27-28 0 17-10 28-27 28Z"/><path d="M337 201v-39m0 16c-18 0-26-10-26-27 16 0 26 8 26 27Zm0-10c0-18 10-28 27-28 0 17-10 28-27 28Z"/></g><g fill="#dfac54"><circle cx="164" cy="165" r="6"/><circle cx="247" cy="134" r="6"/><circle cx="337" cy="162" r="6"/></g><path d="M420 248c13-41 16-73 4-102m0 33c-22-5-31-20-30-40 20 3 31 16 30 40Zm0-11c2-21 15-33 36-33-1 21-14 33-36 33Z" fill="#7f9c68"/></svg></aside>
+              <div class="auth-card"><div class="auth-tabs" aria-label="Wybierz logowanie lub rejestrację"><button class="auth-tab" data-auth="signin" aria-pressed="true">Logowanie</button><button class="auth-tab" data-auth="signup" aria-pressed="false">Rejestracja</button></div><h2 id="auth-title">Dobrze Cię widzieć</h2><p class="auth-intro" id="auth-intro">Zaloguj się, aby wrócić do swojego planu.</p><form onsubmit="return false"><div class="field"><label for="email">Adres e-mail</label><input id="email" type="email" placeholder="ty@przyklad.pl" /></div><div class="field"><label for="password">Hasło</label><input id="password" type="password" placeholder="Co najmniej 8 znaków" /></div><div class="form-row"><label class="remember"><input type="checkbox" /> Zapamiętaj mnie</label><a href="#reset">Nie pamiętasz hasła?</a></div><button class="auth-submit" id="auth-submit">Zaloguj się <span aria-hidden="true">→</span></button></form><p class="auth-switch" id="auth-switch">Nie masz jeszcze konta? <a href="#rejestracja" data-auth-link="signup">Załóż konto</a></p><p class="auth-privacy">Twoje dane i plan ogrodu są prywatne.</p></div>
+            </div>
+          </section>
+
+          <section class="screen app-screen" data-view="garden" aria-label="Koncepcja dashboardu ogrodu">
+            <header class="app-header"><a class="brand" href="#" data-go="landing"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20v-8m0 3c-4.8 0-7.2-2.5-7.2-6.8 4.2 0 7.2 2 7.2 6.8Zm0-3.2c0-4.2 2.3-6.7 7.2-6.7 0 4.3-2.4 6.7-7.2 6.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>moja działka</a><nav class="app-nav"><span class="current">Mój ogród</span><span>Plan sezonu</span></nav><div class="user-chip"><span>Ogród Anny</span><span class="avatar">A</span></div></header>
+            <div class="app-content"><div class="app-heading"><div><p class="eyebrow">Sezon 2026 · 12 maja</p><h1>Twój ogród rośnie 🌱</h1></div><div class="weather"><b aria-hidden="true">☀</b><span>18° · dobry dzień na ogród</span></div></div>
+              <nav class="garden-tabs" role="tablist" aria-label="Widoki ogrodu"><button class="garden-tab" role="tab" aria-selected="true" data-garden="garden">Mój ogród</button><button class="garden-tab" role="tab" aria-selected="false" data-garden="sectors">Sektory <span aria-hidden="true">· 4</span></button><button class="garden-tab" role="tab" aria-selected="false" data-garden="crops">Warzywa <span aria-hidden="true">· 8</span></button></nav>
+              <div class="garden-layout" data-garden-panel="garden"><article class="plot-card"><div class="plot-top"><div><h2>Plan Twoich grządek</h2><p class="subtle">4 grządki <span aria-hidden="true">·</span> 8 wybranych warzyw <span aria-hidden="true">·</span> aktualny plan</p></div><span class="status">● Plan aktualny</span></div><svg class="plot-art" viewBox="0 0 700 370" role="img" aria-label="Przykładowy rozmieszczony plan warzywnika"><defs><pattern id="soil" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#d2b58b"/><path d="M0 13h14" stroke="#c4a67b" stroke-width="1"/></pattern></defs><rect x="39" y="27" width="620" height="315" rx="19" fill="#f0f2e8"/><path d="M92 274 337 163l281 94-247 117-279-100Z" fill="#8e704e"/><path d="M111 262 339 160l253 88-230 108-251-94Z" fill="url(#soil)" stroke="#ae8c61" stroke-width="3"/><path d="m126 255 218-96m-169 125 222-99m-163 126 222-101m-160 126 221-103" stroke="#f4ead7" stroke-width="3"/><path d="m111 262 251 94m-143-162 253 88" stroke="#f4ead7" stroke-width="3"/><g fill="#547c4c" stroke="#547c4c" stroke-width="4" stroke-linecap="round"><path d="M163 247v-40m0 17c-18 0-27-10-27-29 16 0 27 9 27 29Zm0-10c0-18 10-28 28-28-1 18-11 28-28 28Z"/><path d="M251 210v-40m0 17c-18 0-27-10-27-29 16 0 27 9 27 29Zm0-10c0-18 10-28 28-28-1 18-11 28-28 28Z"/><path d="M347 224v-40m0 17c-18 0-27-10-27-29 16 0 27 9 27 29Zm0-10c0-18 10-28 28-28-1 18-11 28-28 28Z"/><path d="M452 260v-40m0 17c-18 0-27-10-27-29 16 0 27 9 27 29Zm0-10c0-18 10-28 28-28-1 18-11 28-28 28Z"/><path d="M527 235v-40m0 17c-18 0-27-10-27-29 16 0 27 9 27 29Zm0-10c0-18 10-28 28-28-1 18-11 28-28 28Z"/></g><g fill="#cd7755"><circle cx="163" cy="207" r="5"/><circle cx="251" cy="170" r="5"/><circle cx="347" cy="184" r="5"/><circle cx="452" cy="220" r="5"/><circle cx="527" cy="195" r="5"/></g><g fill="#fffefa" stroke="#dce2d5"><rect x="56" y="44" width="92" height="34" rx="11"/><rect x="552" y="43" width="82" height="34" rx="11"/></g><g fill="#596b5a" font-family="Segoe UI, sans-serif" font-size="11"><text x="74" y="66">Grządka 1</text><text x="571" y="65">Grządka 2</text></g></svg><button class="plot-zoom-trigger" type="button" data-open-zoom aria-haspopup="dialog"><span aria-hidden="true">⌕</span> Powiększ plan</button><div class="plot-legend"><span style="--dot:#6b8c5b">Pomidory</span><span style="--dot:#8caa6b">Sałata</span><span style="--dot:#d47f58">Marchew</span><span style="--dot:#e5bd68">Zioła</span></div></article>
+                <aside class="side-column"><article class="side-card"><p class="eyebrow">Małe podsumowanie</p><h2>Sezon w skrócie</h2><div class="season-number">42<small>% sezonu</small></div><p class="subtle">Wszystko idzie w dobrym tempie.</p><div class="progress-track"><i></i></div><p class="subtle">3 z 7 prac za Tobą</p><a class="secondary-link" href="#sezon">Zobacz plan sezonu →</a></article><article class="side-card"><p class="eyebrow">Najbliższe zadanie</p><h2>Wysadź pomidory</h2><div class="task"><span class="task-mark">☼</span><span><strong>W tym tygodniu</strong><small>Gdy minie ryzyko przymrozków</small></span></div><div class="task"><span class="task-mark">♧</span><span><strong>Podlej sałatę</strong><small>Najlepiej rano</small></span></div><a class="secondary-link" href="#zadania">Wszystkie zadania →</a></article></aside></div>
+              <div class="alternate-panel" data-garden-panel="sectors" hidden><p class="eyebrow">Twoja przestrzeń</p><h2>Sektory i grządki</h2><p class="subtle">Cztery miejsca, w których zaczyna się Twój plan.</p><div class="mini-list"><div class="mini-bed"><i></i><div><strong>Grządka przy płocie</strong><span>120 × 80 cm · 4 warzywa</span></div></div><div class="mini-bed"><i></i><div><strong>Podwyższona grządka</strong><span>180 × 90 cm · 3 warzywa</span></div></div><div class="mini-bed"><i></i><div><strong>Mały zielnik</strong><span>60 × 60 cm · 2 zioła</span></div></div></div></div>
+              <div class="alternate-panel" data-garden-panel="crops" hidden><p class="eyebrow">Co będzie rosło</p><h2>Twoje warzywa</h2><p class="subtle">Wybierz warzywa, które lubisz. Plan pomoże rozmieścić je w grządkach.</p><div class="crop-pills"><span class="crop-pill">🍅 Pomidor</span><span class="crop-pill">🥬 Sałata</span><span class="crop-pill">🥕 Marchew</span><span class="crop-pill">🧅 Cebula</span><span class="crop-pill">🥒 Ogórek</span><span class="crop-pill">🌿 Bazylia</span><span class="crop-pill">🫑 Papryka</span><span class="crop-pill">🧄 Czosnek</span></div></div>
+            </div><section class="zoom-modal" id="zoom-modal" role="dialog" aria-modal="true" aria-labelledby="zoom-title" hidden><header class="zoom-header"><div><h2 id="zoom-title">Grządka przy płocie</h2><p>Plan w skali · możesz go powiększyć i przesunąć</p></div><button class="zoom-close" type="button" data-close-zoom>Zamknij</button></header><div class="zoom-tools" aria-label="Sterowanie powiększeniem"><button type="button" data-zoom-out aria-label="Pomniejsz plan">−</button><span class="zoom-value" id="zoom-value" aria-live="polite">100%</span><button type="button" data-zoom-in aria-label="Powiększ plan">+</button><button class="zoom-reset" type="button" data-zoom-reset>Resetuj</button></div><p class="zoom-hint">Rozsuń dwa palce, aby przybliżyć · przeciągnij, aby przesunąć</p><div class="zoom-viewport" id="zoom-viewport" tabindex="0" aria-label="Powiększany i przesuwany plan grządki"><div class="zoom-canvas" id="zoom-canvas"></div></div><footer class="zoom-footer">Widok przykładowy · rośliny pozostają na swoich miejscach przy każdym powiększeniu</footer></section><nav class="app-mobile-nav" aria-label="Nawigacja mobilna"><span>⌂ Ogród</span><span>▦ Plan</span><span>☻ Konto</span></nav>
+          </section>
+        </div>
+      </div>
+      <p style="max-width:900px;margin:18px auto 0;color:#6d796d;font-size:12px">Kierunek wizualny: ciepłe, papierowe tło · głęboka zieleń · akcenty gliny i słonecznika · oryginalna, spokojna ilustracja · plan grządek jako główna treść dashboardu. Elementy sterujące nad planszą służą wyłącznie do przeglądania makiety.</p>
+    </main>
+    <script>
+      const device = document.querySelector("#device");
+      const screens = [...document.querySelectorAll("[data-view]")];
+      function showScreen(name) {
+        screens.forEach((screen) => screen.classList.toggle("active", screen.dataset.view === name));
+        document.querySelectorAll("[data-screen]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.screen === name)));
+      }
+      document.querySelectorAll("[data-screen]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.screen)));
+      document.querySelectorAll("[data-size]").forEach((button) => button.addEventListener("click", () => {
+        device.classList.toggle("mobile", button.dataset.size === "mobile");
+        document.querySelectorAll("[data-size]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      }));
+      document.querySelectorAll("[data-go]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); showScreen(link.dataset.go); }));
+      const authText = {
+        signin: ["Dobrze Cię widzieć", "Zaloguj się, aby wrócić do swojego planu.", "Zaloguj się", "Nie masz jeszcze konta?", "Załóż konto", "signup"],
+        signup: ["Zacznij od swojej działki", "Załóż konto i ułóż plan na nowy sezon.", "Utwórz konto", "Masz już konto?", "Zaloguj się", "signin"],
+      };
+      document.querySelectorAll("[data-auth]").forEach((button) => button.addEventListener("click", () => {
+        document.querySelectorAll("[data-auth]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+        const [title, intro, submit, prefix, link, target] = authText[button.dataset.auth];
+        document.querySelector("#auth-title").textContent = title;
+        document.querySelector("#auth-intro").textContent = intro;
+        document.querySelector("#auth-submit").textContent = submit + " →";
+        document.querySelector("#auth-switch").innerHTML = `${prefix} <a href="#${target}" data-auth-link="${target}">${link}</a>`;
+        document.querySelector("[data-auth-link]").addEventListener("click", (event) => { event.preventDefault(); document.querySelector(`[data-auth="${target}"]`).click(); });
+      }));
+      document.querySelectorAll("[data-garden]").forEach((button) => button.addEventListener("click", () => {
+        document.querySelectorAll("[data-garden]").forEach((item) => item.setAttribute("aria-selected", String(item === button)));
+        document.querySelectorAll("[data-garden-panel]").forEach((panel) => { const active = panel.dataset.gardenPanel === button.dataset.garden; panel.hidden = !active; if (active) panel.style.display = ""; });
+      }));
+      const zoomModal = document.querySelector("#zoom-modal");
+      const zoomViewport = document.querySelector("#zoom-viewport");
+      const zoomCanvas = document.querySelector("#zoom-canvas");
+      const zoomValue = document.querySelector("#zoom-value");
+      let zoom = 1;
+      let fitWidth = 320;
+      let pinchStartDistance = 0;
+      let pinchStartZoom = 1;
+      function setZoom(value) {
+        zoom = Math.min(2.5, Math.max(1, value));
+        const width = fitWidth * zoom;
+        zoomCanvas.style.width = `${width}px`;
+        zoomCanvas.style.minWidth = "0";
+        const diagram = zoomCanvas.querySelector("svg");
+        if (diagram) {
+          diagram.style.width = `${width - 16}px`;
+          diagram.style.height = "auto";
+        }
+        zoomValue.textContent = `${Math.round(zoom * 100)}%`;
+      }
+      function openZoom() {
+        const original = document.querySelector(".plot-art");
+        const diagram = original.cloneNode(true);
+        diagram.querySelector("#soil")?.setAttribute("id", "soil-zoom");
+        diagram.querySelector('[fill="url(#soil)"]')?.setAttribute("fill", "url(#soil-zoom)");
+        diagram.setAttribute("aria-label", "Powiększony plan grządek z miejscem na przesuwanie");
+        zoomCanvas.replaceChildren(diagram);
+        zoomModal.hidden = false;
+        requestAnimationFrame(() => {
+          fitWidth = Math.max(260, zoomViewport.clientWidth - 38);
+          setZoom(1);
+          zoomViewport.focus({ preventScroll: true });
+        });
+      }
+      function closeZoom() {
+        zoomModal.hidden = true;
+        document.querySelector("[data-open-zoom]").focus({ preventScroll: true });
+      }
+      document.querySelector("[data-open-zoom]").addEventListener("click", openZoom);
+      document.querySelector("[data-close-zoom]").addEventListener("click", closeZoom);
+      document.querySelector("[data-zoom-in]").addEventListener("click", () => setZoom(zoom + 0.25));
+      document.querySelector("[data-zoom-out]").addEventListener("click", () => setZoom(zoom - 0.25));
+      document.querySelector("[data-zoom-reset]").addEventListener("click", () => {
+        setZoom(1);
+        zoomViewport.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      });
+      function touchDistance(touches) {
+        return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+      }
+      zoomViewport.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 2) return;
+        pinchStartDistance = touchDistance(event.touches);
+        pinchStartZoom = zoom;
+      }, { passive: true });
+      zoomViewport.addEventListener("touchmove", (event) => {
+        if (event.touches.length !== 2 || pinchStartDistance === 0) return;
+        event.preventDefault();
+        setZoom(pinchStartZoom * touchDistance(event.touches) / pinchStartDistance);
+      }, { passive: false });
+      zoomViewport.addEventListener("touchend", (event) => {
+        if (event.touches.length < 2) pinchStartDistance = 0;
+      }, { passive: true });
+      zoomModal.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeZoom();
+      });
+    </script>
+  </body>
+</html>

@@ -1,33 +1,263 @@
 ---
+import GardenSetupForm from "@/components/garden/GardenSetupForm";
+import CropSelectionForm from "@/components/garden/CropSelectionForm";
+import GardenPlanner from "@/components/garden/GardenPlanner";
+import Topbar from "@/components/Topbar.astro";
+import { CROP_CATALOG } from "@/data/crop-catalog";
+import { readGardenLayoutResult, type GardenLayoutResult } from "@/lib/garden-layout";
+import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
+import {
+  createGardenInputSnapshot,
+  fingerprintGardenInputSnapshot,
+  getGardenPlanFreshness,
+} from "@/lib/garden-plan-snapshot";
+import { createClient } from "@/lib/supabase";
 import Layout from "@/layouts/Layout.astro";
 
+interface GardenSpaceRow {
+  id: string;
+  name: string;
+  space_type: "bed" | "sector";
+  width_cm: number;
+  length_cm: number;
+  sort_order: number;
+}
+
+interface GardenCropRow {
+  crop_id: string;
+  proportion: number | string;
+}
+
+interface GardenPlanRow {
+  input_fingerprint: string;
+  generated_at: string;
+  plan: GardenLayoutResult;
+}
+
 const { user } = Astro.locals;
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let initialSpaces: GardenSpaceRow[] = [];
+let initialCrops: { cropId: string; proportion: string }[] = [];
+let loadError: string | null = null;
+let cropsLoadError = false;
+let currentPlan: GardenPlanRow | null = null;
+let currentPlanLoadError = false;
+let currentPlanPositionCount = 0;
+let currentInputFingerprint: string | null = null;
+
+if (supabase && user) {
+  const { data, error } = await supabase
+    .from("gardens")
+    .select("id, garden_spaces(id, name, space_type, width_cm, length_cm, sort_order)")
+    .maybeSingle();
+
+  if (error) {
+    loadError = "unavailable";
+    cropsLoadError = true;
+    currentPlanLoadError = true;
+  } else if (data) {
+    initialSpaces = (data.garden_spaces as GardenSpaceRow[]).sort((left, right) => left.sort_order - right.sort_order);
+
+    const { data: cropRows, error: cropError } = await supabase
+      .from("garden_crops")
+      .select("crop_id, proportion")
+      .eq("garden_id", data.id)
+      .order("crop_id", { ascending: true });
+
+    if (cropError) {
+      cropsLoadError = true;
+    } else {
+      initialCrops = (cropRows as GardenCropRow[]).map((crop) => ({
+        cropId: crop.crop_id,
+        proportion: String(crop.proportion),
+      }));
+
+      const snapshot = createGardenInputSnapshot(
+        initialSpaces.map((space) => ({
+          id: space.id,
+          name: space.name,
+          spaceType: space.space_type,
+          widthCm: space.width_cm,
+          lengthCm: space.length_cm,
+          sortOrder: space.sort_order,
+        })),
+        (cropRows as GardenCropRow[]).map((crop) => ({
+          cropId: crop.crop_id,
+          proportion: String(crop.proportion),
+        })),
+      );
+      currentInputFingerprint = await fingerprintGardenInputSnapshot(snapshot);
+    }
+
+    const { data: planRow, error: planError } = await supabase
+      .from("garden_plans")
+      .select("input_fingerprint, generated_at, plan")
+      .eq("garden_id", data.id)
+      .maybeSingle();
+
+    if (planError) {
+      currentPlanLoadError = true;
+    } else if (planRow) {
+      const plan = readGardenLayoutResult(planRow.plan);
+      if (plan === null) {
+        currentPlanLoadError = true;
+      } else {
+        currentPlan = { ...planRow, plan };
+        currentPlanPositionCount = plan.spaces.reduce((total, space) => total + space.positions.length, 0);
+      }
+    }
+  }
+} else {
+  loadError = "unavailable";
+  cropsLoadError = true;
+  currentPlanLoadError = true;
+}
+
+const error = Astro.url.searchParams.get("error") ?? loadError;
+const saved = Astro.url.searchParams.get("saved") === "1";
+const requestedTab = Astro.url.searchParams.get("tab");
+const activeTab =
+  saved || error ? "sectors" : requestedTab === "sectors" || requestedTab === "crops" ? requestedTab : "garden";
+const inputsUnavailable = !supabase || !user || Boolean(loadError) || cropsLoadError;
+const hasUnresolvedCrops = initialCrops.some((crop) => resolveGardenCropSelection(crop.cropId).status !== "active");
+const initialPlanStatus =
+  inputsUnavailable || currentPlanLoadError
+    ? "unavailable"
+    : currentPlan === null
+      ? "empty"
+      : getGardenPlanFreshness(currentPlan.input_fingerprint, currentInputFingerprint);
+const cropNames: Record<string, string> = Object.fromEntries(
+  CROP_CATALOG.map((crop): [string, string] => [crop.id, crop.commonNamePl]),
+);
+const tabItems = [
+  { id: "garden", label: "Mój ogród", href: "/dashboard", description: "Plan grządek i podsumowanie sezonu" },
+  { id: "sectors", label: "Sektory", href: "/dashboard?tab=sectors", description: "Wymiary skrzyń i sektorów" },
+  { id: "crops", label: "Warzywa", href: "/dashboard?tab=crops", description: "Uprawy i ich udziały" },
+] as const;
 ---
 
-<Layout title="Dashboard">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
-      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-        Dashboard
-      </h1>
-      <p class="text-blue-100/80">
-        Welcome, <span class="font-semibold text-white">{user?.email}</span>
-      </p>
-      <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <a
-        href="/garden"
-        class="mt-6 inline-flex rounded-lg bg-purple-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-purple-300"
+<Layout title="Mój ogród" lang="pl">
+  <main class="min-h-screen bg-garden-workspace p-4 text-garden-foreground md:p-8">
+    <div class="mx-auto max-w-6xl">
+      <Topbar />
+
+      <section class="mb-7 pt-3 md:pt-7" aria-labelledby="dashboard-title">
+        <p class="text-garden-accent mb-2 text-sm font-semibold tracking-widest uppercase">Plan Twojego warzywnika</p>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 id="dashboard-title" class="text-garden-foreground text-3xl font-semibold tracking-tight md:text-4xl">
+              Mój ogród
+            </h1>
+            <p class="text-garden-muted mt-2 max-w-2xl text-base md:text-lg">
+              Zobacz układ grządek, zarządzaj sektorami i wybierz uprawy na sezon.
+            </p>
+          </div>
+          <p class="text-garden-muted hidden pb-1 text-sm sm:block">
+            Witaj, <span class="text-garden-foreground font-medium">{user?.email}</span>
+          </p>
+        </div>
+      </section>
+
+      <nav
+        aria-label="Widoki ogrodu"
+        class="border-app-border bg-app-soft mb-7 grid w-full grid-cols-3 gap-1 rounded-xl border p-1 sm:w-fit"
       >
-        Configure my garden
-      </a>
-      <form method="POST" action="/api/auth/signout" class="mt-6">
-        <button
-          type="submit"
-          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-        >
-          Sign out
-        </button>
-      </form>
+        {tabItems.map((tab) => (
+          <a
+            href={tab.href}
+            aria-current={activeTab === tab.id ? "page" : undefined}
+            aria-label={`${tab.label}: ${tab.description}`}
+            class:list={[
+              "flex min-h-11 items-center justify-center rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors focus-visible:outline-garden-focus focus-visible:outline-2 focus-visible:outline-offset-2",
+              activeTab === tab.id
+                ? "bg-garden-surface text-garden-accent-strong shadow-sm ring-1 ring-app-border"
+                : "text-garden-muted hover:bg-garden-surface/60 hover:text-garden-foreground",
+            ]}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </nav>
+
+      {activeTab === "garden" && (
+        <>
+          <section
+            aria-label="Podsumowanie sezonu"
+            class="border-app-border bg-app-soft mb-6 grid overflow-hidden rounded-xl border sm:grid-cols-3"
+          >
+            <div class="border-app-border flex items-center justify-between gap-4 border-b px-5 py-3 sm:border-r sm:border-b-0">
+              <p class="text-garden-muted text-sm">Przestrzenie</p>
+              <p class="text-garden-foreground text-lg font-semibold">{initialSpaces.length}</p>
+            </div>
+            <div class="border-app-border flex items-center justify-between gap-4 border-b px-5 py-3 sm:border-r sm:border-b-0">
+              <p class="text-garden-muted text-sm">Wybrane uprawy</p>
+              <p class="text-garden-foreground text-lg font-semibold">{initialCrops.length}</p>
+            </div>
+            <div class="flex items-center justify-between gap-4 px-5 py-3">
+              <p class="text-garden-muted text-sm">Rośliny w planie</p>
+              <p class="text-garden-foreground text-lg font-semibold">{currentPlan ? currentPlanPositionCount : "—"}</p>
+            </div>
+          </section>
+          <section
+            id="garden-plan-ssr"
+            class="border-app-border bg-app-surface rounded-2xl border p-5 shadow-sm md:p-8"
+            data-plan-fingerprint={currentPlan?.input_fingerprint ?? ""}
+            data-plan-generated-at={currentPlan?.generated_at ?? ""}
+            data-plan-position-count={currentPlan ? String(currentPlanPositionCount) : ""}
+            data-plan-status={initialPlanStatus}
+          >
+            <GardenPlanner
+              initialPlan={currentPlan?.plan ?? null}
+              initialStatus={initialPlanStatus}
+              initialGeneratedAt={currentPlan?.generated_at ?? null}
+              cropNames={cropNames}
+              hasSpaces={initialSpaces.length > 0}
+              hasCrops={initialCrops.length > 0}
+              hasUnresolvedCrops={hasUnresolvedCrops}
+              inputsUnavailable={inputsUnavailable}
+              client:load
+            />
+          </section>
+        </>
+      )}
+
+      {activeTab === "sectors" && (
+        <section class="border-app-border bg-app-surface rounded-2xl border p-5 shadow-sm md:p-8">
+          <div class="mb-7 max-w-2xl">
+            <p class="text-garden-accent mb-2 text-sm font-semibold tracking-widest uppercase">Przestrzeń upraw</p>
+            <h2 class="text-garden-foreground text-2xl font-semibold">Sektory i skrzynie</h2>
+            <p class="text-garden-muted mt-2">
+              Dodaj miejsca uprawy i podaj wymiary. Planer wykorzysta wszystkie zapisane przestrzenie.
+            </p>
+          </div>
+          <GardenSetupForm
+            initialSpaces={initialSpaces.map((space) => ({
+              id: space.id,
+              name: space.name,
+              spaceType: space.space_type,
+              widthCm: String(space.width_cm),
+              lengthCm: String(space.length_cm),
+            }))}
+            hasSavedPlan={currentPlan !== null || currentPlanLoadError}
+            error={error}
+            saved={saved}
+            client:load
+          />
+        </section>
+      )}
+
+      {activeTab === "crops" && (
+        <section class="border-app-border bg-app-surface rounded-2xl border p-5 shadow-sm md:p-8">
+          <div class="mb-7 max-w-2xl">
+            <p class="text-garden-accent mb-2 text-sm font-semibold tracking-widest uppercase">Dobór upraw</p>
+            <h2 class="text-garden-foreground text-2xl font-semibold">Warzywa na ten sezon</h2>
+            <p class="text-garden-muted mt-2">
+              Wybierz warzywa i ustaw ich udział w planie. Szczegóły uprawy i terminy znajdziesz przy każdej pozycji.
+            </p>
+          </div>
+          <CropSelectionForm initialSelection={initialCrops} unavailable={cropsLoadError} client:load />
+        </section>
+      )}
     </div>
-  </div>
+  </main>
 </Layout>

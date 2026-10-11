@@ -44,7 +44,7 @@ export const test = base.extend<{ gardenReady: undefined }, { gardenSession: Ses
         form: { spaceId: "", spaceName: "Skrzynia e2e", spaceType: "bed", widthCm: "120", lengthCm: "80" },
         maxRedirects: 0,
       });
-      expectRedirect(space, "/garden?saved=1");
+      expectRedirect(space, "/dashboard?tab=sectors&saved=1");
       const crops = await context.request.post("/api/garden-crops", {
         headers: { Origin: baseURL },
         data: [

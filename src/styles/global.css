@@ -5,26 +5,54 @@
 
 :root {
   --radius: 0.625rem;
-  /* Garden roles preserve the existing cosmic palette while keeping view classes semantic. */
-  --garden-page-start: #0a0e1a;
-  --garden-page-middle: #0f1529;
-  --garden-surface: var(--color-white);
-  --garden-input: var(--color-slate-950);
-  --garden-foreground: var(--color-white);
-  --garden-muted: var(--color-blue-100);
-  --garden-accent: var(--color-purple-200);
-  --garden-accent-strong: var(--color-purple-400);
-  --garden-accent-hover: var(--color-purple-300);
-  --garden-accent-foreground: var(--color-slate-950);
-  --garden-focus: var(--color-purple-200);
-  --garden-danger: var(--color-rose-100);
-  --garden-danger-muted: var(--color-rose-200);
-  --garden-danger-surface: var(--color-rose-400);
-  --garden-danger-border: var(--color-rose-300);
-  --garden-success: var(--color-emerald-100);
-  --garden-success-surface: var(--color-emerald-400);
-  --garden-success-border: var(--color-emerald-300);
-  --garden-warning: var(--color-amber-100);
+  /* Shared light-mode roles for the public experience and authentication. */
+  --app-page: #f7f8f1;
+  --app-surface: #fffefa;
+  --app-foreground: #263a2a;
+  --app-muted: #687766;
+  --app-border: #dce3d5;
+  --app-input: #fffefa;
+  --app-accent: #4d7147;
+  --app-soft: #eaf0e3;
+  --app-soil: #b08a62;
+  --app-sun: #d7aa58;
+  --app-accent-strong: #315737;
+  --app-accent-hover: #416e45;
+  --app-accent-foreground: #fffefa;
+  --app-focus: #527f4f;
+  --app-danger: #a33d36;
+  --app-danger-surface: #fff2ef;
+  --app-danger-border: #e8b9b1;
+  --app-success: #315d3b;
+  --app-warning: #75561e;
+  --garden-workspace-start: #0a0e1a;
+  --garden-workspace-middle: #0f1529;
+  /* Garden consumers share the same light, botanical roles as public and auth views. */
+  --garden-surface: var(--app-surface);
+  --garden-input: var(--app-input);
+  --garden-foreground: var(--app-foreground);
+  --garden-muted: var(--app-muted);
+  --garden-accent: var(--app-accent);
+  --garden-accent-strong: var(--app-accent-strong);
+  --garden-accent-hover: var(--app-accent-hover);
+  --garden-accent-foreground: var(--app-accent-foreground);
+  --garden-focus: var(--app-focus);
+  --garden-danger: var(--app-danger);
+  --garden-danger-muted: #7c302a;
+  --garden-danger-surface: var(--app-danger-surface);
+  --garden-danger-border: var(--app-danger-border);
+  --garden-success: var(--app-success);
+  --garden-success-surface: #eaf4e8;
+  --garden-success-border: #b9d2b5;
+  --garden-warning: var(--app-warning);
+  --garden-warning-surface: #fbf3df;
+  --garden-warning-border: #e3d4aa;
+  /* Garden-bed illustration roles: selected overhead concept, design/concepts.svg (variant 01). */
+  --garden-bed-frame: var(--app-soil);
+  --garden-bed-frame-highlight: #d6a36b;
+  --garden-bed-frame-shadow: #8c5b35;
+  --garden-bed-soil: #70543b;
+  --garden-bed-soil-texture: #c5a27d;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -93,6 +121,25 @@
 }
 
 @theme inline {
+  --color-app-page: var(--app-page);
+  --color-app-surface: var(--app-surface);
+  --color-app-foreground: var(--app-foreground);
+  --color-app-muted: var(--app-muted);
+  --color-app-border: var(--app-border);
+  --color-app-input: var(--app-input);
+  --color-app-accent: var(--app-accent);
+  --color-app-soft: var(--app-soft);
+  --color-app-soil: var(--app-soil);
+  --color-app-sun: var(--app-sun);
+  --color-app-accent-strong: var(--app-accent-strong);
+  --color-app-accent-hover: var(--app-accent-hover);
+  --color-app-accent-foreground: var(--app-accent-foreground);
+  --color-app-focus: var(--app-focus);
+  --color-app-danger: var(--app-danger);
+  --color-app-danger-surface: var(--app-danger-surface);
+  --color-app-danger-border: var(--app-danger-border);
+  --color-app-success: var(--app-success);
+  --color-app-warning: var(--app-warning);
   --color-garden-surface: var(--garden-surface);
   --color-garden-input: var(--garden-input);
   --color-garden-foreground: var(--garden-foreground);
@@ -110,6 +157,13 @@
   --color-garden-success-surface: var(--garden-success-surface);
   --color-garden-success-border: var(--garden-success-border);
   --color-garden-warning: var(--garden-warning);
+  --color-garden-warning-surface: var(--garden-warning-surface);
+  --color-garden-warning-border: var(--garden-warning-border);
+  --color-garden-bed-frame: var(--garden-bed-frame);
+  --color-garden-bed-frame-highlight: var(--garden-bed-frame-highlight);
+  --color-garden-bed-frame-shadow: var(--garden-bed-frame-shadow);
+  --color-garden-bed-soil: var(--garden-bed-soil);
+  --color-garden-bed-soil-texture: var(--garden-bed-soil-texture);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -147,13 +201,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@utility bg-cosmic {
-  background-image: linear-gradient(
-    to bottom,
-    var(--garden-page-start),
-    var(--garden-page-middle),
-    var(--garden-page-start)
-  );
+@utility bg-garden-workspace {
+  background-color: var(--app-page);
 }
 
 @layer base {
@@ -161,6 +210,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-app-page text-app-foreground;
   }
 }

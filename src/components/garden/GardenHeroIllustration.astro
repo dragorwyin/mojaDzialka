@@ -1,0 +1,65 @@
+---
+const { class: className = "" } = Astro.props;
+---
+
+<svg
+  class:list={["h-auto w-full", className]}
+  viewBox="0 0 640 500"
+  role="img"
+  aria-label="Ilustracja planu warzywnika z grządkami i roślinami"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <ellipse cx="328" cy="438" rx="242" ry="29" class="fill-app-foreground/10" />
+  <path d="M110 180 315 72l211 110-207 113z" class="fill-app-soft" />
+  <path d="m110 180 209 115v154L110 334z" class="fill-app-soil" />
+  <path d="m319 295 207-113v152L319 449z" class="fill-app-accent-strong" />
+  <path d="m139 190 176-91 175 91-176 96z" class="fill-app-surface" />
+
+  <path d="m158 190 55-29 53 29-55 30z" class="fill-app-soft" />
+  <path d="m213 220 53-30v82l-53 29z" class="fill-app-soil" />
+  <path d="m158 190 55 30v81l-55-30z" class="fill-app-soil/80" />
+  <path d="m170 190 43-23 41 23-43 24z" class="fill-app-soil" />
+
+  <path d="m276 126 57-30 57 30-57 31z" class="fill-app-soft" />
+  <path d="m333 157 57-31v83l-57 31z" class="fill-app-soil" />
+  <path d="m276 126 57 31v83l-57-31z" class="fill-app-soil/80" />
+  <path d="m290 126 43-23 43 23-43 24z" class="fill-app-soil" />
+
+  <path d="m365 192 58-31 57 30-58 32z" class="fill-app-soft" />
+  <path d="m422 223 58-32v83l-58 32z" class="fill-app-soil" />
+  <path d="m365 192 57 31v83l-57-31z" class="fill-app-soil/80" />
+  <path d="m380 192 42-23 43 22-43 24z" class="fill-app-soil" />
+
+  <g class="fill-app-accent">
+    <ellipse cx="194" cy="174" rx="8" ry="14" transform="rotate(-31 194 174)" />
+    <ellipse cx="222" cy="181" rx="8" ry="13" transform="rotate(29 222 181)" />
+    <ellipse cx="201" cy="190" rx="8" ry="13" transform="rotate(-30 201 190)" />
+    <ellipse cx="327" cy="111" rx="8" ry="14" transform="rotate(-31 327 111)" />
+    <ellipse cx="354" cy="119" rx="8" ry="13" transform="rotate(29 354 119)" />
+    <ellipse cx="333" cy="128" rx="8" ry="13" transform="rotate(-30 333 128)" />
+    <ellipse cx="414" cy="176" rx="8" ry="14" transform="rotate(-31 414 176)" />
+    <ellipse cx="443" cy="184" rx="8" ry="13" transform="rotate(29 443 184)" />
+    <ellipse cx="420" cy="194" rx="8" ry="13" transform="rotate(-30 420 194)" />
+  </g>
+  <g class="fill-app-accent-strong">
+    <circle cx="239" cy="189" r="8" />
+    <circle cx="371" cy="124" r="8" />
+    <circle cx="460" cy="190" r="8" />
+  </g>
+  <g class="fill-app-sun">
+    <circle cx="180" cy="203" r="7" />
+    <circle cx="345" cy="141" r="7" />
+    <circle cx="434" cy="207" r="7" />
+  </g>
+
+  <path
+    d="M84 372c21-13 39-12 54 2m-44 23c20-10 37-7 49 9m393-31c22-10 40-8 55 5m-48 22c22-7 38-3 50 13"
+    class="fill-none stroke-app-accent/35"
+    stroke-linecap="round"
+    stroke-width="3"
+  />
+  <path
+    d="M90 363c-8-8-8-17 0-24 10 7 11 15 0 24Zm25 17c-1-12 5-19 17-20 3 12-2 19-17 20Zm417-22c-9-8-8-17 1-24 10 8 9 16-1 24Zm26 18c0-12 6-18 18-19 2 12-4 19-18 19Z"
+    class="fill-app-accent"
+  />
+</svg>

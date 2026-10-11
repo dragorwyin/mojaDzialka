@@ -4,16 +4,23 @@ import { generatePlan } from "./support/garden";
 test("dimension edits retain the old diagram as stale until regeneration", async ({ page }) => {
   await page.goto("/garden");
   await generatePlan(page);
+  const screenshotSize = page.viewportSize()?.width === 390 ? "mobile" : "desktop";
+  await page.screenshot({
+    path: `context/changes/garden-bed-visuals-tabs/evidence/dashboard-${screenshotSize}.png`,
+    fullPage: true,
+  });
   const layout = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" });
   const oldDiagram = await layout.innerText();
   expect(oldDiagram).toContain("120 × 80 cm");
 
+  await page.getByRole("link", { name: /Sektory: Wymiary/ }).click();
   const space = page.getByRole("group", { name: "Przestrzeń 1", exact: true });
   await space.getByLabel("Szerokość (cm)", { exact: true }).fill("121");
-  const savedUrl = page.waitForURL("**/garden?saved=1");
+  const savedUrl = page.waitForURL("**/dashboard?tab=sectors&saved=1");
   await page.getByRole("button", { name: "Zapisz działkę", exact: true }).click();
   await savedUrl;
 
+  await page.goto("/dashboard");
   await expect(page.locator("#garden-plan-ssr")).toHaveAttribute("data-plan-status", "stale");
   await expect(layout).toHaveAttribute("data-layout-status", "stale");
   await expect(layout).toContainText("120 × 80 cm");
@@ -27,6 +34,7 @@ test("dimension edits retain the old diagram as stale until regeneration", async
 test("saving a changed crop mix marks the existing plan stale without a reload", async ({ page }) => {
   await page.goto("/garden");
   await generatePlan(page);
+  await page.getByRole("link", { name: /Warzywa: Uprawy/ }).click();
 
   const crops = page.getByRole("region", { name: "Wybór warzyw i udziałów procentowych" });
   await crops.getByLabel("Udział (%)").nth(0).fill("60.00");
@@ -34,6 +42,7 @@ test("saving a changed crop mix marks the existing plan stale without a reload",
   await crops.getByRole("button", { name: "Zapisz wybór upraw", exact: true }).click();
 
   await expect(crops.getByRole("status").filter({ hasText: "Wybór upraw został zapisany." })).toBeVisible();
+  await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: "Układ działki", exact: true })).toHaveAttribute(
     "data-plan-status",
     "stale",

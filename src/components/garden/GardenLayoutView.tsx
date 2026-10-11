@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import type { GardenLayoutResult } from "@/lib/garden-layout";
 import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
@@ -88,7 +88,6 @@ function CropAtlasGlyph({
 
   return (
     <svg x={x} y={y} width={size} height={size} viewBox="-50 -50 100 100" aria-hidden="true" focusable="false">
-      <circle cx="0" cy="0" r="48" className="fill-garden-surface stroke-garden-surface/40" strokeWidth="3" />
       {presentation.kind === "atlas" && !atlasFailed && (
         <svg
           x="-40"
@@ -148,6 +147,7 @@ function GardenSpaceDiagram({
   style,
 }: GardenSpaceDiagramProps) {
   const viewBox = projection.viewBox;
+  const soilPatternId = `garden-soil-${useId().replaceAll(":", "")}`;
 
   return (
     <svg
@@ -158,13 +158,44 @@ function GardenSpaceDiagram({
       className={className}
       style={{ aspectRatio: getGardenDiagramAspectRatio(projection), ...style }}
     >
+      <defs>
+        <pattern id={soilPatternId} width="8" height="8" patternUnits="userSpaceOnUse">
+          <circle cx="1.5" cy="2" r="0.28" className="fill-garden-bed-soil-texture opacity-35" />
+          <circle cx="6" cy="6" r="0.2" className="fill-garden-bed-soil-texture opacity-25" />
+        </pattern>
+      </defs>
+      <rect
+        x="-2.2"
+        y="-2.2"
+        width={space.widthCm + 4.4}
+        height={space.lengthCm + 4.4}
+        rx="1.1"
+        className="fill-garden-bed-frame-shadow"
+      />
+      <rect
+        x="-2"
+        y="-2"
+        width={space.widthCm + 4}
+        height={space.lengthCm + 4}
+        rx="1"
+        className="fill-garden-bed-frame"
+      />
+      <rect
+        x="-1.3"
+        y="-1.3"
+        width={space.widthCm + 2.6}
+        height={space.lengthCm + 2.6}
+        rx="0.7"
+        className="fill-garden-bed-frame-highlight"
+      />
+      <rect x="0" y="0" width={space.widthCm} height={space.lengthCm} className="fill-garden-bed-soil" />
       <rect
         x="0"
         y="0"
         width={space.widthCm}
         height={space.lengthCm}
-        className="fill-garden-surface/5 stroke-garden-surface/35"
-        strokeWidth="0.35"
+        fill={`url(#${soilPatternId})`}
+        aria-hidden="true"
       />
       {projection.xGridLinesCm.map((xCm) => (
         <line
@@ -173,8 +204,8 @@ function GardenSpaceDiagram({
           y1="0"
           x2={xCm}
           y2={space.lengthCm}
-          className="stroke-garden-surface/20"
-          strokeWidth="0.18"
+          className="stroke-garden-bed-soil-texture opacity-15"
+          strokeWidth="0.12"
           aria-hidden="true"
         />
       ))}
@@ -185,8 +216,8 @@ function GardenSpaceDiagram({
           y1={yCm}
           x2={space.widthCm}
           y2={yCm}
-          className="stroke-garden-surface/20"
-          strokeWidth="0.18"
+          className="stroke-garden-bed-soil-texture opacity-15"
+          strokeWidth="0.12"
           aria-hidden="true"
         />
       ))}
@@ -265,8 +296,8 @@ function GardenSpaceDiagramViewer({
 
   return (
     <>
-      <div className="border-garden-surface/15 bg-garden-surface/10 space-y-2 rounded-lg border p-2">
-        <p className="text-garden-muted/75 text-xs">
+      <div className="border-app-border bg-garden-surface space-y-2 rounded-lg border p-2">
+        <p className="text-garden-muted text-xs">
           Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji
           rośliny.
         </p>
@@ -288,7 +319,7 @@ function GardenSpaceDiagramViewer({
         onClick={() => {
           setIsDialogOpen(true);
         }}
-        className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus w-full md:hidden"
+        className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus w-full md:hidden"
       >
         Powiększ diagram
       </Button>
@@ -300,13 +331,13 @@ function GardenSpaceDiagramViewer({
           event.preventDefault();
           setIsDialogOpen(false);
         }}
-        className="backdrop:bg-garden-input/90 border-garden-surface/20 bg-garden-input text-garden-foreground m-auto h-dvh max-h-dvh w-screen max-w-none overflow-hidden rounded-2xl border p-0 shadow-2xl backdrop:backdrop-blur-sm"
+        className="backdrop:bg-garden-input/90 border-app-border bg-garden-input text-garden-foreground m-auto h-dvh max-h-dvh w-screen max-w-none overflow-hidden rounded-2xl border p-0 shadow-2xl backdrop:backdrop-blur-sm"
       >
         <div className="flex h-full min-h-0 flex-col">
-          <header className="border-garden-surface/10 flex shrink-0 items-center justify-between gap-4 border-b p-4">
+          <header className="border-app-border flex shrink-0 items-center justify-between gap-4 border-b p-4">
             <div>
               <h2 className="text-garden-foreground font-semibold">{spaceName}</h2>
-              <p className="text-garden-muted/75 mt-1 text-xs">Przewijaj diagram w poziomie i pionie.</p>
+              <p className="text-garden-muted mt-1 text-xs">Przewijaj diagram w poziomie i pionie.</p>
             </div>
             <Button
               type="button"
@@ -314,7 +345,7 @@ function GardenSpaceDiagramViewer({
               onClick={() => {
                 setIsDialogOpen(false);
               }}
-              className="border-garden-surface/20 bg-garden-surface/10 text-garden-foreground hover:bg-garden-surface/20 focus-visible:ring-garden-focus shrink-0"
+              className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0"
             >
               Zamknij
             </Button>
@@ -356,7 +387,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
     <section aria-label="Szczegóły wygenerowanego układu" className="space-y-8" data-layout-status={status}>
       {status === "stale" && (
         <p
-          className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-lg border px-4 py-3 text-sm font-semibold"
+          className="border-garden-warning-border bg-garden-warning-surface text-garden-warning rounded-lg border px-4 py-3 text-sm font-semibold"
           role="alert"
         >
           Plan nieaktualny. Diagram i liczby poniżej opisują poprzedni zapisany układ, a nie bieżące wejścia.
@@ -364,7 +395,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
       )}
       {status === "unknown" && (
         <p
-          className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-lg border px-4 py-3 text-sm font-semibold"
+          className="border-garden-warning-border bg-garden-warning-surface text-garden-warning rounded-lg border px-4 py-3 text-sm font-semibold"
           role="alert"
         >
           Nie można potwierdzić aktualności tego planu, ponieważ odczyt wejść nie powiódł się.
@@ -374,20 +405,17 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
       <div className="space-y-6">
         {plan.spaces.map(({ space, positions, status = "complete" }) => {
           return (
-            <article
-              key={space.id}
-              className="border-garden-surface/10 bg-garden-surface/5 space-y-4 rounded-xl border p-4"
-            >
+            <article key={space.id} className="border-app-border bg-garden-surface space-y-4 rounded-xl border p-4">
               <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-garden-foreground font-semibold">{space.name ?? "Przestrzeń działki"}</h3>
-                <p className="text-garden-muted/80 text-sm">
+                <p className="text-garden-muted text-sm">
                   {space.widthCm} × {space.lengthCm} cm · {positions.length} pozycji
                 </p>
               </header>
 
               {status !== "complete" && (
                 <p
-                  className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning rounded-lg border px-3 py-2 text-sm font-medium"
+                  className="border-garden-warning-border bg-garden-warning-surface text-garden-warning rounded-lg border px-3 py-2 text-sm font-medium"
                   role="alert"
                 >
                   {status === "partial"
@@ -404,7 +432,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
               />
 
               {positions.length > 0 && (
-                <details className="border-garden-surface/10 bg-garden-surface/5 rounded-lg border px-4 py-3">
+                <details className="border-app-border bg-garden-surface rounded-lg border px-4 py-3">
                   <summary className="text-garden-foreground cursor-pointer text-sm font-semibold">
                     Sąsiedzi i uzasadnienie pozycji ({positions.length})
                   </summary>
@@ -446,10 +474,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
       </div>
 
       {plan.cropSummaries.length > 0 && (
-        <section
-          aria-label="Legenda diagramu"
-          className="border-garden-surface/10 bg-garden-surface/5 rounded-xl border p-4"
-        >
+        <section aria-label="Legenda diagramu" className="border-app-border bg-garden-surface rounded-xl border p-4">
           <h3 className="text-garden-foreground mb-3 text-sm font-semibold">Legenda upraw</h3>
           <ul className="flex flex-wrap gap-x-4 gap-y-2">
             {plan.cropSummaries.map((summary, index) => (
@@ -471,15 +496,15 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
             <h3 id="garden-layout-summary-title" className="text-garden-foreground text-lg font-semibold">
               Cel i osiągnięty miks
             </h3>
-            <p className="text-garden-muted/70 mt-1 text-sm">
+            <p className="text-garden-muted mt-1 text-sm">
               Cel procentowy pochodzi z wyboru upraw. Liczba pozycji obsady i osiągnięty udział pokazują ten diagram;
               udział liczymy według jednostek sadzenia (np. jedna kępa szczypiorku to jedna pozycja). Kody upraw
               znajdziesz w legendzie, a szczegóły po wskazaniu pozycji.
             </p>
           </div>
-          <div className="border-garden-surface/10 overflow-x-auto rounded-xl border">
+          <div className="border-app-border overflow-x-auto rounded-xl border">
             <table className="w-full min-w-max text-left text-sm">
-              <thead className="bg-garden-surface/10 text-garden-muted">
+              <thead className="bg-garden-surface text-garden-muted">
                 <tr>
                   <th scope="col" className="px-3 py-3 font-semibold">
                     Uprawa
@@ -501,11 +526,11 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-garden-surface/10 divide-y">
+              <tbody className="divide-app-border divide-y">
                 {plan.cropSummaries.map((summary, index) => (
                   <tr key={summary.cropId}>
                     <th scope="row" className="text-garden-foreground px-3 py-3 font-medium whitespace-nowrap">
-                      <span className="border-garden-surface/20 mr-2 inline-flex size-6 items-center justify-center rounded-md border text-xs">
+                      <span className="border-app-border mr-2 inline-flex size-6 items-center justify-center rounded-md border text-xs">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       {cropName(summary.cropId, cropNames)}
@@ -535,7 +560,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
           </h3>
 
           {geometryConflicts.length > 0 && (
-            <div className="border-garden-warning/30 bg-garden-warning/10 rounded-lg border p-4">
+            <div className="border-garden-warning-border bg-garden-warning-surface rounded-lg border p-4">
               <h4 className="text-garden-warning font-semibold">Cel ograniczony przez geometrię</h4>
               <ul className="text-garden-muted mt-2 list-disc space-y-1 pl-5 text-sm">
                 {geometryConflicts.map((conflict, index) => (
@@ -548,7 +573,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
           )}
 
           {neighborConflicts.length > 0 && (
-            <div className="border-garden-danger-border/30 bg-garden-danger-surface/10 rounded-lg border p-4">
+            <div className="border-garden-danger-border bg-garden-danger-surface rounded-lg border p-4">
               <h4 className="text-garden-danger font-semibold">Potwierdzone negatywne sąsiedztwo</h4>
               <ul className="text-garden-muted mt-2 list-disc space-y-1 pl-5 text-sm">
                 {neighborConflicts.map((conflict, index) => (
@@ -561,7 +586,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
           )}
 
           {plan.omissions.length > 0 && (
-            <div className="border-garden-surface/10 bg-garden-surface/5 rounded-lg border p-4">
+            <div className="border-app-border bg-garden-surface rounded-lg border p-4">
               <h4 className="text-garden-foreground font-semibold">Uprawy bez wyznaczonej pozycji</h4>
               <ul className="text-garden-muted mt-2 list-disc space-y-1 pl-5 text-sm">
                 {plan.omissions.map((omission, index) => (
@@ -576,13 +601,13 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
         </section>
       )}
 
-      <p className="text-garden-muted/80 text-sm">
+      <p className="text-garden-muted text-sm">
         Sąsiedztwo w układzie: korzystne wskazówki {plan.metrics.supportedNeighbors}, ostrzeżenia caution{" "}
         {plan.metrics.cautionNeighbors}. Brak wpisu w katalogu jest neutralny; wskazówki nie są gwarancją plonu.
       </p>
 
       {plan.warnings.length > 0 && (
-        <ul className="border-garden-warning/30 bg-garden-warning/10 text-garden-warning list-disc space-y-1 rounded-lg border px-4 py-3 pl-8 text-sm">
+        <ul className="border-garden-warning-border bg-garden-warning-surface text-garden-warning list-disc space-y-1 rounded-lg border px-4 py-3 pl-8 text-sm">
           {plan.warnings.map((warning, index) => (
             <li key={`${warning}-${index}`}>{warning}</li>
           ))}
