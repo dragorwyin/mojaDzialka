@@ -1,10 +1,10 @@
 ---
 change_id: group-crops-within-garden-beds
 title: Group identical crops within each garden bed
-status: impl_reviewed
+status: archived
 created: 2026-10-11
 updated: 2026-10-11
-archived_at: null
+archived_at: 2026-10-11T20:11:09Z
 ---
 
 ## Notes

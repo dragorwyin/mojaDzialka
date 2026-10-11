@@ -212,7 +212,7 @@ Existing saved plans may not contain bed-level crop quotas or deficits. Parsing 
 
 #### Manual
 
-- [x] 1.3 Inspect generated multi-bed layouts and constrained partial groups
+- [x] 1.3 Inspect generated multi-bed layouts and constrained partial groups — a76c087
 
 ### Phase 2: Per-bed and garden-level shortfall reporting
 
