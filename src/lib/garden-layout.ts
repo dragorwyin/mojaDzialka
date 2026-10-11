@@ -1037,7 +1037,7 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
   const targets = new Map<string, ReadonlyMap<string, number>>();
   for (const spaceResult of baseline.spaces) {
     if (spaceResult.status === "not_processed") continue;
-    const counts = new Map(baseline.cropSummaries.map(({ cropId }) => [cropId, 0] as const));
+    const counts = new Map<string, number>(baseline.cropSummaries.map(({ cropId }) => [cropId, 0] as const));
     for (const position of spaceResult.positions) {
       counts.set(position.cropId, (counts.get(position.cropId) ?? 0) + 1);
     }
