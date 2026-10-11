@@ -38,8 +38,8 @@ test("a rejected crop save shows an error without claiming success or staling th
     "current",
   );
   await page.unroute("**/api/garden-crops");
-  await page.goto("/dashboard?tab=crops");
   await expect(page.locator("#garden-plan-ssr")).toHaveAttribute("data-plan-status", "current");
+  await page.goto("/dashboard?tab=crops");
   const restoredCrops = page.getByRole("region", { name: "Wybór warzyw i udziałów procentowych" });
   await expect(restoredCrops.getByLabel("Udział (%)").nth(0)).toHaveValue("50.00");
   await expect(restoredCrops.getByLabel("Udział (%)").nth(1)).toHaveValue("50.00");
