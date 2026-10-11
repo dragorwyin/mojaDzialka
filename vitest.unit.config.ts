@@ -7,6 +7,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/lib/**/*.test.ts", "src/data/**/*.test.ts"],
+    include: ["src/lib/**/*.test.ts", "src/data/**/*.test.ts", "scripts/__tests__/agent-hooks.test.mjs"],
   },
 });

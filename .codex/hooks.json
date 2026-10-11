@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/lint-edited-file.mjs\"",
+            "commandWindows": "powershell -NoProfile -Command \"$repo = git rev-parse --show-toplevel; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; node (Join-Path $repo '.codex/hooks/lint-edited-file.mjs')\"",
+            "timeout": 30,
+            "statusMessage": "Linting edited files"
+          },
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/test-related-modules.mjs\"",
+            "commandWindows": "powershell -NoProfile -Command \"$repo = git rev-parse --show-toplevel; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; node (Join-Path $repo '.codex/hooks/test-related-modules.mjs')\"",
+            "timeout": 30,
+            "statusMessage": "Running module-related tests"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/end-of-turn.mjs\"",
+            "commandWindows": "powershell -NoProfile -Command \"$repo = git rev-parse --show-toplevel; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; node (Join-Path $repo '.codex/hooks/end-of-turn.mjs')\"",
+            "timeout": 120,
+            "statusMessage": "Checking lint, types, and tests"
+          }
+        ]
+      }
+    ]
+  }
+}
