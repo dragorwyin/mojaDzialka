@@ -1,27 +1,67 @@
 import { test, expect } from "./fixtures/garden";
+import type { Page } from "@playwright/test";
 import { generatePlan } from "./support/garden";
 import { readGardenLayoutResult } from "../../src/lib/garden-layout";
 
 async function readCropMarkers(page: Parameters<typeof generatePlan>[0]) {
-  const labels = await page
-    .getByRole("region", { name: "Szczegóły wygenerowanego układu" })
-    .locator('svg[role="group"] g[role="img"]')
-    .evaluateAll((markers) => markers.map((marker) => marker.getAttribute("aria-label") ?? ""));
+  const diagrams = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" }).locator('svg[role="group"]');
+  const labels: string[] = [];
   const groups = new Map<string, { row: number; column: number }[]>();
 
-  for (const label of labels) {
-    const match = /^(\d+) · .*pozycja (\d+), (\d+),/.exec(label);
-    if (!match) throw new Error("Unexpected crop marker label: " + label);
-    const cropCode = match[1];
-    const row = Number(match[2]) - 1;
-    const column = Number(match[3]) - 1;
-    if (!cropCode) throw new Error("Missing crop code in marker label: " + label);
-    const cropGroup = groups.get(cropCode) ?? [];
-    cropGroup.push({ row, column });
-    groups.set(cropCode, cropGroup);
+  for (let diagramIndex = 0; diagramIndex < (await diagrams.count()); diagramIndex += 1) {
+    const diagramLabels = await diagrams
+      .nth(diagramIndex)
+      .locator('g[role="img"]')
+      .evaluateAll((markers) => markers.map((marker) => marker.getAttribute("aria-label") ?? ""));
+    labels.push(...diagramLabels);
+    for (const label of diagramLabels) {
+      const match = /^(\d+) · .*pozycja (\d+), (\d+),/.exec(label);
+      if (!match) throw new Error("Unexpected crop marker label: " + label);
+      const cropCode = match[1];
+      const row = Number(match[2]) - 1;
+      const column = Number(match[3]) - 1;
+      if (!cropCode) throw new Error("Missing crop code in marker label: " + label);
+      const groupKey = `${diagramIndex}:${cropCode}`;
+      const cropGroup = groups.get(groupKey) ?? [];
+      cropGroup.push({ row, column });
+      groups.set(groupKey, cropGroup);
+    }
   }
 
   return { labels, groups };
+}
+
+async function configureConstrainedGarden(page: Page) {
+  const origin = new URL(page.url()).origin;
+  const spaces = new URLSearchParams();
+  for (const space of [
+    { name: "Skrzynia e2e", widthCm: "120", lengthCm: "80" },
+    { name: "Skrzynia ograniczona e2e", widthCm: "20", lengthCm: "20" },
+  ]) {
+    spaces.append("spaceId", "");
+    spaces.append("spaceName", space.name);
+    spaces.append("spaceType", "bed");
+    spaces.append("widthCm", space.widthCm);
+    spaces.append("lengthCm", space.lengthCm);
+  }
+  const spaceResponse = await page.request.post(`${origin}/api/garden`, {
+    data: spaces.toString(),
+    headers: { Origin: origin, "Content-Type": "application/x-www-form-urlencoded" },
+    maxRedirects: 0,
+  });
+  expect(spaceResponse.status()).toBe(302);
+  expect(spaceResponse.headers().location).toBe("/dashboard?tab=sectors&saved=1");
+
+  const cropResponse = await page.request.post(`${origin}/api/garden-crops`, {
+    headers: { Origin: origin },
+    data: [
+      { cropId: "marchew", proportion: 0.5 },
+      { cropId: "rzodkiewka", proportion: 0.5 },
+    ],
+  });
+  expect(cropResponse.status()).toBe(200);
+  expect(await cropResponse.json()).toEqual({ saved: true });
+  await page.reload();
 }
 
 function expectEveryCropGroupConnected(groups: Map<string, { row: number; column: number }[]>) {
@@ -49,6 +89,7 @@ function expectEveryCropGroupConnected(groups: Map<string, { row: number; column
 
 test("saved grouped positions and per-bed allocation data survive dashboard reload", async ({ page }) => {
   await page.goto("/dashboard");
+  await configureConstrainedGarden(page);
   const responsePromise = page.waitForResponse(
     (response) => response.url().endsWith("/api/garden-plan") && response.request().method() === "POST",
   );
@@ -62,6 +103,21 @@ test("saved grouped positions and per-bed allocation data survive dashboard relo
   const plan = readGardenLayoutResult(body.plan);
   expect(plan).not.toBeNull();
   if (plan === null) throw new Error("Generated plan response did not parse.");
+
+  const largeBed = plan.spaces.find((space) => space.space.name === "Skrzynia e2e");
+  const constrainedBed = plan.spaces.find((space) => space.space.name === "Skrzynia ograniczona e2e");
+  expect(largeBed?.cropAllocations).toContainEqual({
+    cropId: "rzodkiewka",
+    allocatedCount: 57,
+    placedCount: 40,
+    missingCount: 17,
+  });
+  expect(constrainedBed?.cropAllocations).toContainEqual({
+    cropId: "marchew",
+    allocatedCount: 2,
+    placedCount: 1,
+    missingCount: 1,
+  });
 
   for (const space of plan.spaces) {
     if (space.status === "not_processed") continue;
@@ -84,16 +140,10 @@ test("saved grouped positions and per-bed allocation data survive dashboard relo
   const afterReload = await readCropMarkers(page);
   expect(afterReload.labels).toEqual(beforeReload.labels);
 
-  const hasShortfall = plan.spaces.some((space) => space.cropAllocations?.some(({ missingCount }) => missingCount > 0));
-  if (hasShortfall) {
-    await expect(layout).toContainText("Braki w całym ogrodzie");
-    for (const space of plan.spaces) {
-      if (space.cropAllocations?.some(({ missingCount }) => missingCount > 0)) {
-        await expect(layout).toContainText("Do dosadzenia w tej skrzyni");
-        await expect(layout).toContainText(space.space.name ?? space.space.id);
-      }
-    }
-  } else {
-    await expect(layout).not.toContainText("Braki w całym ogrodzie");
-  }
+  await expect(layout).toContainText("Braki w całym ogrodzie");
+  await expect(layout).toContainText("Do dosadzenia w tej skrzyni");
+  await expect(layout).toContainText("Skrzynia e2e");
+  await expect(layout).toContainText("Skrzynia ograniczona e2e");
+  await expect(layout).toContainText("17 pozycji do dosadzenia");
+  await expect(layout).toContainText("1 pozycja do dosadzenia");
 });

@@ -57,4 +57,23 @@ describe("garden layout shortfall presentation", () => {
     expect(legacyMarkup).not.toContain("Braki w całym ogrodzie");
     expect(legacyMarkup).not.toContain("Do dosadzenia w tej skrzyni");
   });
+
+  it("explains unknown allocations even when there are no known deficits", () => {
+    const crop = CROP_CATALOG.find((entry) => entry.id === "marchew");
+    if (!crop) throw new Error("Missing carrot fixture.");
+    const plan = generateGardenLayout({
+      spaces: [
+        { id: "legacy", name: "Stara skrzynia", widthCm: 30, lengthCm: 10 },
+        { id: "known", name: "Nowa skrzynia", widthCm: 30, lengthCm: 10 },
+      ],
+      crops: [{ crop, proportion: 100 }],
+      relations: [],
+    });
+    plan.spaces[0].cropAllocations = undefined;
+    plan.spaces[1].cropAllocations = [];
+    const markup = renderToStaticMarkup(createElement(GardenLayoutView, { plan, status: "current", cropNames: {} }));
+
+    expect(markup).toContain("Pozostałe nie mają pełnych danych do obliczenia braków.");
+    expect(markup).not.toContain("Braki w całym ogrodzie");
+  });
 });

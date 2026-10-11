@@ -515,14 +515,17 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                 </li>
               ))}
             </ul>
-            {shortfalls.hasUnknownAllocations && (
-              <p className="text-garden-muted mt-3 text-sm">
-                Podsumowanie obejmuje tylko skrzynie z zapisaną alokacją. Pozostałe nie mają pełnych danych do
-                obliczenia braków.
-              </p>
-            )}
           </div>
         </section>
+      )}
+
+      {shortfalls.hasUnknownAllocations && (
+        <div className="border-garden-warning-border bg-garden-warning-surface rounded-xl border p-4">
+          <p className="text-garden-muted text-sm">
+            Podsumowanie obejmuje tylko skrzynie z zapisaną alokacją. Pozostałe nie mają pełnych danych do obliczenia
+            braków.
+          </p>
+        </div>
       )}
 
       {plan.cropSummaries.length > 0 && (
