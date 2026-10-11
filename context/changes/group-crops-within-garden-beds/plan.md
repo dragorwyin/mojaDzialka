@@ -218,20 +218,20 @@ Existing saved plans may not contain bed-level crop quotas or deficits. Parsing 
 
 #### Automated
 
-- [x] 2.1 Extend and parse per-bed allocation, placed, and missing counts compatibly
-- [x] 2.2 Display per-bed and garden-level deficits and cover their accounting
+- [x] 2.1 Extend and parse per-bed allocation, placed, and missing counts compatibly — e745169
+- [x] 2.2 Display per-bed and garden-level deficits and cover their accounting — e745169
 
 #### Manual
 
-- [x] 2.3 Inspect full and partial plans for clear, correctly located deficit reporting
+- [x] 2.3 Inspect full and partial plans for clear, correctly located deficit reporting — e745169
 
 ### Phase 3: End-to-end acceptance
 
 #### Automated
 
-- [ ] 3.1 Verify grouped positions and deficits through save/read and dashboard flow
-- [ ] 3.2 Run the applicable repository quality gates
+- [x] 3.1 Verify grouped positions and deficits through save/read and dashboard flow
+- [x] 3.2 Run the applicable repository quality gates
 
 #### Manual
 
-- [ ] 3.3 Accept the saved grouped plan and shortfall report in the dashboard
+- [x] 3.3 Accept the saved grouped plan and shortfall report in the dashboard

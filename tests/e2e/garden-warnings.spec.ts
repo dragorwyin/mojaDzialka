@@ -34,6 +34,7 @@ test("renders explicit low-confidence and omitted-crop warnings from a fixed res
                   },
                 },
               ],
+              cropAllocations: [{ cropId: "marchew", allocatedCount: 2, placedCount: 1, missingCount: 1 }],
               status: "complete",
             },
           ],
@@ -66,4 +67,7 @@ test("renders explicit low-confidence and omitted-crop warnings from a fixed res
   await expect(layout).toContainText("pomidor Faworyt");
   await expect(layout).toContainText("Pewność danych");
   await expect(layout).toContainText("niska");
+  await expect(layout).toContainText("Do dosadzenia w tej skrzyni");
+  await expect(layout).toContainText("Braki w całym ogrodzie");
+  await expect(layout).toContainText("1 pozycja do dosadzenia");
 });
