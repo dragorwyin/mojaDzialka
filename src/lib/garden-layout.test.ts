@@ -86,7 +86,7 @@ describe("garden layout engine", () => {
     expect(coordinates(10, 20)).toEqual([[5, 10]]);
     expect(coordinates(20, 10, 20, 10)).toEqual([[10, 5]]);
     expect(coordinates(9, 20)).toEqual([]);
-    expect(coordinates(20, 19)).toEqual([]);
+    expect(coordinates(20, 19)).toEqual([[10, 5]]);
     expect(coordinates(15, 15, 10, 10)).toEqual([[5, 5]]);
     expect(coordinates(10, 10, 10, 10)).toEqual([[5, 5]]);
     expect(coordinates(9, 10, 10, 10)).toEqual([]);
@@ -307,23 +307,21 @@ describe("garden layout engine", () => {
     expect(carrot?.placementReason).toMatchObject({ category: "compactness" });
   });
 
-  it("reports the exact number of positions omitted by the per-crop grid limit", () => {
+  it("considers every feasible grid position beyond the former per-crop limit", () => {
     const result = generateGardenLayout({
       spaces: [{ id: "radish-bed", name: "Grządka rzodkiewki", widthCm: 200, lengthCm: 100 }],
       crops: [{ crop: compactCrop("rzodkiewka", 2, 10), proportion: 100 }],
       relations: [],
     });
 
-    expect(result.spaces[0]?.positions).toHaveLength(256);
-    expect(result.warnings).toContain(
-      'W przestrzeni "Grządka rzodkiewki" pominięto 744 z 1000 pozycji siatki dla uprawy rzodkiewka (limit 256).',
-    );
+    expect(result.spaces[0]?.positions).toHaveLength(1_000);
+    expect(result.warnings).toEqual([]);
     expect(result.metrics.limitReached).toBe(false);
   });
 
   it("does not scan rows when a space is too narrow for any candidate", () => {
     const result = generateGardenLayout({
-      spaces: [{ id: "narrow-long", widthCm: 10, lengthCm: 100_000 }],
+      spaces: [{ id: "narrow-long", widthCm: 0.0005, lengthCm: 100_000 }],
       crops: [{ crop: compactCrop("marchew", 30, 0.001), proportion: 100 }],
       relations: [],
     });
