@@ -231,13 +231,13 @@ Brak migracji. Dane zapisane w centymetrach i istniejące payloady nie zmieniaj�
 
 #### Automated
 
-- [x] 3.1 `npm run lint`, `npx astro check` i `npm run build` przechodzą po finalnych zmianach.
-- [x] 3.2 Kitchen sink w dev renderuje siedem wymaganych stanów; każdy wyjątek ma jawne uzasadnienie N/A.
-- [x] 3.3 Istniejący skaner tokenów obejmuje zmienione widoki, a zmiana nie dodaje dependency ani literalnych kolorów.
+- [x] 3.1 `npm run lint`, `npx astro check` i `npm run build` przechodzą po finalnych zmianach. — 865505e
+- [x] 3.2 Kitchen sink w dev renderuje siedem wymaganych stanów; każdy wyjątek ma jawne uzasadnienie N/A. — 865505e
+- [x] 3.3 Istniejący skaner tokenów obejmuje zmienione widoki, a zmiana nie dodaje dependency ani literalnych kolorów. — 865505e
 
 #### Manual
 
-- [x] 3.4 Wszystkie siedem stanów jest widocznych na kitchen sinku lub ma uzasadnione N/A; kontrast i fokus pozostają czytelne.
-- [x] 3.5 Trzy adresy zakładek, aktywny stan, nawigacja wstecz/dalej oraz oba przepływy zapisu kończą się we właściwym widoku z potwierdzeniem.
-- [x] 3.6 Ostateczne zrzuty desktop/mobile pokazują spójny dashboard, czytelny diagram i brak regresji mobilnego zoomu; użytkownik akceptuje odbiór.
-- [x] 3.7 Zasada UI w `AGENTS.md` pozostaje jedynym aktualnym kontraktem agentów dla tokenów, wspólnych komponentów i lokalizacji kitchen sinka.
+- [x] 3.4 Wszystkie siedem stanów jest widocznych na kitchen sinku lub ma uzasadnione N/A; kontrast i fokus pozostają czytelne. — 865505e
+- [x] 3.5 Trzy adresy zakładek, aktywny stan, nawigacja wstecz/dalej oraz oba przepływy zapisu kończą się we właściwym widoku z potwierdzeniem. — 865505e
+- [x] 3.6 Ostateczne zrzuty desktop/mobile pokazują spójny dashboard, czytelny diagram i brak regresji mobilnego zoomu; użytkownik akceptuje odbiór. — 865505e
+- [x] 3.7 Zasada UI w `AGENTS.md` pozostaje jedynym aktualnym kontraktem agentów dla tokenów, wspólnych komponentów i lokalizacji kitchen sinka. — 865505e

@@ -1,7 +1,7 @@
 ---
 change_id: garden-bed-visuals-tabs
 title: Czytelne skrzynie i działające zakładki ogrodu
-status: implementing
+status: impl_reviewed
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null
