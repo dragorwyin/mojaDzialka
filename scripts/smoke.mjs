@@ -373,17 +373,21 @@ const steps = [
     "structural space changes remove the plan and retain existing space IDs",
     async () => {
       const result = await request("/dashboard?tab=sectors");
+      const planner = await request("/dashboard");
       const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
         (match) => match[1],
       );
       if (currentSpaceIds[0] !== savedSpaceId) throw new Error("saved space ID changed after adding another space");
       if (currentSpaceIds.length !== 2) throw new Error("expected the saved garden to contain two spaces");
+      if (!planner.body.includes('data-plan-status="empty"')) {
+        throw new Error("structural changes should clear the plan on the dashboard tab");
+      }
       savedSectorId = currentSpaceIds[1];
       return result;
     },
     {
       status: 200,
-      includes: ['data-plan-status="empty"', "Skrzynia testowa", "Sektor testowy"],
+      includes: ["Skrzynia testowa", "Sektor testowy"],
     },
   ],
   [
@@ -417,15 +421,19 @@ const steps = [
     "structural space removal keeps only the retained ID and leaves no plan",
     async () => {
       const result = await request("/dashboard?tab=sectors");
+      const planner = await request("/dashboard");
       const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
         (match) => match[1],
       );
       if (currentSpaceIds.length !== 1 || currentSpaceIds[0] !== savedSpaceId) {
         throw new Error("removing a space did not retain exactly the original space ID");
       }
+      if (!planner.body.includes('data-plan-status="empty"')) {
+        throw new Error("removing a space should clear the plan on the dashboard tab");
+      }
       return result;
     },
-    { status: 200, includes: ['data-plan-status="empty"', "Skrzynia testowa"], excludes: "Sektor testowy" },
+    { status: 200, includes: "Skrzynia testowa", excludes: "Sektor testowy" },
   ],
   [
     "garden plan can be regenerated after removing a structural space",
@@ -540,12 +548,12 @@ const steps = [
   [
     "unknown signin error displays only generic message",
     () => request("/auth/signin?error=supabase-secret-sentinel"),
-    { status: 200, includes: "Something went wrong. Please try again.", excludes: "supabase-secret-sentinel" },
+    { status: 200, includes: "Coś poszło nie tak. Spróbuj ponownie.", excludes: "supabase-secret-sentinel" },
   ],
   [
     "unknown signup error displays only generic message",
     () => request("/auth/signup?error=supabase-secret-sentinel"),
-    { status: 200, includes: "Something went wrong. Please try again.", excludes: "supabase-secret-sentinel" },
+    { status: 200, includes: "Coś poszło nie tak. Spróbuj ponownie.", excludes: "supabase-secret-sentinel" },
   ],
 ];
 
