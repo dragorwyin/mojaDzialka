@@ -40,8 +40,8 @@ export const test = base.extend<{ gardenReady: undefined }, { gardenSession: Ses
       // Empty persisted ID replaces the structure, clearing any previous plan via the real RPC.
       // No database reset, admin key or mocked success; every test gets the same independent input.
       const space = await context.request.post("/api/garden", {
-        headers: { Origin: baseURL },
         form: { spaceId: "", spaceName: "Skrzynia e2e", spaceType: "bed", widthCm: "120", lengthCm: "80" },
+        headers: { Origin: baseURL },
         maxRedirects: 0,
       });
       expectRedirect(space, "/dashboard?tab=sectors&saved=1");

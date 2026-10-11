@@ -107,6 +107,7 @@ test("accepting a removed space saves the structure and clears the previous plan
   await respondToPlanLoss(page, "accept");
   expect((await saved).status()).toBe(302);
 
+  await expect(page).toHaveURL(/\/dashboard\?tab=sectors&saved=1$/);
   await page.reload();
   await expect(page.getByRole("group", { name: "Przestrzeń 1", exact: true })).toBeVisible();
   await expect(page.getByRole("group", { name: "Przestrzeń 2", exact: true })).toHaveCount(0);

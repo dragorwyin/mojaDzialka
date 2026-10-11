@@ -128,11 +128,7 @@ const steps = [
     () => request("/dashboard"),
     { status: 302, location: "/auth/signin?returnTo=%2Fdashboard" },
   ],
-  [
-    "garden plan is not rendered for an anonymous user",
-    () => request("/garden"),
-    { status: 302, location: "/auth/signin?returnTo=%2Fgarden" },
-  ],
+  ["legacy garden route redirects to the dashboard", () => request("/garden"), { status: 308, location: "/dashboard" }],
   [
     "garden plan rejects an anonymous request",
     () => request("/api/garden-plan", { method: "POST", json: {} }),
@@ -157,7 +153,7 @@ const steps = [
   [
     "public signin page skips refresh for an expired session cookie",
     () => request("/auth/signin", { cookieJar: createExpiredSessionJar() }),
-    { status: 200, includes: "Sign in" },
+    { status: 200, includes: "Zaloguj się" },
   ],
   [
     "wrong password clears every expired session cookie chunk",
@@ -203,7 +199,7 @@ const steps = [
     () => request("/auth/signin?error=signin_failed&returnTo=%2Fdashboard"),
     {
       status: 200,
-      includes: "Email or password is incorrect.",
+      includes: "Adres e-mail lub hasło są nieprawidłowe.",
       excludes: ["signin_failed", "Invalid login credentials"],
     },
   ],
@@ -219,8 +215,8 @@ const steps = [
     { status: 422, includes: '"error":"missing_garden"' },
   ],
   [
-    "garden renders crop selection for signed-in user",
-    () => request("/garden"),
+    "dashboard crops tab renders crop selection for signed-in user",
+    () => request("/dashboard?tab=crops"),
     { status: 200, includes: "Wybór warzyw i udziałów procentowych" },
   ],
   [
@@ -238,7 +234,7 @@ const steps = [
   ],
   [
     "selected crops render final spacing, sowing density and seasonal details separately",
-    () => request("/garden"),
+    () => request("/dashboard?tab=crops"),
     {
       status: 200,
       includes: [
@@ -255,8 +251,8 @@ const steps = [
     { status: 422, includes: '"error":"missing_spaces"' },
   ],
   [
-    "garden renders the saved crop selection as normalized percentages",
-    () => request("/garden"),
+    "dashboard crops tab renders the saved selection as normalized percentages",
+    () => request("/dashboard?tab=crops"),
     { status: 200, includes: ["pomidor", "marchew", 'value="72.73"', 'value="27.27"', "100,00%"] },
   ],
   [
@@ -272,11 +268,11 @@ const steps = [
           lengthCm: "80",
         },
       }),
-    { status: 302, location: "/garden?saved=1" },
+    { status: 302, location: "/dashboard?tab=sectors&saved=1" },
   ],
   [
-    "garden renders crops after the space list has been replaced",
-    () => request("/garden"),
+    "dashboard crops tab renders crops after the space list has been replaced",
+    () => request("/dashboard?tab=crops"),
     { status: 200, includes: ["pomidor", "marchew", 'value="72.73"', 'value="27.27"', "100,00%"] },
   ],
   [
@@ -320,13 +316,13 @@ const steps = [
   ],
   [
     "garden SSR reads the saved current plan",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ["garden-plan-ssr", 'data-plan-status="current"', "Układ działki"] },
   ],
   [
     "garden form exposes the stable ID of its saved space",
     async () => {
-      const result = await request("/garden");
+      const result = await request("/dashboard?tab=sectors");
       savedSpaceId = result.body.match(/name="spaceId" value="([0-9a-f-]+)"/i)?.[1] ?? null;
       return result;
     },
@@ -347,11 +343,11 @@ const steps = [
         },
       });
     },
-    { status: 302, location: "/garden?saved=1" },
+    { status: 302, location: "/dashboard?tab=sectors&saved=1" },
   ],
   [
     "dimension changes keep the previous plan visible as stale",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ['data-plan-status="stale"', "Plan nieaktualny", "Układ działki"] },
   ],
   [
@@ -371,23 +367,27 @@ const steps = [
       form.append("lengthCm", "100");
       return request("/api/garden", { method: "POST", form });
     },
-    { status: 302, location: "/garden?saved=1" },
+    { status: 302, location: "/dashboard?tab=sectors&saved=1" },
   ],
   [
     "structural space changes remove the plan and retain existing space IDs",
     async () => {
-      const result = await request("/garden");
+      const result = await request("/dashboard?tab=sectors");
+      const planner = await request("/dashboard");
       const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
         (match) => match[1],
       );
       if (currentSpaceIds[0] !== savedSpaceId) throw new Error("saved space ID changed after adding another space");
       if (currentSpaceIds.length !== 2) throw new Error("expected the saved garden to contain two spaces");
+      if (!planner.body.includes('data-plan-status="empty"')) {
+        throw new Error("structural changes should clear the plan on the dashboard tab");
+      }
       savedSectorId = currentSpaceIds[1];
       return result;
     },
     {
       status: 200,
-      includes: ['data-plan-status="empty"', "Skrzynia testowa", "Sektor testowy"],
+      includes: ["Skrzynia testowa", "Sektor testowy"],
     },
   ],
   [
@@ -397,7 +397,7 @@ const steps = [
   ],
   [
     "regenerated plan reflects the saved structural change",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ['data-plan-status="current"', "Sektor testowy"] },
   ],
   [
@@ -415,21 +415,25 @@ const steps = [
         },
       });
     },
-    { status: 302, location: "/garden?saved=1" },
+    { status: 302, location: "/dashboard?tab=sectors&saved=1" },
   ],
   [
     "structural space removal keeps only the retained ID and leaves no plan",
     async () => {
-      const result = await request("/garden");
+      const result = await request("/dashboard?tab=sectors");
+      const planner = await request("/dashboard");
       const currentSpaceIds = [...result.body.matchAll(/name="spaceId" value="([0-9a-f-]+)"/gi)].map(
         (match) => match[1],
       );
       if (currentSpaceIds.length !== 1 || currentSpaceIds[0] !== savedSpaceId) {
         throw new Error("removing a space did not retain exactly the original space ID");
       }
+      if (!planner.body.includes('data-plan-status="empty"')) {
+        throw new Error("removing a space should clear the plan on the dashboard tab");
+      }
       return result;
     },
-    { status: 200, includes: ['data-plan-status="empty"', "Skrzynia testowa"], excludes: "Sektor testowy" },
+    { status: 200, includes: "Skrzynia testowa", excludes: "Sektor testowy" },
   ],
   [
     "garden plan can be regenerated after removing a structural space",
@@ -438,7 +442,7 @@ const steps = [
   ],
   [
     "regenerated plan stays current after structural space removal",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ['data-plan-status="current"', "Skrzynia testowa"], excludes: "Sektor testowy" },
   ],
   [
@@ -453,7 +457,7 @@ const steps = [
   ],
   [
     "second account does not read the first account's garden plan",
-    () => request("/garden", { cookieJar: secondJar }),
+    () => request("/dashboard", { cookieJar: secondJar }),
     { status: 200, includes: 'data-plan-status="empty"', excludes: "Skrzynia testowa" },
   ],
   [
@@ -462,11 +466,11 @@ const steps = [
     { status: 200, includes: '"saved":true' },
   ],
   [
-    "garden renders the empty crop selection after clearing",
-    () => request("/garden"),
+    "dashboard crops tab renders the empty selection after clearing",
+    () => request("/dashboard?tab=crops"),
     {
       status: 200,
-      includes: ["Nie wybrano jeszcze warzyw", 'data-plan-status="stale"', "Plan nieaktualny", "Skrzynia testowa"],
+      includes: ["Nie wybrano jeszcze warzyw"],
       excludes: ['id="crop-proportion-pomidor"', 'id="crop-proportion-marchew"'],
     },
   ],
@@ -481,7 +485,7 @@ const steps = [
   ],
   [
     "failed plan generation leaves the previous plan visible as stale",
-    () => request("/garden"),
+    () => request("/dashboard"),
     {
       status: 200,
       includes: ['data-plan-status="stale"', "Plan nieaktualny", "Układ działki"],
@@ -502,7 +506,7 @@ const steps = [
   ],
   [
     "changed garden crop mix remains stale until the plan is regenerated",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ['data-plan-status="stale"', "Plan nieaktualny"] },
   ],
   [
@@ -512,7 +516,7 @@ const steps = [
   ],
   [
     "garden SSR shows the regenerated plan as current",
-    () => request("/garden"),
+    () => request("/dashboard"),
     { status: 200, includes: ['data-plan-status="current"', "Układ działki"] },
   ],
   [
@@ -544,12 +548,12 @@ const steps = [
   [
     "unknown signin error displays only generic message",
     () => request("/auth/signin?error=supabase-secret-sentinel"),
-    { status: 200, includes: "Something went wrong. Please try again.", excludes: "supabase-secret-sentinel" },
+    { status: 200, includes: "Coś poszło nie tak. Spróbuj ponownie.", excludes: "supabase-secret-sentinel" },
   ],
   [
     "unknown signup error displays only generic message",
     () => request("/auth/signup?error=supabase-secret-sentinel"),
-    { status: 200, includes: "Something went wrong. Please try again.", excludes: "supabase-secret-sentinel" },
+    { status: 200, includes: "Coś poszło nie tak. Spróbuj ponownie.", excludes: "supabase-secret-sentinel" },
   ],
 ];
 

@@ -1,13 +1,15 @@
 import { test, expect } from "./fixtures/garden";
 
 test("authenticated garden hydrates the space form", async ({ page }) => {
-  await page.goto("/garden");
-  await expect(page.getByRole("heading", { name: "Zdefiniuj swoją działkę" })).toBeVisible();
+  await page.goto("/dashboard?tab=sectors");
+  await expect(page.getByRole("heading", { name: "Sektory i skrzynie" })).toBeVisible();
   await expect(page.getByRole("group", { name: "Przestrzeń 1", exact: true })).toBeVisible();
+  await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: "Układ działki", exact: true })).toHaveAttribute(
     "data-plan-status",
     "empty",
   );
+  await page.goto("/dashboard?tab=sectors");
   // The SSR button alone proves nothing: wait for the island to finish hydrating,
   // then require its real React handler to add a second fieldset.
   await expect(

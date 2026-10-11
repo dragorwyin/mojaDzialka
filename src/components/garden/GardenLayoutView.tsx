@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
-import type { GardenLayoutResult } from "@/lib/garden-layout";
+import { createGardenLayoutShortfallReport, type GardenLayoutResult } from "@/lib/garden-layout";
 import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
 import {
   CROP_ATLAS_HREF,
@@ -64,6 +64,15 @@ function formatDeviation(actual: number, target: number): string {
   const deviation = actual - target;
   const sign = deviation > 0 ? "+" : "";
   return `${sign}${formatPercentage(deviation)}`;
+}
+
+function formatMissingPositions(count: number): string {
+  const lastTwoDigits = count % 100;
+  if (count === 1) return "1 pozycja do dosadzenia";
+  if (count % 10 >= 2 && count % 10 <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return String(count) + " pozycje do dosadzenia";
+  }
+  return String(count) + " pozycji do dosadzenia";
 }
 
 function cropName(cropId: string, cropNames: Record<string, string>): string {
@@ -382,6 +391,8 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
   );
   const geometryConflicts = plan.conflicts.filter((conflict) => conflict.type === "geometry");
   const neighborConflicts = plan.conflicts.filter((conflict) => conflict.type === "negative_neighbor");
+  const shortfalls = createGardenLayoutShortfallReport(plan);
+  const shortfallsBySpace = new Map(shortfalls.bySpace.map(({ space, crops }) => [space.id, crops]));
 
   return (
     <section aria-label="Szczegóły wygenerowanego układu" className="space-y-8" data-layout-status={status}>
@@ -412,6 +423,23 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                   {space.widthCm} × {space.lengthCm} cm · {positions.length} pozycji
                 </p>
               </header>
+
+              {shortfallsBySpace.has(space.id) && (
+                <aside
+                  aria-label={"Brakujące pozycje w " + (space.name ?? "przestrzeni działki")}
+                  className="border-garden-warning-border bg-garden-warning-surface rounded-lg border px-3 py-2"
+                >
+                  <h4 className="text-garden-warning text-sm font-semibold">Do dosadzenia w tej skrzyni</h4>
+                  <ul className="text-garden-muted mt-1 space-y-1 text-sm">
+                    {shortfallsBySpace.get(space.id)?.map(({ cropId, missingCount }) => (
+                      <li key={cropId}>
+                        <span className="text-garden-foreground font-medium">{cropName(cropId, cropNames)}</span>:{" "}
+                        {formatMissingPositions(missingCount)}
+                      </li>
+                    ))}
+                  </ul>
+                </aside>
+              )}
 
               {status !== "complete" && (
                 <p
@@ -472,6 +500,33 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
           );
         })}
       </div>
+
+      {shortfalls.byCrop.length > 0 && (
+        <section aria-labelledby="garden-layout-shortfall-title" className="space-y-3">
+          <div className="border-garden-warning-border bg-garden-warning-surface rounded-xl border p-4">
+            <h3 id="garden-layout-shortfall-title" className="text-garden-warning font-semibold">
+              Braki w całym ogrodzie
+            </h3>
+            <ul className="text-garden-muted mt-2 space-y-1 text-sm">
+              {shortfalls.byCrop.map(({ cropId, missingCount }) => (
+                <li key={cropId}>
+                  <span className="text-garden-foreground font-medium">{cropName(cropId, cropNames)}</span>:{" "}
+                  {formatMissingPositions(missingCount)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {shortfalls.hasUnknownAllocations && (
+        <div className="border-garden-warning-border bg-garden-warning-surface rounded-xl border p-4">
+          <p className="text-garden-muted text-sm">
+            Podsumowanie obejmuje tylko skrzynie z zapisaną alokacją. Pozostałe nie mają pełnych danych do obliczenia
+            braków.
+          </p>
+        </div>
+      )}
 
       {plan.cropSummaries.length > 0 && (
         <section aria-label="Legenda diagramu" className="border-app-border bg-garden-surface rounded-xl border p-4">
