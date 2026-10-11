@@ -51,7 +51,8 @@
 - **Location**: `context/changes/garden-experience-redesign/change.md:20`
 - **Detail**: Frontmatter wskazuje `status: implemented`, a wszystkie pozycje fazy 5 w planie są ukończone; jednocześnie ogólna pozycja „Wykonać odbiór wizualny...” w `change.md` pozostaje niezaznaczona.
 - **Fix**: Po rozstrzygnięciu F1 ujednolicić checkbox podsumowujący z faktycznym stanem odbioru.
-- **Decision**: PENDING
+- **Decision**: FIXED
+- **Resolution**: Zaznaczono odbiór wizualny jako ukończony w `change.md`; potwierdzają go akceptacja użytkownika i zrzuty ekranów zapisane w katalogu projektu.
 
 ### F4 — Widoki używają arbitralnych wartości Tailwinda
 
@@ -61,7 +62,8 @@
 - **Location**: `src/pages/dashboard.astro:224`, `src/pages/dashboard.astro:249`
 - **Detail**: `tracking-[0.16em]` stosuje arbitrary Tailwind values w widoku, wbrew UI guard w `AGENTS.md`, który wymaga semantycznych tokenów lub wspólnych prymitywów.
 - **Fix**: Zastąpić named utility albo semantycznym tokenem typograficznym zgodnym z istniejącym systemem.
-- **Decision**: PENDING
+- **Decision**: FIXED
+- **Resolution**: Oba `tracking-[0.16em]` zastąpiono istniejącą klasą `tracking-widest`, zgodną z UI guard i używaną już w tym widoku.
 
 ### F5 — Powtórny lint nie zakończył się w przeglądzie
 
@@ -71,7 +73,8 @@
 - **Location**: `npm run lint`
 - **Detail**: `npm run build` zakończył się powodzeniem (pozostało znane ostrzeżenie sitemap o braku opcji `site`), a `git diff --check 7dd3895^..4792f8b` jest czysty. Powtórny `npm run lint` wypisał token scan bez naruszeń, po czym ESLint nie zwrócił dalszego wyjścia przez ponad minutę; proces został przerwany. `change.md` zawiera wcześniejszy zapis udanego lint dla fazy 5, ale ta próba przeglądowa nie dostarczyła nowego końcowego statusu.
 - **Fix**: Ponowić `npm run lint` w działającym środowisku przed zamknięciem otwartych uwag.
-- **Decision**: PENDING
+- **Decision**: FIXED
+- **Resolution**: Ponowne `npm run lint` zakończyło się kodem 0. Skan tokenów przeszedł bez niezatwierdzonych dopasowań (21 plików), a ESLint zakończył się bez błędów.
 
 ## Additional review notes
 

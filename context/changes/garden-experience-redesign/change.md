@@ -1,7 +1,7 @@
 ---
 change_id: garden-experience-redesign
 title: Spójne doświadczenie Moja Działka od strony publicznej po planer
-status: implemented
+status: impl_reviewed
 created: 2026-10-10
 updated: 2026-10-11
 archived_at: null
@@ -17,7 +17,7 @@ Użytkownik zgłasza, że strona startowa nadal wygląda jak starter Astro, logo
 - [x] Przeprowadzić 10x-research i ustalić źródłowe kontrakty oraz otwarte decyzje design systemu.
 - [x] Przygotować warianty wizualne do oceny użytkownika przed implementacją.
 - [x] Zaplanować i zaimplementować uzgodniony zakres.
-- [ ] Wykonać odbiór wizualny wszystkich ekranów i stanów przed uznaniem zmiany za gotową.
+- [x] Wykonać odbiór wizualny wszystkich ekranów i stanów przed uznaniem zmiany za gotową.
 
 ## Phase 5 — przegląd przed odbiorem
 
@@ -28,5 +28,5 @@ Użytkownik zgłasza, że strona startowa nadal wygląda jak starter Astro, logo
 - Pasek Astro Dev Toolbar ukryto wyłącznie w zrzutach przez styl wstrzyknięty w przeglądarce. Konfiguracja projektu nie została zmieniona.
 - Kitchen sinki obejrzane: planner pokazuje default, hover, focus-visible, disabled, error, empty i loading; crop selection pokazuje default, hover, focus, read error, write error, empty i loading. W mobilnym zrzucie nie widać poziomego overflow; tekst, pola i komunikaty mieszczą się w viewportcie.
 - Landing oraz oba widoki auth obejrzane na desktopie i telefonie. Hierarchia i CTA są czytelne, formularze mieszczą się bez poziomego overflow. `/garden` zwraca 308 do `/dashboard`; anonimowy `/dashboard` zwraca 302 do `/auth/signin?returnTo=%2Fdashboard`.
-- Dashboard pozostaje chroniony i nie trafił do nowych screenshotów, żeby nie zapisywać prywatnych danych konta. Użytkownik ręcznie zaakceptował jego desktopowy i mobilny widok oraz zakładki w fazie 4.
+- Dodano desktopowe i mobilne zrzuty dashboardu dla zakładek „Mój ogród”, „Sektory” i „Warzywa” oraz aliasu `/garden` w `output/playwright/garden-experience-redesign/`. Do ich wykonania użyto lokalnego fikcyjnego konta i przykładowego ogrodu; po zrzutach konto i powiązane dane usunięto. Zrzuty aliasu dokumentują przekierowanie do dashboardu.
 - Użytkownik zaakceptował finalny zestaw ekranów i zrzutów fazy 5. Zgłosił, że ilustracje ogrodu są zbyt abstrakcyjne i nieczytelne; ich wymiana na bardziej rozpoznawalne grafiki jest odnotowana jako osobne przyszłe usprawnienie, poza zakresem tej fazy.
