@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/garden";
 import { generatePlan } from "./support/garden";
 
 test("a failed regeneration keeps the old diagram visible and permits a real retry", async ({ page }) => {
-  await page.goto("/garden");
+  await page.goto("/dashboard");
   await generatePlan(page);
   const layout = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" });
   const oldDiagramHeader = await layout.locator("article > header").first().innerText();
@@ -21,8 +21,9 @@ test("a failed regeneration keeps the old diagram visible and permits a real ret
 });
 
 test("a rejected crop save shows an error without claiming success or staling the plan", async ({ page }) => {
-  await page.goto("/garden");
+  await page.goto("/dashboard");
   await generatePlan(page);
+  await page.goto("/dashboard?tab=crops");
   const crops = page.getByRole("region", { name: "Wybór warzyw i udziałów procentowych" });
   await crops.getByLabel("Udział (%)").nth(0).fill("60.00");
   await crops.getByLabel("Udział (%)").nth(1).fill("40.00");
@@ -31,13 +32,14 @@ test("a rejected crop save shows an error without claiming success or staling th
 
   await expect(crops.getByRole("alert")).toContainText("Zapisywanie wyboru jest chwilowo niedostępne");
   await expect(crops.getByRole("status").filter({ hasText: "Wybór upraw został zapisany." })).toHaveCount(0);
+  await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: "Układ działki", exact: true })).toHaveAttribute(
     "data-plan-status",
     "current",
   );
   await page.unroute("**/api/garden-crops");
-  await page.reload();
   await expect(page.locator("#garden-plan-ssr")).toHaveAttribute("data-plan-status", "current");
+  await page.goto("/dashboard?tab=crops");
   const restoredCrops = page.getByRole("region", { name: "Wybór warzyw i udziałów procentowych" });
   await expect(restoredCrops.getByLabel("Udział (%)").nth(0)).toHaveValue("50.00");
   await expect(restoredCrops.getByLabel("Udział (%)").nth(1)).toHaveValue("50.00");
