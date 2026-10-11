@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function generatePlan(page: Page) {
+  if (new URL(page.url()).searchParams.get("tab") !== null) await page.goto("/dashboard");
   const button = page.getByRole("button", { name: /^(Wygeneruj plan|Wygeneruj ponownie)$/ });
   const plannerIsland = page.locator('astro-island[component-export="default"]').filter({ has: button });
 
@@ -31,17 +32,19 @@ export async function saveSpaces(page: Page, names: readonly string[]) {
     maxRedirects: 0,
   });
   expect(response.status()).toBe(302);
-  expect(response.headers().location).toBe("/garden?saved=1");
-  await page.goto("/garden");
+  expect(response.headers().location).toBe("/dashboard?tab=sectors&saved=1");
+  await page.goto("/dashboard?tab=sectors");
   await expect(page.getByRole("group", { name: `Przestrzeń ${names.length}`, exact: true })).toBeVisible();
 }
 
 export async function addSpace(page: Page) {
+  if (new URL(page.url()).searchParams.get("tab") !== "sectors") await page.goto("/dashboard?tab=sectors");
   await page.getByRole("button", { name: "+ Dodaj skrzynię lub sektor", exact: true }).click();
   await expect(page.getByRole("group", { name: "Przestrzeń 2", exact: true })).toBeVisible();
 }
 
 export async function removeSecondSpace(page: Page) {
+  if (new URL(page.url()).searchParams.get("tab") !== "sectors") await page.goto("/dashboard?tab=sectors");
   await page
     .getByRole("group", { name: "Przestrzeń 2", exact: true })
     .getByRole("button", { name: "Usuń tę przestrzeń", exact: true })

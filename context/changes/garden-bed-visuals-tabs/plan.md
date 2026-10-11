@@ -216,28 +216,28 @@ Brak migracji. Dane zapisane w centymetrach i istniejące payloady nie zmieniaj�
 
 #### Automated
 
-- [x] 2.1 `npm run lint` przechodzi, a skan tokenów nie wykrywa nowych literalnych stylów w `dashboard.astro` ani `GardenLayoutView.tsx`.
-- [x] 2.2 `npx astro check` i `npm run build` przechodzą.
-- [x] 2.3 W mapowaniu renderowanych markerów każdy element nadal pochodzi z oryginalnych pozycji i jest opisany dostępnie; brak nowego algorytmu lub przeliczenia geometrii.
+- [x] 2.1 `npm run lint` przechodzi, a skan tokenów nie wykrywa nowych literalnych stylów w `dashboard.astro` ani `GardenLayoutView.tsx`. — 605ad5f
+- [x] 2.2 `npx astro check` i `npm run build` przechodzą. — 605ad5f
+- [x] 2.3 W mapowaniu renderowanych markerów każdy element nadal pochodzi z oryginalnych pozycji i jest opisany dostępnie; brak nowego algorytmu lub przeliczenia geometrii. — 605ad5f
 
 #### Manual
 
-- [x] 2.4 Zrzuty dashboardu w desktopie i na szerokości mobilnej pokazują rozpoznawalną skrzynkę z góry, czytelne rośliny i aktywną zakładkę bez niezamierzonego poziomego przepełnienia.
-- [x] 2.5 Na telefonie powiększenie pozwala przesuwać diagram w obu osiach, a zamknięcie przyciskiem i Escape przywraca fokus do przycisku otwierającego.
-- [x] 2.6 Bezpośrednie wejście na trzy URL-e wybiera właściwy widok; przejścia linkami zachowują fokus i aktywny stan.
-- [x] 2.7 Po pokazaniu zrzutów użytkownik akceptuje efekt wizualny przed rozpoczęciem Fazy 3.
+- [x] 2.4 Zrzuty dashboardu w desktopie i na szerokości mobilnej pokazują rozpoznawalną skrzynkę z góry, czytelne rośliny i aktywną zakładkę bez niezamierzonego poziomego przepełnienia. — 605ad5f
+- [x] 2.5 Na telefonie powiększenie pozwala przesuwać diagram w obu osiach, a zamknięcie przyciskiem i Escape przywraca fokus do przycisku otwierającego. — 605ad5f
+- [x] 2.6 Bezpośrednie wejście na trzy URL-e wybiera właściwy widok; przejścia linkami zachowują fokus i aktywny stan. — 605ad5f
+- [x] 2.7 Po pokazaniu zrzutów użytkownik akceptuje efekt wizualny przed rozpoczęciem Fazy 3. — 605ad5f
 
 ### Phase 3: Stany, odbiór i trwały guard
 
 #### Automated
 
-- [ ] 3.1 `npm run lint`, `npx astro check` i `npm run build` przechodzą po finalnych zmianach.
-- [ ] 3.2 Kitchen sink w dev renderuje siedem wymaganych stanów; każdy wyjątek ma jawne uzasadnienie N/A.
-- [ ] 3.3 Istniejący skaner tokenów obejmuje zmienione widoki, a zmiana nie dodaje dependency ani literalnych kolorów.
+- [x] 3.1 `npm run lint`, `npx astro check` i `npm run build` przechodzą po finalnych zmianach.
+- [x] 3.2 Kitchen sink w dev renderuje siedem wymaganych stanów; każdy wyjątek ma jawne uzasadnienie N/A.
+- [x] 3.3 Istniejący skaner tokenów obejmuje zmienione widoki, a zmiana nie dodaje dependency ani literalnych kolorów.
 
 #### Manual
 
-- [ ] 3.4 Wszystkie siedem stanów jest widocznych na kitchen sinku lub ma uzasadnione N/A; kontrast i fokus pozostają czytelne.
-- [ ] 3.5 Trzy adresy zakładek, aktywny stan, nawigacja wstecz/dalej oraz oba przepływy zapisu kończą się we właściwym widoku z potwierdzeniem.
-- [ ] 3.6 Ostateczne zrzuty desktop/mobile pokazują spójny dashboard, czytelny diagram i brak regresji mobilnego zoomu; użytkownik akceptuje odbiór.
-- [ ] 3.7 Zasada UI w `AGENTS.md` pozostaje jedynym aktualnym kontraktem agentów dla tokenów, wspólnych komponentów i lokalizacji kitchen sinka.
+- [x] 3.4 Wszystkie siedem stanów jest widocznych na kitchen sinku lub ma uzasadnione N/A; kontrast i fokus pozostają czytelne.
+- [x] 3.5 Trzy adresy zakładek, aktywny stan, nawigacja wstecz/dalej oraz oba przepływy zapisu kończą się we właściwym widoku z potwierdzeniem.
+- [x] 3.6 Ostateczne zrzuty desktop/mobile pokazują spójny dashboard, czytelny diagram i brak regresji mobilnego zoomu; użytkownik akceptuje odbiór.
+- [x] 3.7 Zasada UI w `AGENTS.md` pozostaje jedynym aktualnym kontraktem agentów dla tokenów, wspólnych komponentów i lokalizacji kitchen sinka.
