@@ -137,7 +137,17 @@ describe("garden plan POST", () => {
       spaces: [{ space: { id: SPACE_ID, name: "Test bed", widthCm: 20, lengthCm: 30 } }],
       cropSummaries: [{ cropId: "marchew" }],
     });
-    expect(readGardenLayoutResult(savedPayload.p_plan)).not.toBeNull();
+    const parsedPlan = readGardenLayoutResult(savedPayload.p_plan);
+    if (parsedPlan === null) throw new Error("Expected generated garden plan to be readable.");
+    const savedSpace = parsedPlan.spaces[0];
+    expect(savedSpace.cropAllocations).toEqual([
+      expect.objectContaining({
+        cropId: "marchew",
+        allocatedCount: savedSpace.positions.filter((position) => position.cropId === "marchew").length,
+        placedCount: savedSpace.positions.filter((position) => position.cropId === "marchew").length,
+        missingCount: 0,
+      }),
+    ]);
     await expectJsonResponse(response, 200, {
       saved: true,
       inputFingerprint: expectedFingerprint,

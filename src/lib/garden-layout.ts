@@ -112,8 +112,17 @@ export interface GardenLayoutConflict {
 export interface GardenLayoutSpaceResult {
   space: GardenLayoutSpace;
   positions: readonly GardenLayoutPosition[];
+  /** Missing on legacy plans and spaces whose baseline allocation was not processed. */
+  cropAllocations?: readonly GardenLayoutCropAllocation[];
   /** Missing on older saved plans; new generator output always includes it. */
   status?: "complete" | "partial" | "not_processed";
+}
+
+export interface GardenLayoutCropAllocation {
+  cropId: string;
+  allocatedCount: number;
+  placedCount: number;
+  missingCount: number;
 }
 
 export interface GardenLayoutResult {
@@ -229,6 +238,37 @@ function isCropSummary(value: unknown): value is GardenLayoutCropSummary {
   );
 }
 
+function isCropAllocation(value: unknown): value is GardenLayoutCropAllocation {
+  return (
+    isRecord(value) &&
+    typeof value.cropId === "string" &&
+    isNonNegativeInteger(value.allocatedCount) &&
+    isNonNegativeInteger(value.placedCount) &&
+    isNonNegativeInteger(value.missingCount) &&
+    value.missingCount === Math.max(value.allocatedCount - value.placedCount, 0)
+  );
+}
+
+function isUniqueCropAllocationList(value: unknown): value is GardenLayoutCropAllocation[] {
+  if (!Array.isArray(value) || !value.every(isCropAllocation)) return false;
+  return new Set(value.map(({ cropId }) => cropId)).size === value.length;
+}
+
+function hasConsistentSpaceAllocations(spaceResult: Record<string, unknown>): boolean {
+  if (spaceResult.cropAllocations === undefined) return true;
+  const positions: unknown = spaceResult.positions;
+  if (
+    !isUniqueCropAllocationList(spaceResult.cropAllocations) ||
+    !Array.isArray(positions) ||
+    !positions.every(isLayoutPosition)
+  ) {
+    return false;
+  }
+  return spaceResult.cropAllocations.every(
+    ({ cropId, placedCount }) => placedCount === positions.filter((position) => position.cropId === cropId).length,
+  );
+}
+
 function isOmission(value: unknown): value is GardenLayoutOmission {
   return (
     isRecord(value) &&
@@ -284,7 +324,8 @@ export function readGardenLayoutResult(value: unknown): GardenLayoutResult | nul
           spaceResult.status === "partial" ||
           spaceResult.status === "not_processed") &&
         Array.isArray(spaceResult.positions) &&
-        spaceResult.positions.every(isLayoutPosition),
+        spaceResult.positions.every(isLayoutPosition) &&
+        hasConsistentSpaceAllocations(spaceResult),
     )
   ) {
     return null;
@@ -302,6 +343,44 @@ export function readGardenLayoutResult(value: unknown): GardenLayoutResult | nul
     return null;
   }
   return value as unknown as GardenLayoutResult;
+}
+
+export interface GardenLayoutShortfallReport {
+  bySpace: readonly {
+    space: GardenLayoutSpace;
+    crops: readonly { cropId: string; missingCount: number }[];
+  }[];
+  byCrop: readonly { cropId: string; missingCount: number }[];
+  hasUnknownAllocations: boolean;
+}
+
+/** Summarizes known shortfalls without inferring allocations for legacy or unprocessed spaces. */
+export function createGardenLayoutShortfallReport(result: GardenLayoutResult): GardenLayoutShortfallReport {
+  const totals = new Map<string, number>();
+  const bySpace = result.spaces.flatMap(({ space, cropAllocations }) => {
+    const crops = (cropAllocations ?? [])
+      .filter(({ missingCount }) => missingCount > 0)
+      .map(({ cropId, missingCount }) => {
+        totals.set(cropId, (totals.get(cropId) ?? 0) + missingCount);
+        return { cropId, missingCount };
+      });
+    return crops.length > 0 ? [{ space, crops }] : [];
+  });
+  const summaryOrder = new Map(result.cropSummaries.map(({ cropId }, index) => [cropId, index]));
+  const byCrop = [...totals]
+    .map(([cropId, missingCount]) => ({ cropId, missingCount }))
+    .sort(
+      (left, right) =>
+        (summaryOrder.get(left.cropId) ?? Number.MAX_SAFE_INTEGER) -
+        (summaryOrder.get(right.cropId) ?? Number.MAX_SAFE_INTEGER),
+    );
+  return {
+    bySpace,
+    byCrop,
+    hasUnknownAllocations: result.spaces.some(
+      ({ cropAllocations, status }) => cropAllocations === undefined || status === "not_processed",
+    ),
+  };
 }
 
 interface UsableCrop {
@@ -973,10 +1052,28 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
     if (baselineSpace.status === "not_processed") {
       return { ...spaceResult, status: "not_processed" as const, positions: [] };
     }
-    if (baselineSpace.status === "partial" && spaceResult.status !== "not_processed") {
-      return { ...spaceResult, status: "partial" as const };
+    const placedCounts = new Map<string, number>();
+    for (const position of spaceResult.positions) {
+      placedCounts.set(position.cropId, (placedCounts.get(position.cropId) ?? 0) + 1);
     }
-    return spaceResult;
+    const baselineCounts = new Map<string, number>();
+    for (const position of baselineSpace.positions) {
+      baselineCounts.set(position.cropId, (baselineCounts.get(position.cropId) ?? 0) + 1);
+    }
+    const cropAllocations = baseline.cropSummaries.map(({ cropId }) => {
+      const allocatedCount = baselineCounts.get(cropId) ?? 0;
+      const placedCount = placedCounts.get(cropId) ?? 0;
+      return {
+        cropId,
+        allocatedCount,
+        placedCount,
+        missingCount: Math.max(allocatedCount - placedCount, 0),
+      };
+    });
+    if (baselineSpace.status === "partial" && spaceResult.status !== "not_processed") {
+      return { ...spaceResult, cropAllocations, status: "partial" as const };
+    }
+    return { ...spaceResult, cropAllocations };
   });
   const warnings = [...baseline.warnings, ...grouped.warnings].filter(
     (warning, index, allWarnings) => allWarnings.indexOf(warning) === index,

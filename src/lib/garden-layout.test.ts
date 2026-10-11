@@ -6,7 +6,12 @@ import {
   getGardenDiagramZoomDimensions,
 } from "../components/garden/garden-layout-diagram.js";
 import { CROP_CATALOG, type CompanionRelation, type CropCatalogEntry } from "../data/crop-catalog.js";
-import { GardenLayoutSearchLimitError, generateGardenLayout, readGardenLayoutResult } from "./garden-layout.js";
+import {
+  createGardenLayoutShortfallReport,
+  GardenLayoutSearchLimitError,
+  generateGardenLayout,
+  readGardenLayoutResult,
+} from "./garden-layout.js";
 
 function crop(id: string): CropCatalogEntry {
   const entry = CROP_CATALOG.find((candidate) => candidate.id === id);
@@ -463,8 +468,55 @@ describe("garden layout engine", () => {
     expect(carrot?.actualPercentage).toBeCloseTo(200 / 3);
     expect(onion).toMatchObject({ targetPercentage: 20, actualCount: 1 });
     expect(onion?.actualPercentage).toBeCloseTo(100 / 3);
+    expect(result.spaces[0]?.cropAllocations).toEqual([
+      { cropId: "cebula", allocatedCount: 1, placedCount: 1, missingCount: 0 },
+      { cropId: "marchew", allocatedCount: 2, placedCount: 2, missingCount: 0 },
+    ]);
     expect(result.conflicts).toEqual([]);
     expect(result.omissions).toEqual([]);
+  });
+
+  it("aggregates known per-bed shortfalls while leaving unprocessed allocations unknown", () => {
+    const complete = generateGardenLayout({
+      spaces: [
+        { id: "first", name: "Skrzynia 1", widthCm: 30, lengthCm: 10 },
+        { id: "second", name: "Skrzynia 2", widthCm: 30, lengthCm: 10 },
+      ],
+      crops: [{ crop: compactCrop("marchew", 10, 10), proportion: 100 }],
+      relations: [],
+    });
+    const result = structuredClone(complete);
+    const first = result.spaces[0];
+    const second = result.spaces[1];
+    if (first.cropAllocations === undefined) throw new Error("Expected generated bed allocations.");
+    first.cropAllocations = first.cropAllocations.map((allocation) => ({
+      ...allocation,
+      allocatedCount: allocation.placedCount + 2,
+      missingCount: 2,
+    }));
+    delete second.cropAllocations;
+    second.status = "not_processed";
+
+    expect(readGardenLayoutResult(result)).not.toBeNull();
+    expect(createGardenLayoutShortfallReport(result)).toMatchObject({
+      bySpace: [{ space: { id: "first", name: "Skrzynia 1" }, crops: [{ cropId: "marchew", missingCount: 2 }] }],
+      byCrop: [{ cropId: "marchew", missingCount: 2 }],
+      hasUnknownAllocations: true,
+    });
+  });
+
+  it("rejects inconsistent saved allocation counts", () => {
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", widthCm: 30, lengthCm: 10 }],
+      crops: [{ crop: compactCrop("marchew", 10, 10), proportion: 100 }],
+      relations: [],
+    });
+    const invalid = structuredClone(result);
+    const allocation = invalid.spaces[0]?.cropAllocations?.[0];
+    if (!allocation) throw new Error("Expected generated crop allocation.");
+    allocation.missingCount += 1;
+
+    expect(readGardenLayoutResult(invalid)).toBeNull();
   });
 
   it("keeps a positively supported crop group together and groups crops independently per bed", () => {
@@ -825,6 +877,7 @@ describe("garden layout engine", () => {
     const legacy = structuredClone(generated);
     for (const space of legacy.spaces) {
       delete space.status;
+      delete space.cropAllocations;
       for (const position of space.positions) {
         delete position.neighbors;
         delete position.placementReason;

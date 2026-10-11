@@ -207,23 +207,23 @@ Existing saved plans may not contain bed-level crop quotas or deficits. Parsing 
 
 #### Automated
 
-- [x] 1.1 Capture current per-crop/per-bed counts and use them as targets for bounded one-cluster placement
-- [x] 1.2 Replace interleaving expectation and cover grouping, constraints, determinism, and partial placement
+- [x] 1.1 Capture current per-crop/per-bed counts and use them as targets for bounded one-cluster placement — a76c087
+- [x] 1.2 Replace interleaving expectation and cover grouping, constraints, determinism, and partial placement — a76c087
 
 #### Manual
 
-- [ ] 1.3 Inspect generated multi-bed layouts and constrained partial groups
+- [x] 1.3 Inspect generated multi-bed layouts and constrained partial groups
 
 ### Phase 2: Per-bed and garden-level shortfall reporting
 
 #### Automated
 
-- [ ] 2.1 Extend and parse per-bed allocation, placed, and missing counts compatibly
-- [ ] 2.2 Display per-bed and garden-level deficits and cover their accounting
+- [x] 2.1 Extend and parse per-bed allocation, placed, and missing counts compatibly
+- [x] 2.2 Display per-bed and garden-level deficits and cover their accounting
 
 #### Manual
 
-- [ ] 2.3 Inspect full and partial plans for clear, correctly located deficit reporting
+- [x] 2.3 Inspect full and partial plans for clear, correctly located deficit reporting
 
 ### Phase 3: End-to-end acceptance
 
