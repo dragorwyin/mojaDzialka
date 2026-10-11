@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import type { GardenLayoutResult } from "@/lib/garden-layout";
 import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
@@ -88,7 +88,6 @@ function CropAtlasGlyph({
 
   return (
     <svg x={x} y={y} width={size} height={size} viewBox="-50 -50 100 100" aria-hidden="true" focusable="false">
-      <circle cx="0" cy="0" r="48" className="fill-garden-surface stroke-garden-surface/40" strokeWidth="3" />
       {presentation.kind === "atlas" && !atlasFailed && (
         <svg
           x="-40"
@@ -148,6 +147,7 @@ function GardenSpaceDiagram({
   style,
 }: GardenSpaceDiagramProps) {
   const viewBox = projection.viewBox;
+  const soilPatternId = `garden-soil-${useId().replaceAll(":", "")}`;
 
   return (
     <svg
@@ -158,13 +158,44 @@ function GardenSpaceDiagram({
       className={className}
       style={{ aspectRatio: getGardenDiagramAspectRatio(projection), ...style }}
     >
+      <defs>
+        <pattern id={soilPatternId} width="8" height="8" patternUnits="userSpaceOnUse">
+          <circle cx="1.5" cy="2" r="0.28" className="fill-garden-bed-soil-texture opacity-35" />
+          <circle cx="6" cy="6" r="0.2" className="fill-garden-bed-soil-texture opacity-25" />
+        </pattern>
+      </defs>
+      <rect
+        x="-2.2"
+        y="-2.2"
+        width={space.widthCm + 4.4}
+        height={space.lengthCm + 4.4}
+        rx="1.1"
+        className="fill-garden-bed-frame-shadow"
+      />
+      <rect
+        x="-2"
+        y="-2"
+        width={space.widthCm + 4}
+        height={space.lengthCm + 4}
+        rx="1"
+        className="fill-garden-bed-frame"
+      />
+      <rect
+        x="-1.3"
+        y="-1.3"
+        width={space.widthCm + 2.6}
+        height={space.lengthCm + 2.6}
+        rx="0.7"
+        className="fill-garden-bed-frame-highlight"
+      />
+      <rect x="0" y="0" width={space.widthCm} height={space.lengthCm} className="fill-garden-bed-soil" />
       <rect
         x="0"
         y="0"
         width={space.widthCm}
         height={space.lengthCm}
-        className="fill-garden-surface/5 stroke-garden-surface/35"
-        strokeWidth="0.35"
+        fill={`url(#${soilPatternId})`}
+        aria-hidden="true"
       />
       {projection.xGridLinesCm.map((xCm) => (
         <line
@@ -173,8 +204,8 @@ function GardenSpaceDiagram({
           y1="0"
           x2={xCm}
           y2={space.lengthCm}
-          className="stroke-garden-surface/20"
-          strokeWidth="0.18"
+          className="stroke-garden-bed-soil-texture opacity-15"
+          strokeWidth="0.12"
           aria-hidden="true"
         />
       ))}
@@ -185,8 +216,8 @@ function GardenSpaceDiagram({
           y1={yCm}
           x2={space.widthCm}
           y2={yCm}
-          className="stroke-garden-surface/20"
-          strokeWidth="0.18"
+          className="stroke-garden-bed-soil-texture opacity-15"
+          strokeWidth="0.12"
           aria-hidden="true"
         />
       ))}

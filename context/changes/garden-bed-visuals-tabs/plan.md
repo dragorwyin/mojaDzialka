@@ -204,28 +204,28 @@ Brak migracji. Dane zapisane w centymetrach i istniejące payloady nie zmieniaj�
 
 #### Automated
 
-- [x] 1.1 `npm run lint` przechodzi; skaner UI nie wykrywa nowych surowych kolorów ani arbitralnych wartości w plikach widoku.
-- [x] 1.2 `npx astro check` przechodzi po publikacji wymaganych ról tokenów.
+- [x] 1.1 `npm run lint` przechodzi; skaner UI nie wykrywa nowych surowych kolorów ani arbitralnych wartości w plikach widoku. — f43c6e3
+- [x] 1.2 `npx astro check` przechodzi po publikacji wymaganych ról tokenów. — f43c6e3
 
 #### Manual
 
-- [x] 1.3 Wartości tokenów pasują do wybranego rzutu z góry i zachowują lekki, biało-zielony charakter całego dashboardu.
-- [x] 1.4 Wartości i ich źródło są zapisane w `design/tokens.md`; kontrakt nie wprowadza drugiej palety ani nowej biblioteki.
+- [x] 1.3 Wartości tokenów pasują do wybranego rzutu z góry i zachowują lekki, biało-zielony charakter całego dashboardu. — f43c6e3
+- [x] 1.4 Wartości i ich źródło są zapisane w `design/tokens.md`; kontrakt nie wprowadza drugiej palety ani nowej biblioteki. — f43c6e3
 
 ### Phase 2: Skrzynie z góry i czytelne zakładki
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` przechodzi, a skan tokenów nie wykrywa nowych literalnych stylów w `dashboard.astro` ani `GardenLayoutView.tsx`.
-- [ ] 2.2 `npx astro check` i `npm run build` przechodzą.
-- [ ] 2.3 W mapowaniu renderowanych markerów każdy element nadal pochodzi z oryginalnych pozycji i jest opisany dostępnie; brak nowego algorytmu lub przeliczenia geometrii.
+- [x] 2.1 `npm run lint` przechodzi, a skan tokenów nie wykrywa nowych literalnych stylów w `dashboard.astro` ani `GardenLayoutView.tsx`.
+- [x] 2.2 `npx astro check` i `npm run build` przechodzą.
+- [x] 2.3 W mapowaniu renderowanych markerów każdy element nadal pochodzi z oryginalnych pozycji i jest opisany dostępnie; brak nowego algorytmu lub przeliczenia geometrii.
 
 #### Manual
 
-- [ ] 2.4 Zrzuty dashboardu w desktopie i na szerokości mobilnej pokazują rozpoznawalną skrzynkę z góry, czytelne rośliny i aktywną zakładkę bez niezamierzonego poziomego przepełnienia.
-- [ ] 2.5 Na telefonie powiększenie pozwala przesuwać diagram w obu osiach, a zamknięcie przyciskiem i Escape przywraca fokus do przycisku otwierającego.
-- [ ] 2.6 Bezpośrednie wejście na trzy URL-e wybiera właściwy widok; przejścia linkami zachowują fokus i aktywny stan.
-- [ ] 2.7 Po pokazaniu zrzutów użytkownik akceptuje efekt wizualny przed rozpoczęciem Fazy 3.
+- [x] 2.4 Zrzuty dashboardu w desktopie i na szerokości mobilnej pokazują rozpoznawalną skrzynkę z góry, czytelne rośliny i aktywną zakładkę bez niezamierzonego poziomego przepełnienia.
+- [x] 2.5 Na telefonie powiększenie pozwala przesuwać diagram w obu osiach, a zamknięcie przyciskiem i Escape przywraca fokus do przycisku otwierającego.
+- [x] 2.6 Bezpośrednie wejście na trzy URL-e wybiera właściwy widok; przejścia linkami zachowują fokus i aktywny stan.
+- [x] 2.7 Po pokazaniu zrzutów użytkownik akceptuje efekt wizualny przed rozpoczęciem Fazy 3.
 
 ### Phase 3: Stany, odbiór i trwały guard
 

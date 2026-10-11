@@ -158,17 +158,20 @@ const tabItems = [
         </div>
       </section>
 
-      <nav aria-label="Widoki ogrodu" class="border-app-border mb-7 flex gap-1 overflow-x-auto border-b">
+      <nav
+        aria-label="Widoki ogrodu"
+        class="border-app-border bg-app-soft mb-7 grid w-full grid-cols-3 gap-1 rounded-xl border p-1 sm:w-fit"
+      >
         {tabItems.map((tab) => (
           <a
             href={tab.href}
             aria-current={activeTab === tab.id ? "page" : undefined}
             aria-label={`${tab.label}: ${tab.description}`}
             class:list={[
-              "relative shrink-0 px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-garden-focus focus-visible:outline-2 focus-visible:outline-offset-2",
+              "flex min-h-11 items-center justify-center rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors focus-visible:outline-garden-focus focus-visible:outline-2 focus-visible:outline-offset-2",
               activeTab === tab.id
-                ? "text-garden-accent-strong after:bg-garden-accent-strong after:absolute after:right-3 after:bottom-0 after:left-3 after:h-0.5 after:rounded-full"
-                : "text-garden-muted hover:text-garden-foreground",
+                ? "bg-garden-surface text-garden-accent-strong shadow-sm ring-1 ring-app-border"
+                : "text-garden-muted hover:bg-garden-surface/60 hover:text-garden-foreground",
             ]}
           >
             {tab.label}
