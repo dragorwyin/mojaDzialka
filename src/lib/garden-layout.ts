@@ -625,7 +625,10 @@ function createSummary(
 }
 
 /** Generates a bounded, deterministic layout across every supplied garden space. */
-export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResult {
+function generateGardenLayoutPass(
+  input: GardenLayoutInput,
+  groupedTargets?: ReadonlyMap<string, ReadonlyMap<string, number>>,
+): GardenLayoutResult {
   const relations = getRelationMap(input.relations ?? COMPANION_RELATIONS);
   const candidateLimit = input.maxCandidates ?? DEFAULT_CANDIDATE_LIMIT;
   const selections = [...input.crops].sort((left, right) => left.crop.id.localeCompare(right.crop.id));
@@ -700,7 +703,14 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
   let totalPlaced = 0;
 
   for (const space of input.spaces) {
+    const spaceTargets = groupedTargets?.get(space.id);
+    if (groupedTargets !== undefined && spaceTargets === undefined) {
+      spaceResults.push({ space, positions: [], status: "not_processed" });
+      continue;
+    }
     const placed: PlacedPosition[] = [];
+    let activeCropId: string | null = null;
+    const finishedCropIds = new Set<string>();
     const geometryBlockedCropIds = new Set<string>();
     const negativeBlockedByCrop = new Map<string, Set<string>>();
     const truncatedGridCropIdsInSpace = new Set<string>();
@@ -722,19 +732,39 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
     while (candidateChecks < candidateLimit) {
       const scored: CandidateScore[] = [];
       for (const crop of usableCrops) {
-        const candidates = candidatesByCrop.get(crop.selection.crop.id) ?? [];
+        const cropId = crop.selection.crop.id;
+        if (
+          groupedTargets !== undefined &&
+          (finishedCropIds.has(cropId) || (activeCropId !== null && activeCropId !== cropId))
+        ) {
+          continue;
+        }
+        const requestedCount = spaceTargets?.get(cropId);
+        const placedCropCount = placed.filter((position) => position.cropId === cropId).length;
+        if (requestedCount !== undefined && placedCropCount >= requestedCount) continue;
+        const candidates = candidatesByCrop.get(cropId) ?? [];
+        const existingCropPositions = placed.filter((position) => position.cropId === cropId);
+        const canExtendGroup = (candidate: Candidate) =>
+          groupedTargets === undefined ||
+          existingCropPositions.length === 0 ||
+          existingCropPositions.some(
+            (position) =>
+              Math.max(Math.abs(position.row - candidate.row), Math.abs(position.column - candidate.column)) === 1,
+          );
+        const deferredCandidates = groupedTargets === undefined ? [] : candidates.filter((c) => !canExtendGroup(c));
+        const eligibleCandidates = groupedTargets === undefined ? candidates : candidates.filter(canExtendGroup);
         const cropScores: CandidateScore[] = [];
         const remainingCandidates: Candidate[] = [];
         let nextCandidateIndex = 0;
         let stoppedByLimit = false;
         let hadOverlappingCandidates = 0;
         const hardBlockers = new Set<string>();
-        for (; nextCandidateIndex < candidates.length; nextCandidateIndex += 1) {
+        for (; nextCandidateIndex < eligibleCandidates.length; nextCandidateIndex += 1) {
           if (candidateChecks >= candidateLimit) {
             stoppedByLimit = true;
             break;
           }
-          const candidate = candidates[nextCandidateIndex];
+          const candidate = eligibleCandidates[nextCandidateIndex];
           candidateChecks += 1;
           if (placed.some((existing) => overlaps(existing, candidate))) {
             hadOverlappingCandidates += 1;
@@ -757,15 +787,16 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
         }
 
         const stoppedAfterAlternatives = cropScores.length >= candidateAlternativesLimit;
+        remainingCandidates.push(...deferredCandidates);
         remainingCandidates.push(...cropScores.map((score) => score.candidate));
-        remainingCandidates.push(...candidates.slice(nextCandidateIndex));
-        candidatesByCrop.set(crop.selection.crop.id, remainingCandidates);
+        remainingCandidates.push(...eligibleCandidates.slice(nextCandidateIndex));
+        candidatesByCrop.set(cropId, remainingCandidates);
         scored.push(...cropScores);
 
         const completedSearch = !stoppedByLimit && !stoppedAfterAlternatives;
         if (cropScores.length === 0 && completedSearch) {
           if (!truncatedGridCropIdsInSpace.has(crop.selection.crop.id)) {
-            if (candidates.length === 0 || hadOverlappingCandidates > 0) {
+            if (hardBlockers.size === 0 && (candidates.length === 0 || hadOverlappingCandidates > 0)) {
               geometryBlockedCropIds.add(crop.selection.crop.id);
             }
             if (hardBlockers.size > 0) negativeBlockedByCrop.set(crop.selection.crop.id, hardBlockers);
@@ -774,7 +805,14 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
         if (stoppedByLimit || candidateChecks >= candidateLimit) break;
       }
 
-      if (scored.length === 0) break;
+      if (scored.length === 0) {
+        if (activeCropId !== null) {
+          finishedCropIds.add(activeCropId);
+          activeCropId = null;
+          continue;
+        }
+        break;
+      }
       scored.sort(compareCandidates);
       const best = scored[0];
       const selected = best.candidate;
@@ -800,6 +838,16 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
         position.cropId,
         (candidatesByCrop.get(position.cropId) ?? []).filter((candidate) => candidate !== selected),
       );
+      if (groupedTargets !== undefined) {
+        activeCropId = position.cropId;
+        if (
+          placed.filter((placedPosition) => placedPosition.cropId === position.cropId).length >=
+          (spaceTargets?.get(position.cropId) ?? 0)
+        ) {
+          finishedCropIds.add(position.cropId);
+          activeCropId = null;
+        }
+      }
     }
 
     if (candidateChecks >= candidateLimit) {
@@ -812,13 +860,18 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
     spaceResults.push({
       space,
       status: limitReached ? "partial" : "complete",
-      positions: placed.map((position) => {
-        const { crop: _crop, ...layoutPosition } = position;
-        return {
-          ...layoutPosition,
-          neighbors: createNeighbors(position, placed, relations),
-        };
-      }),
+      positions: placed
+        .map((position) => {
+          const { crop: _crop, ...layoutPosition } = position;
+          return {
+            ...layoutPosition,
+            neighbors: createNeighbors(position, placed, relations),
+          };
+        })
+        .sort(
+          (left, right) =>
+            left.row - right.row || left.column - right.column || left.cropId.localeCompare(right.cropId),
+        ),
     });
     if (limitReached) break;
   }
@@ -896,5 +949,61 @@ export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResu
     conflicts,
     warnings,
     metrics: { candidateChecks, supportedNeighbors, cautionNeighbors, limitReached },
+  };
+}
+
+/** Uses the current deterministic allocation as per-bed targets, then places each crop as one connected cluster. */
+export function generateGardenLayout(input: GardenLayoutInput): GardenLayoutResult {
+  const baseline = generateGardenLayoutPass(input);
+  const targets = new Map<string, ReadonlyMap<string, number>>();
+  for (const spaceResult of baseline.spaces) {
+    if (spaceResult.status === "not_processed") continue;
+    const counts = new Map(baseline.cropSummaries.map(({ cropId }) => [cropId, 0] as const));
+    for (const position of spaceResult.positions) {
+      counts.set(position.cropId, (counts.get(position.cropId) ?? 0) + 1);
+    }
+    targets.set(spaceResult.space.id, counts);
+  }
+
+  const grouped = generateGardenLayoutPass(input, targets);
+  const candidateChecks = baseline.metrics.candidateChecks + grouped.metrics.candidateChecks;
+  const limitReached = baseline.metrics.limitReached || grouped.metrics.limitReached;
+  const spaces = grouped.spaces.map((spaceResult, index) => {
+    const baselineSpace = baseline.spaces[index];
+    if (baselineSpace.status === "not_processed") {
+      return { ...spaceResult, status: "not_processed" as const, positions: [] };
+    }
+    if (baselineSpace.status === "partial" && spaceResult.status !== "not_processed") {
+      return { ...spaceResult, status: "partial" as const };
+    }
+    return spaceResult;
+  });
+  const warnings = [...baseline.warnings, ...grouped.warnings].filter(
+    (warning, index, allWarnings) => allWarnings.indexOf(warning) === index,
+  );
+  const placedCropIds = new Set(spaces.flatMap(({ positions }) => positions.map(({ cropId }) => cropId)));
+  const conflicts = [
+    ...grouped.conflicts,
+    ...baseline.conflicts.filter((conflict) => !placedCropIds.has(conflict.cropIds[0] ?? "")),
+  ].filter(
+    (conflict, index, allConflicts) =>
+      allConflicts.findIndex(
+        (candidate) =>
+          candidate.spaceId === conflict.spaceId &&
+          candidate.type === conflict.type &&
+          [...candidate.cropIds].sort().join("::") === [...conflict.cropIds].sort().join("::"),
+      ) === index,
+  );
+  return {
+    ...grouped,
+    spaces,
+    warnings,
+    conflicts,
+    metrics: {
+      candidateChecks,
+      supportedNeighbors: grouped.metrics.supportedNeighbors,
+      cautionNeighbors: grouped.metrics.cautionNeighbors,
+      limitReached,
+    },
   };
 }
