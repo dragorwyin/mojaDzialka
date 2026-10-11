@@ -20,7 +20,9 @@ describe("garden layout shortfall presentation", () => {
     });
     const first = plan.spaces[0];
     const originalPositions = structuredClone(first.positions);
-    first.cropAllocations = first.cropAllocations.map((allocation) => ({
+    const originalAllocations = first.cropAllocations;
+    if (!originalAllocations) throw new Error("Missing crop allocation fixture.");
+    first.cropAllocations = originalAllocations.map((allocation) => ({
       ...allocation,
       allocatedCount: allocation.placedCount + 1,
       missingCount: 1,
