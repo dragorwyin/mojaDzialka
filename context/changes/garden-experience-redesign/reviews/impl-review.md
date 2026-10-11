@@ -5,79 +5,33 @@
 - **Scope**: Full plan
 - **Reviewed phases**: 1, 2, 3, 4, 5
 - **Date**: 2026-10-11
-- **Verdict**: NEEDS ATTENTION
-- **Findings**: 0 critical, 2 warnings, 3 observations
+- **Verdict**: APPROVED
+- **Findings**: 0 critical, 0 warnings, 0 observations
 
 ## Verdicts
 
 | Dimension | Verdict |
 |-----------|---------|
-| Plan Adherence | WARNING |
-| Scope Discipline | WARNING |
+| Plan Adherence | PASS |
+| Scope Discipline | PASS |
 | Safety & Quality | PASS |
 | Architecture | PASS |
-| Pattern Consistency | WARNING |
-| Success Criteria | WARNING |
+| Pattern Consistency | PASS |
+| Success Criteria | PASS |
 
 ## Findings
 
-### F1 — Faza 5 nie ma zrzutów dashboardu i aliasu
+No findings.
 
-- **Severity**: ⚠️ WARNING
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: `context/changes/garden-experience-redesign/plan.md:211`
-- **Detail**: Kontrakt fazy 5 wymaga desktopowych i mobilnych zrzutów `/dashboard` z trzema zakładkami oraz przekierowania `/garden`. Zatwierdzony zestaw zawiera landing, signin/signup i dwa kitchen sinki, lecz nie te widoki. `change.md` odnotowuje prywatność konta jako powód pominięcia dashboardu; użytkownik zaakceptował dashboard ręcznie w fazie 4. Mimo tego progress 5.3 deklaruje obejrzenie wszystkich ekranów w fazie 5, więc checklistę i dowody dzieli rozbieżność.
-- **Fix**: Uzupełnić deterministyczne, pozbawione prywatnych danych zrzuty dashboardu i `/garden` na desktopie/mobile albo doprecyzować kryterium oraz opis odbioru, że dashboard i alias odebrano w fazie 4, bez zrzutów fazy 5.
-- **Decision**: FIXED
-- **Resolution**: Dodano desktopowe i mobilne zrzuty trzech zakładek dashboardu oraz widoku aliasu `/garden` do `output/playwright/garden-experience-redesign/`. Zrzuty wykonano na lokalnym, fikcyjnym koncie i przykładowych danych ogrodu; konto wraz z powiązanymi danymi usunięto po sesji. Widoki `/dashboard` oraz zachowanie przekierowania `/garden` zweryfikowano w przeglądarce.
+## Verification Evidence
 
-### F2 — Zatwierdzony mockup pozostaje nieśledzony
+- `npm run lint` — exit code 0. Garden UI token scan reported 0 unapproved matches across 21 files; ESLint completed without errors.
+- `npm run build` — exit code 0. Astro reported the existing sitemap configuration warning because `site` is not configured; build completed successfully.
+- All five plan phases are complete in the canonical Progress section. The user accepted the design and final visual review; desktop/mobile evidence for landing, auth, dashboard tabs, alias and deterministic kitchen sinks is tracked under `output/playwright/garden-experience-redesign/`.
+- Plan-drift review confirmed the earlier findings were resolved: design/source artifacts are committed, the dashboard and `/garden` screenshots are present, the overall review checkbox is complete, and the dashboard arbitrary tracking values were replaced with a named utility.
+- Safety, reliability, performance, architecture and pattern review found no substantive issues.
 
-- **Severity**: ⚠️ WARNING
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Scope Discipline
-- **Location**: `context/changes/garden-experience-redesign/design/index.html`
-- **Detail**: Plan fazy 1 określa mockup jako trwały artefakt zmiany. Plik istnieje w katalogu roboczym, ale nie należy do zakresu commitów `7dd3895^..4792f8b`; nadal jest nieśledzony. Podobnie nieśledzone są `frame.md`, `plan-brief.md` i `research.md`, które plan wymienia jako źródła. Ich pozostawienie poza commitem było decyzją odbioru stagingu; nie zmienia to faktu, że nie są przenośną częścią historii zmiany.
-- **Fix**: Zachować te zatwierdzone materiały w repozytorium w osobnym, jawnym commicie artefaktów zmiany, albo świadomie przenieść/archiwizować je według konwencji repozytorium przed archiwizacją tej zmiany.
-- **Decision**: FIXED
-- **Resolution**: Zachowano zatwierdzony mockup oraz źródłowe materiały `frame.md`, `plan-brief.md` i `research.md` w repozytorium osobnym commitem dokumentacji, żeby historia zmiany zawierała podstawę decyzji projektowych.
+## Additional Review Notes
 
-### F3 — Postęp odbioru w `change.md` jest nadal oznaczony jako pending
-
-- **Severity**: 👁️ OBSERVATION
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: `context/changes/garden-experience-redesign/change.md:20`
-- **Detail**: Frontmatter wskazuje `status: implemented`, a wszystkie pozycje fazy 5 w planie są ukończone; jednocześnie ogólna pozycja „Wykonać odbiór wizualny...” w `change.md` pozostaje niezaznaczona.
-- **Fix**: Po rozstrzygnięciu F1 ujednolicić checkbox podsumowujący z faktycznym stanem odbioru.
-- **Decision**: FIXED
-- **Resolution**: Zaznaczono odbiór wizualny jako ukończony w `change.md`; potwierdzają go akceptacja użytkownika i zrzuty ekranów zapisane w katalogu projektu.
-
-### F4 — Widoki używają arbitralnych wartości Tailwinda
-
-- **Severity**: 👁️ OBSERVATION
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Pattern Consistency
-- **Location**: `src/pages/dashboard.astro:224`, `src/pages/dashboard.astro:249`
-- **Detail**: `tracking-[0.16em]` stosuje arbitrary Tailwind values w widoku, wbrew UI guard w `AGENTS.md`, który wymaga semantycznych tokenów lub wspólnych prymitywów.
-- **Fix**: Zastąpić named utility albo semantycznym tokenem typograficznym zgodnym z istniejącym systemem.
-- **Decision**: FIXED
-- **Resolution**: Oba `tracking-[0.16em]` zastąpiono istniejącą klasą `tracking-widest`, zgodną z UI guard i używaną już w tym widoku.
-
-### F5 — Powtórny lint nie zakończył się w przeglądzie
-
-- **Severity**: 👁️ OBSERVATION
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: `npm run lint`
-- **Detail**: `npm run build` zakończył się powodzeniem (pozostało znane ostrzeżenie sitemap o braku opcji `site`), a `git diff --check 7dd3895^..4792f8b` jest czysty. Powtórny `npm run lint` wypisał token scan bez naruszeń, po czym ESLint nie zwrócił dalszego wyjścia przez ponad minutę; proces został przerwany. `change.md` zawiera wcześniejszy zapis udanego lint dla fazy 5, ale ta próba przeglądowa nie dostarczyła nowego końcowego statusu.
-- **Fix**: Ponowić `npm run lint` w działającym środowisku przed zamknięciem otwartych uwag.
-- **Decision**: FIXED
-- **Resolution**: Ponowne `npm run lint` zakończyło się kodem 0. Skan tokenów przeszedł bez niezatwierdzonych dopasowań (21 plików), a ESLint zakończył się bez błędów.
-
-## Additional review notes
-
-- Zmiana SSR `/dashboard`, alias `/garden`, redirecty auth/zapisu oraz zachowanie tabów odpowiadają planowi; brak stwierdzonej niezgodności w tych ścieżkach.
-- Nie znaleziono problemów krytycznych bezpieczeństwa, niezawodności, wydajności ani granic architektury.
-- Uwaga użytkownika o zbyt abstrakcyjnych ilustracjach jest jawnie odnotowana jako osobne przyszłe usprawnienie i nie jest traktowana jako nieuzgodniony scope creep.
+- The user's separate follow-up that the garden illustrations should later become more recognizable remains recorded in `context/changes/garden-experience-redesign/change.md`; it is outside this completed change and is not an unplanned regression.
+- The working tree has unrelated untracked `.playwright-cli/` and `context/changes/garden-bed-visuals-tabs/` paths. They were not included in this review scope and were left untouched.
