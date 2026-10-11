@@ -229,9 +229,9 @@ Existing saved plans may not contain bed-level crop quotas or deficits. Parsing 
 
 #### Automated
 
-- [x] 3.1 Verify grouped positions and deficits through save/read and dashboard flow
-- [x] 3.2 Run the applicable repository quality gates
+- [x] 3.1 Verify grouped positions and deficits through save/read and dashboard flow — 5da82a5
+- [x] 3.2 Run the applicable repository quality gates — 5da82a5
 
 #### Manual
 
-- [x] 3.3 Accept the saved grouped plan and shortfall report in the dashboard
+- [x] 3.3 Accept the saved grouped plan and shortfall report in the dashboard — 5da82a5
