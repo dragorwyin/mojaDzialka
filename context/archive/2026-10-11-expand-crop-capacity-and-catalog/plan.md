@@ -340,12 +340,12 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 #### Automated
 
-- [x] 3.1 Test API + RPC round-trip zapisuje i odczytuje co najmniej 10 000 pozycji bez utraty współrzędnych, cropId, alokacji, braków i fingerprintu.
-- [x] 3.2 Test projekcji dla dużego planu potwierdza agregację na małym zoomie, dostępność wszystkich markerów po powiększeniu i niezmienione dane źródłowe.
-- [x] 3.3 E2E desktop/mobile generuje, zapisuje, przeładowuje dashboard i sprawdza podsumowanie, liczby, agregaty oraz rozwinięte markery.
-- [x] 3.4 `npm run test:db`, `npm run test:unit`, `npm run test:e2e`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
+- [x] 3.1 Test API + RPC round-trip zapisuje i odczytuje co najmniej 10 000 pozycji bez utraty współrzędnych, cropId, alokacji, braków i fingerprintu. — eb1d15d
+- [x] 3.2 Test projekcji dla dużego planu potwierdza agregację na małym zoomie, dostępność wszystkich markerów po powiększeniu i niezmienione dane źródłowe. — eb1d15d
+- [x] 3.3 E2E desktop/mobile generuje, zapisuje, przeładowuje dashboard i sprawdza podsumowanie, liczby, agregaty oraz rozwinięte markery. — eb1d15d
+- [x] 3.4 `npm run test:db`, `npm run test:unit`, `npm run test:e2e`, `npm run lint`, `npx astro check` i `npm run build` przechodzą. — eb1d15d
 
 #### Manual
 
-- [x] 3.5 Ręczny odbiór praktycznej skali: użytkownik potwierdza, że ogród z 2 000 roślin działa prawidłowo. Przepływ 10 000 pozycji pozostaje przypadkiem brzegowym zabezpieczanym testami automatycznymi, bez wymogu ręcznego używania tak dużego planu.
-- [x] 3.6 Użytkownik potwierdza poprawne działanie sterowania i czytelność diagramu na desktopie oraz dotykowym Surface; akceptuje centrowanie skrzyń, symbole roślin, plakietki `+N`, szczegóły po kliknięciu, przybliżanie i przesuwanie.
+- [x] 3.5 Ręczny odbiór praktycznej skali: użytkownik potwierdza, że ogród z 2 000 roślin działa prawidłowo. Przepływ 10 000 pozycji pozostaje przypadkiem brzegowym zabezpieczanym testami automatycznymi, bez wymogu ręcznego używania tak dużego planu. — eb1d15d
+- [x] 3.6 Użytkownik potwierdza poprawne działanie sterowania i czytelność diagramu na desktopie oraz dotykowym Surface; akceptuje centrowanie skrzyń, symbole roślin, plakietki `+N`, szczegóły po kliknięciu, przybliżanie i przesuwanie. — eb1d15d
