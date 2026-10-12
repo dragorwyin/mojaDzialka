@@ -86,7 +86,7 @@ describe("garden layout engine", () => {
     expect(coordinates(10, 20)).toEqual([[5, 10]]);
     expect(coordinates(20, 10, 20, 10)).toEqual([[10, 5]]);
     expect(coordinates(9, 20)).toEqual([]);
-    expect(coordinates(20, 19)).toEqual([]);
+    expect(coordinates(20, 19)).toEqual([[10, 5]]);
     expect(coordinates(15, 15, 10, 10)).toEqual([[5, 5]]);
     expect(coordinates(10, 10, 10, 10)).toEqual([[5, 5]]);
     expect(coordinates(9, 10, 10, 10)).toEqual([]);
@@ -307,23 +307,21 @@ describe("garden layout engine", () => {
     expect(carrot?.placementReason).toMatchObject({ category: "compactness" });
   });
 
-  it("reports the exact number of positions omitted by the per-crop grid limit", () => {
+  it("considers every feasible grid position beyond the former per-crop limit", () => {
     const result = generateGardenLayout({
       spaces: [{ id: "radish-bed", name: "Grządka rzodkiewki", widthCm: 200, lengthCm: 100 }],
       crops: [{ crop: compactCrop("rzodkiewka", 2, 10), proportion: 100 }],
       relations: [],
     });
 
-    expect(result.spaces[0]?.positions).toHaveLength(256);
-    expect(result.warnings).toContain(
-      'W przestrzeni "Grządka rzodkiewki" pominięto 744 z 1000 pozycji siatki dla uprawy rzodkiewka (limit 256).',
-    );
+    expect(result.spaces[0]?.positions).toHaveLength(1_000);
+    expect(result.warnings).toEqual([]);
     expect(result.metrics.limitReached).toBe(false);
   });
 
   it("does not scan rows when a space is too narrow for any candidate", () => {
     const result = generateGardenLayout({
-      spaces: [{ id: "narrow-long", widthCm: 10, lengthCm: 100_000 }],
+      spaces: [{ id: "narrow-long", widthCm: 0.0005, lengthCm: 100_000 }],
       crops: [{ crop: compactCrop("marchew", 30, 0.001), proportion: 100 }],
       relations: [],
     });
@@ -830,30 +828,36 @@ describe("garden layout engine", () => {
     expect(result.cropSummaries[0]).toMatchObject({ targetPercentage: 100, actualPercentage: 0, actualCount: 0 });
   });
 
-  it("does not use sowing density as final plant spacing", () => {
-    const sowingOnlyCrop = crop("kukurydza-cukrowa");
-    expect(sowingOnlyCrop.finalSpacing).toBeNull();
-    expect(sowingOnlyCrop.sowingDensity).toMatchObject({
+  it("uses sourced final spacing without conflating it with sowing density", () => {
+    const cornCrop = crop("kukurydza-cukrowa");
+    expect(cornCrop.finalSpacing).toMatchObject({
+      inRowCm: { min: 20, max: 30 },
+      betweenRowsCm: { min: 50, max: 60 },
+      confidence: "low",
+      sourceIds: ["S71", "S49"],
+    });
+    expect(cornCrop.sowingDensity).toMatchObject({
       inRowCm: { min: 20, max: 30 },
       betweenRowsCm: { min: 76, max: 91 },
     });
 
     const result = generateGardenLayout({
       spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
-      crops: [{ crop: sowingOnlyCrop, proportion: 100 }],
+      crops: [{ crop: cornCrop, proportion: 100 }],
       relations: [],
     });
 
-    expect(result.spaces[0]?.positions).toEqual([]);
-    expect(result.omissions).toContainEqual(
+    expect(result.spaces[0]?.positions.length).toBeGreaterThan(0);
+    expect(result.spaces[0]?.positions.every((position) => position.spacing.betweenRowsCm === 50)).toBe(true);
+    expect(result.omissions).not.toContainEqual(
       expect.objectContaining({ cropId: "kukurydza-cukrowa", reason: "missing_spacing" }),
     );
     expect(result.cropSummaries.find((summary) => summary.cropId === "kukurydza-cukrowa")).toMatchObject({
       targetPercentage: 100,
-      actualPercentage: 0,
-      actualCount: 0,
-      dataConfidence: null,
-      spacingStage: null,
+      actualPercentage: 100,
+      actualCount: 10,
+      dataConfidence: "low",
+      spacingStage: "thinning",
     });
   });
 
@@ -932,5 +936,47 @@ describe("garden layout diagram projection", () => {
     expect(projection.yGridLinesCm[0]).toBe(1_000);
     expect(projection.xGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
     expect(projection.yGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
+  });
+
+  it("aggregates 10,000 positions in overview while detail retains every exact source position", () => {
+    const positions = Array.from({ length: 10_000 }, (_, index) => ({
+      xCm: (index % 100) * 7 + 3.5,
+      yCm: Math.floor(index / 100) * 10 + 5,
+      cropId: index % 3 === 0 ? "marchew" : "cebula",
+      row: Math.floor(index / 100),
+      column: index % 100,
+    }));
+    const before = structuredClone(positions);
+    const space = { widthCm: 700, lengthCm: 1_000 };
+    const overview = createGardenDiagramProjection(space, positions, "overview", undefined, 500);
+    const detail = createGardenDiagramProjection(space, positions, "detail");
+
+    expect(overview.markers.length).toBeLessThan(positions.length / 5);
+    expect(overview.markers.every((marker) => marker.positions.length > 1)).toBe(true);
+    expect(overview.markers.flatMap((marker) => marker.positions)).toHaveLength(positions.length);
+    expect(overview.markers.flatMap((marker) => marker.cropCounts).reduce((sum, crop) => sum + crop.count, 0)).toBe(
+      positions.length,
+    );
+    expect(detail.markers).toHaveLength(positions.length);
+    expect(detail.markers.every((marker, index) => marker.position === positions[index])).toBe(true);
+    expect(
+      detail.markers.every(
+        ({ center }, index) => center.xCm === positions[index]?.xCm && center.yCm === positions[index]?.yCm,
+      ),
+    ).toBe(true);
+    expect(positions[0]).toEqual(before[0]);
+    expect(positions.at(-1)).toEqual(before.at(-1));
+  }, 30_000);
+
+  it("keeps a dense overview bounded while preserving every position in its aggregates", () => {
+    const positions = Array.from({ length: 10_000 }, (_, index) => ({
+      xCm: (index % 100) * 7 + 3.5,
+      yCm: Math.floor(index / 100) * 10 + 5,
+      cropId: "marchew",
+    }));
+    const projection = createGardenDiagramProjection({ widthCm: 700, lengthCm: 1_000 }, positions, "overview", 2, 500);
+
+    expect(projection.markers.length).toBeLessThanOrEqual(500);
+    expect(projection.markers.flatMap((marker) => marker.positions)).toHaveLength(positions.length);
   });
 });

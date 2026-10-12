@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-export async function generatePlan(page: Page) {
+export async function generatePlan(page: Page, timeoutMs = 5_000) {
   if (new URL(page.url()).searchParams.get("tab") !== null) await page.goto("/dashboard");
   const button = page.getByRole("button", { name: /^(Wygeneruj plan|Wygeneruj ponownie)$/ });
   const plannerIsland = page.locator('astro-island[component-export="default"]').filter({ has: button });
@@ -12,6 +12,7 @@ export async function generatePlan(page: Page) {
   await expect(page.getByRole("region", { name: "Układ działki", exact: true })).toHaveAttribute(
     "data-plan-status",
     "current",
+    { timeout: timeoutMs },
   );
   await expect(page.getByRole("region", { name: "Szczegóły wygenerowanego układu" })).toBeVisible();
 }

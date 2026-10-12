@@ -10,10 +10,7 @@ export type GardenCropSelectionResolution =
   | { status: "retired"; displayName: string }
   | { status: "unknown"; displayName: string };
 
-const RETIRED_CROP_NAMES = new Map<string, string>([
-  ["fasola-zwykla", "fasola szparagowa"],
-  ["bob", "bób"],
-]);
+const RETIRED_CROP_NAMES = new Map<string, string>([["fasola-zwykla", "fasola szparagowa"]]);
 
 export function resolveGardenCropSelection(cropId: string): GardenCropSelectionResolution {
   const crop = getCropById(cropId);

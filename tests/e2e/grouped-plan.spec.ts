@@ -1,34 +1,60 @@
 import { test, expect } from "./fixtures/garden";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { generatePlan } from "./support/garden";
-import { readGardenLayoutResult } from "../../src/lib/garden-layout";
+import { readGardenLayoutResult, type GardenLayoutResult } from "../../src/lib/garden-layout";
 
 async function readCropMarkers(page: Parameters<typeof generatePlan>[0]) {
-  const diagrams = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" }).locator('svg[role="group"]');
-  const labels: string[] = [];
-  const groups = new Map<string, { row: number; column: number }[]>();
+  const layout = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" });
+  const markers = layout.locator('article svg[role="group"] g[data-garden-marker="true"]');
+  return markers.evaluateAll((items) => items.map((marker) => marker.getAttribute("aria-label") ?? ""));
+}
 
-  for (let diagramIndex = 0; diagramIndex < (await diagrams.count()); diagramIndex += 1) {
-    const diagramLabels = await diagrams
-      .nth(diagramIndex)
-      .locator('g[role="img"]')
-      .evaluateAll((markers) => markers.map((marker) => marker.getAttribute("aria-label") ?? ""));
-    labels.push(...diagramLabels);
-    for (const label of diagramLabels) {
-      const match = /^(\d+) · .*pozycja (\d+), (\d+),/.exec(label);
-      if (!match) throw new Error("Unexpected crop marker label: " + label);
-      const cropCode = match[1];
-      const row = Number(match[2]) - 1;
-      const column = Number(match[3]) - 1;
-      if (!cropCode) throw new Error("Missing crop code in marker label: " + label);
-      const groupKey = `${diagramIndex}:${cropCode}`;
-      const cropGroup = groups.get(groupKey) ?? [];
-      cropGroup.push({ row, column });
-      groups.set(groupKey, cropGroup);
+async function readDetailedPositions(article: Locator) {
+  await article.getByText(/^Sąsiedzi i uzasadnienie pozycji/).click();
+  const rows = article.locator("details ol > li > p:first-child");
+  const nextPage = article.getByRole("button", { name: /Pokaż kolejne/ });
+  let visibleRows = await rows.allTextContents();
+  while ((await nextPage.count()) > 0) {
+    await nextPage.click();
+    visibleRows = await rows.allTextContents();
+  }
+  return visibleRows;
+}
+
+function expectEveryCropGroupConnected(plan: GardenLayoutResult) {
+  const groups = new Map<string, { row: number; column: number }[]>();
+  for (const [spaceIndex, space] of plan.spaces.entries()) {
+    for (const position of space.positions) {
+      const key = `${spaceIndex}:${position.cropId}`;
+      const positions = groups.get(key) ?? [];
+      positions.push({ row: position.row, column: position.column });
+      groups.set(key, positions);
     }
   }
 
-  return { labels, groups };
+  for (const positions of groups.values()) {
+    if (positions.length < 2) continue;
+    const reached = new Set([positions[0]]);
+    const queue = [positions[0]];
+    while (queue.length > 0) {
+      const current = queue.pop();
+      if (current === undefined) continue;
+      positions.forEach((position) => {
+        if (
+          !reached.has(position) &&
+          Math.max(Math.abs(position.row - current.row), Math.abs(position.column - current.column)) === 1
+        ) {
+          reached.add(position);
+          queue.push(position);
+        }
+      });
+    }
+    expect(reached.size).toBe(positions.length);
+  }
+}
+
+function expectedPositionRows(space: GardenLayoutResult["spaces"][number]) {
+  return space.positions.map(({ cropId, xCm, yCm }) => `${cropId} · ${xCm} × ${yCm} cm`);
 }
 
 async function configureConstrainedGarden(page: Page) {
@@ -64,27 +90,31 @@ async function configureConstrainedGarden(page: Page) {
   await page.reload();
 }
 
-function expectEveryCropGroupConnected(groups: Map<string, { row: number; column: number }[]>) {
-  for (const positions of groups.values()) {
-    if (positions.length < 2) continue;
-    const reached = new Set([0]);
-    const queue = [0];
-    while (queue.length > 0) {
-      const index = queue.pop();
-      const current = index === undefined ? undefined : positions[index];
-      if (current === undefined) continue;
-      positions.forEach((position, candidateIndex) => {
-        if (
-          !reached.has(candidateIndex) &&
-          Math.max(Math.abs(position.row - current.row), Math.abs(position.column - current.column)) === 1
-        ) {
-          reached.add(candidateIndex);
-          queue.push(candidateIndex);
-        }
-      });
-    }
-    expect(reached.size).toBe(positions.length);
+async function configureLargeGarden(page: Page) {
+  const origin = new URL(page.url()).origin;
+  const spaces = new URLSearchParams();
+  for (const name of ["Duża skrzynia e2e 1", "Duża skrzynia e2e 2"]) {
+    spaces.append("spaceId", "");
+    spaces.append("spaceName", name);
+    spaces.append("spaceType", "bed");
+    spaces.append("widthCm", "250");
+    spaces.append("lengthCm", "600");
   }
+  const spaceResponse = await page.request.post(`${origin}/api/garden`, {
+    data: spaces.toString(),
+    headers: { Origin: origin, "Content-Type": "application/x-www-form-urlencoded" },
+    maxRedirects: 0,
+  });
+  expect(spaceResponse.status()).toBe(302);
+  expect(spaceResponse.headers().location).toBe("/dashboard?tab=sectors&saved=1");
+
+  const cropResponse = await page.request.post(`${origin}/api/garden-crops`, {
+    headers: { Origin: origin },
+    data: [{ cropId: "marchew", proportion: 1 }],
+  });
+  expect(cropResponse.status()).toBe(200);
+  expect(await cropResponse.json()).toEqual({ saved: true });
+  await page.reload();
 }
 
 test("saved grouped positions and per-bed allocation data survive dashboard reload", async ({ page }) => {
@@ -97,7 +127,15 @@ test("saved grouped positions and per-bed allocation data survive dashboard relo
   const response = await responsePromise;
   expect(response.status()).toBe(200);
   const body: unknown = await response.json();
-  if (typeof body !== "object" || body === null || !("plan" in body)) {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("plan" in body) ||
+    !("inputFingerprint" in body) ||
+    !("generatedAt" in body) ||
+    typeof body.inputFingerprint !== "string" ||
+    typeof body.generatedAt !== "string"
+  ) {
     throw new Error("Generated plan response did not include a plan.");
   }
   const plan = readGardenLayoutResult(body.plan);
@@ -109,15 +147,13 @@ test("saved grouped positions and per-bed allocation data survive dashboard relo
   expect(largeBed?.cropAllocations).toContainEqual({
     cropId: "rzodkiewka",
     allocatedCount: 57,
-    placedCount: 40,
-    missingCount: 17,
+    placedCount: 57,
+    missingCount: 0,
   });
-  expect(constrainedBed?.cropAllocations).toContainEqual({
-    cropId: "marchew",
-    allocatedCount: 2,
-    placedCount: 1,
-    missingCount: 1,
-  });
+  expect(constrainedBed?.cropAllocations).toEqual([
+    { cropId: "marchew", allocatedCount: 2, placedCount: 2, missingCount: 0 },
+    { cropId: "rzodkiewka", allocatedCount: 2, placedCount: 2, missingCount: 0 },
+  ]);
 
   for (const space of plan.spaces) {
     if (space.status === "not_processed") continue;
@@ -131,19 +167,102 @@ test("saved grouped positions and per-bed allocation data survive dashboard relo
   }
 
   const layout = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" });
+  await expect(
+    layout.locator('svg[role="group"] g[role="button"][aria-label*="roślin w skupisku"]').first(),
+  ).toBeVisible();
   const beforeReload = await readCropMarkers(page);
-  expectEveryCropGroupConnected(beforeReload.groups);
+  expectEveryCropGroupConnected(plan);
 
   await page.reload();
-  await expect(page.locator("#garden-plan-ssr")).toHaveAttribute("data-plan-status", "current");
+  const serverPlan = page.locator("#garden-plan-ssr");
+  await expect(serverPlan).toHaveAttribute("data-plan-status", "current");
+  await expect(serverPlan).toHaveAttribute("data-plan-fingerprint", body.inputFingerprint);
+  expect(Date.parse((await serverPlan.getAttribute("data-plan-generated-at")) ?? "")).toBe(
+    Date.parse(body.generatedAt),
+  );
+  await expect(serverPlan).toHaveAttribute(
+    "data-plan-position-count",
+    String(plan.spaces.reduce((count, space) => count + space.positions.length, 0)),
+  );
   await expect(layout).toBeVisible();
   const afterReload = await readCropMarkers(page);
-  expect(afterReload.labels).toEqual(beforeReload.labels);
+  expect(afterReload).toEqual(beforeReload);
+  for (const space of plan.spaces) {
+    const article = layout.locator("article").filter({ has: page.getByRole("heading", { name: space.space.name }) });
+    expect(await readDetailedPositions(article)).toEqual(expectedPositionRows(space));
+  }
 
-  await expect(layout).toContainText("Braki w całym ogrodzie");
-  await expect(layout).toContainText("Do dosadzenia w tej skrzyni");
   await expect(layout).toContainText("Skrzynia e2e");
   await expect(layout).toContainText("Skrzynia ograniczona e2e");
-  await expect(layout).toContainText("17 pozycji do dosadzenia");
-  await expect(layout).toContainText("1 pozycja do dosadzenia");
+  await expect(layout).not.toContainText("Braki w całym ogrodzie");
+});
+
+test("large plans retain exact counts after reload and aggregate overview markers", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await page.goto("/dashboard");
+  await configureLargeGarden(page);
+  const responsePromise = page
+    .waitForResponse(
+      (response) => response.url().endsWith("/api/garden-plan") && response.request().method() === "POST",
+    )
+    .then(async (response) => ({
+      status: response.status(),
+      body: (await response.json()) as {
+        inputFingerprint: string;
+        generatedAt: string;
+        plan: unknown;
+      },
+    }));
+  await generatePlan(page, 30_000);
+  const { status, body } = await responsePromise;
+  expect(status).toBe(200);
+  const plan = readGardenLayoutResult(body.plan);
+  expect(plan).not.toBeNull();
+  if (!plan) throw new Error("Generated large plan did not parse.");
+  const layout = page.getByRole("region", { name: "Szczegóły wygenerowanego układu" });
+  const aggregateMarker = layout.locator('svg[role="group"] g[role="button"][aria-label*="roślin w skupisku"]').first();
+  await expect(aggregateMarker).toBeVisible();
+  await page.reload();
+  const serverPlan = page.locator("#garden-plan-ssr");
+  await expect(serverPlan).toHaveAttribute("data-plan-status", "current");
+  await expect(serverPlan).toHaveAttribute("data-plan-fingerprint", body.inputFingerprint);
+  expect(Date.parse((await serverPlan.getAttribute("data-plan-generated-at")) ?? "")).toBe(
+    Date.parse(body.generatedAt),
+  );
+  const totalPositions = plan.spaces.reduce((count, space) => count + space.positions.length, 0);
+  await expect(serverPlan).toHaveAttribute("data-plan-position-count", String(totalPositions));
+  expect(totalPositions).toBeGreaterThanOrEqual(2_000);
+  await expect(layout).toBeVisible();
+  await expect(layout).toContainText("Duża skrzynia e2e 1");
+  await expect(layout).toContainText("Duża skrzynia e2e 2");
+  for (const space of plan.spaces) {
+    const article = layout.locator("article").filter({ has: page.getByRole("heading", { name: space.space.name }) });
+    expect(await readDetailedPositions(article)).toEqual(expectedPositionRows(space));
+  }
+  const firstBed = layout
+    .locator("article")
+    .filter({ has: page.getByRole("heading", { name: "Duża skrzynia e2e 1" }) });
+  const originalViewport = page.viewportSize();
+  await page.setViewportSize({ width: 820, height: 1024 });
+  const controls = firstBed.getByRole("navigation", { name: "Sterowanie diagramem Duża skrzynia e2e 1" });
+  const zoomLevel = controls.locator('[aria-live="polite"]');
+  await expect(zoomLevel).toHaveText("100%");
+  const zoomViewport = firstBed.locator('[aria-label="Płótno diagramu Duża skrzynia e2e 1"]');
+  const diagram = zoomViewport.getByRole("group", { name: "Diagram Duża skrzynia e2e 1 w skali centymetrowej" });
+  const fittedWidth = await diagram.evaluate((svg) => svg.clientWidth);
+  await controls.getByRole("button", { name: "Powiększ diagram" }).click();
+  await expect(zoomLevel).toHaveText("125%");
+  await expect.poll(() => diagram.evaluate((svg) => svg.clientWidth)).toBeGreaterThan(fittedWidth);
+  for (let step = 0; step < 9; step += 1) {
+    await controls.getByRole("button", { name: "Powiększ diagram" }).click();
+  }
+  await expect(zoomViewport.locator('g[role="button"][aria-label*="pozycja"]').first()).toBeVisible();
+  await controls.getByRole("button", { name: "Dopasuj" }).click();
+  await expect(zoomLevel).toHaveText("100%");
+  if (originalViewport) await page.setViewportSize(originalViewport);
+  await page.screenshot({ path: `test-results/large-garden-${testInfo.project.name}.png`, fullPage: true });
+  await layout
+    .locator("article")
+    .first()
+    .screenshot({ path: `test-results/large-garden-bed-${testInfo.project.name}.png` });
 });

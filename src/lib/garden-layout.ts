@@ -9,8 +9,7 @@ import {
 } from "../data/crop-catalog.js";
 import { normalizeProportionsToPercentages } from "./garden-crop-percentages.js";
 
-const DEFAULT_CANDIDATE_LIMIT = 2_000;
-const MAX_GRID_POINTS_PER_CROP = 256;
+const DEFAULT_CANDIDATE_LIMIT = 100_000;
 const MAX_CANDIDATE_ALTERNATIVES_PER_CROP = 8;
 
 export class GardenLayoutSearchLimitError extends Error {
@@ -50,6 +49,8 @@ export interface GardenLayoutPosition {
     inRowCm: number;
     betweenRowsCm: number;
   };
+  /** Physical grid orientation; absent on plans created before rotated layouts were supported. */
+  orientation?: "standard" | "rotated";
   confidence: Confidence;
   stage: SpacingStage;
   /** Absent only on plans persisted by a generator predating Phase 2. */
@@ -213,6 +214,7 @@ function isLayoutPosition(value: unknown): value is GardenLayoutPosition {
     value.spacing.inRowCm <= 0 ||
     !isFiniteNumber(value.spacing.betweenRowsCm) ||
     value.spacing.betweenRowsCm <= 0 ||
+    (value.orientation !== undefined && value.orientation !== "standard" && value.orientation !== "rotated") ||
     !isConfidence(value.confidence) ||
     !isSpacingStage(value.stage)
   ) {
@@ -264,8 +266,12 @@ function hasConsistentSpaceAllocations(spaceResult: Record<string, unknown>): bo
   ) {
     return false;
   }
+  const placedCounts = new Map<string, number>();
+  for (const position of positions) {
+    placedCounts.set(position.cropId, (placedCounts.get(position.cropId) ?? 0) + 1);
+  }
   return spaceResult.cropAllocations.every(
-    ({ cropId, placedCount }) => placedCount === positions.filter((position) => position.cropId === cropId).length,
+    ({ cropId, placedCount }) => placedCount === (placedCounts.get(cropId) ?? 0),
   );
 }
 
@@ -396,6 +402,7 @@ interface Candidate {
   yCm: number;
   row: number;
   column: number;
+  orientation: "standard" | "rotated";
 }
 
 interface CandidateGrid {
@@ -466,12 +473,14 @@ function getHardBlockers(
 function distanceInSpacingSteps(first: GardenLayoutPosition, second: Candidate | GardenLayoutPosition): number {
   const dx = Math.abs(first.xCm - second.xCm);
   const dy = Math.abs(first.yCm - second.yCm);
-  const secondInRowCm = "crop" in second ? second.crop.inRowCm : second.spacing.inRowCm;
-  const secondBetweenRowsCm = "crop" in second ? second.crop.betweenRowsCm : second.spacing.betweenRowsCm;
-  const inRowStep = Math.max(first.spacing.inRowCm, secondInRowCm);
-  const betweenRowsStep = Math.max(first.spacing.betweenRowsCm, secondBetweenRowsCm);
+  const firstXStep = first.orientation === "rotated" ? first.spacing.betweenRowsCm : first.spacing.inRowCm;
+  const firstYStep = first.orientation === "rotated" ? first.spacing.inRowCm : first.spacing.betweenRowsCm;
+  const secondSpacing = "crop" in second ? second.crop : second.spacing;
+  const secondOrientation = second.orientation ?? "standard";
+  const secondXStep = secondOrientation === "rotated" ? secondSpacing.betweenRowsCm : secondSpacing.inRowCm;
+  const secondYStep = secondOrientation === "rotated" ? secondSpacing.inRowCm : secondSpacing.betweenRowsCm;
 
-  return Math.hypot(dx / inRowStep, dy / betweenRowsStep);
+  return Math.hypot(dx / Math.max(firstXStep, secondXStep), dy / Math.max(firstYStep, secondYStep));
 }
 
 function areNeighbors(first: GardenLayoutPosition, second: Candidate | GardenLayoutPosition): boolean {
@@ -482,11 +491,12 @@ function areNeighbors(first: GardenLayoutPosition, second: Candidate | GardenLay
 function overlaps(first: GardenLayoutPosition, second: Candidate): boolean {
   const dx = Math.abs(first.xCm - second.xCm);
   const dy = Math.abs(first.yCm - second.yCm);
+  const firstXStep = first.orientation === "rotated" ? first.spacing.betweenRowsCm : first.spacing.inRowCm;
+  const firstYStep = first.orientation === "rotated" ? first.spacing.inRowCm : first.spacing.betweenRowsCm;
+  const secondXStep = second.orientation === "rotated" ? second.crop.betweenRowsCm : second.crop.inRowCm;
+  const secondYStep = second.orientation === "rotated" ? second.crop.inRowCm : second.crop.betweenRowsCm;
 
-  return (
-    dx < Math.max(first.spacing.inRowCm, second.crop.inRowCm) &&
-    dy < Math.max(first.spacing.betweenRowsCm, second.crop.betweenRowsCm)
-  );
+  return dx < Math.max(firstXStep, secondXStep) && dy < Math.max(firstYStep, secondYStep);
 }
 
 function compareCandidates(left: CandidateScore, right: CandidateScore): number {
@@ -503,36 +513,33 @@ function compareCandidates(left: CandidateScore, right: CandidateScore): number 
   );
 }
 
-function makeCandidates(space: GardenLayoutSpace, crop: UsableCrop): CandidateGrid {
+function makeCandidates(space: GardenLayoutSpace, crop: UsableCrop, candidatePoolLimit: number): CandidateGrid {
+  const getDimensions = (rotated: boolean) => {
+    const xStep = rotated ? crop.betweenRowsCm : crop.inRowCm;
+    const yStep = rotated ? crop.inRowCm : crop.betweenRowsCm;
+    const columns = Math.max(0, Math.floor((space.widthCm - xStep) / xStep) + 1);
+    const rows = Math.max(0, Math.floor((space.lengthCm - yStep) / yStep) + 1);
+    return { xStep, yStep, columns, rows, totalCandidates: columns * rows };
+  };
+  const standard = getDimensions(false);
+  const rotated = getDimensions(true);
+  const orientation = rotated.totalCandidates > standard.totalCandidates ? "rotated" : "standard";
+  const { xStep, yStep, columns, rows, totalCandidates } = orientation === "rotated" ? rotated : standard;
   const candidates: Candidate[] = [];
-  const startX = crop.inRowCm / 2;
-  const startY = crop.betweenRowsCm / 2;
-  const lastX = space.widthCm - crop.inRowCm / 2;
-  const lastY = space.lengthCm - crop.betweenRowsCm / 2;
-  const columns = Math.max(0, Math.floor((lastX - startX) / crop.inRowCm) + 1);
-  const rows = Math.max(0, Math.floor((lastY - startY) / crop.betweenRowsCm) + 1);
-  const totalCandidates = columns * rows;
 
-  // With no columns, the row loop would otherwise scan the entire (potentially huge) length.
-  if (columns === 0 || rows === 0) {
-    return { candidates, totalCandidates, truncatedCount: totalCandidates };
-  }
-
-  for (let row = 0; row < rows && candidates.length < MAX_GRID_POINTS_PER_CROP; row += 1) {
-    for (let column = 0; column < columns && candidates.length < MAX_GRID_POINTS_PER_CROP; column += 1) {
-      const xCm = startX + column * crop.inRowCm;
-      const yCm = startY + row * crop.betweenRowsCm;
-      if (xCm <= space.widthCm && yCm <= space.lengthCm) {
-        candidates.push({ crop, xCm, yCm, row, column });
-      }
+  for (let row = 0; row < rows && candidates.length < candidatePoolLimit; row += 1) {
+    for (let column = 0; column < columns && candidates.length < candidatePoolLimit; column += 1) {
+      candidates.push({
+        crop,
+        xCm: xStep / 2 + column * xStep,
+        yCm: yStep / 2 + row * yStep,
+        row,
+        column,
+        orientation,
+      });
     }
   }
-
-  return {
-    candidates,
-    totalCandidates,
-    truncatedCount: Math.max(0, totalCandidates - candidates.length),
-  };
+  return { candidates, totalCandidates, truncatedCount: Math.max(0, totalCandidates - candidates.length) };
 }
 
 function scoreCandidate(
@@ -703,6 +710,138 @@ function createSummary(
   };
 }
 
+function generateSingleCropLayoutPass(
+  input: GardenLayoutInput,
+  selections: readonly GardenLayoutCropSelection[],
+  targetByCrop: ReadonlyMap<string, number>,
+  crop: UsableCrop,
+  priorOmissions: readonly GardenLayoutOmission[],
+  groupedTargets?: ReadonlyMap<string, ReadonlyMap<string, number>>,
+): GardenLayoutResult {
+  const spaceResults: GardenLayoutSpaceResult[] = [];
+  const conflicts: GardenLayoutConflict[] = [];
+  const candidateLimit = input.maxCandidates ?? DEFAULT_CANDIDATE_LIMIT;
+  let candidateChecks = 0;
+  let limitReached = candidateLimit <= 0;
+  const cropId = crop.selection.crop.id;
+  const spacing = crop.selection.crop.spacing;
+  if (candidateLimit <= 0) throw new GardenLayoutSearchLimitError();
+
+  for (const space of input.spaces) {
+    const spaceTargets = groupedTargets?.get(space.id);
+    if (groupedTargets !== undefined && spaceTargets === undefined) {
+      spaceResults.push({ space, positions: [], status: "not_processed" });
+      continue;
+    }
+
+    const standardColumns = Math.max(0, Math.floor((space.widthCm - crop.inRowCm) / crop.inRowCm) + 1);
+    const standardRows = Math.max(0, Math.floor((space.lengthCm - crop.betweenRowsCm) / crop.betweenRowsCm) + 1);
+    const rotatedColumns = Math.max(0, Math.floor((space.widthCm - crop.betweenRowsCm) / crop.betweenRowsCm) + 1);
+    const rotatedRows = Math.max(0, Math.floor((space.lengthCm - crop.inRowCm) / crop.inRowCm) + 1);
+    const standardCount = standardColumns * standardRows;
+    const rotatedCount = rotatedColumns * rotatedRows;
+    const orientation = rotatedCount > standardCount ? "rotated" : "standard";
+    const columns = orientation === "rotated" ? rotatedColumns : standardColumns;
+    const availableCount = Math.max(standardCount, rotatedCount);
+    const requestedCount = spaceTargets?.get(cropId) ?? availableCount;
+    const remainingBudget = Math.max(0, candidateLimit - candidateChecks);
+    const placedCount = Math.min(requestedCount, availableCount, remainingBudget);
+    const positions: GardenLayoutPosition[] = [];
+    const xStep = orientation === "rotated" ? crop.betweenRowsCm : crop.inRowCm;
+    const yStep = orientation === "rotated" ? crop.inRowCm : crop.betweenRowsCm;
+
+    for (let index = 0; index < placedCount; index += 1) {
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      positions.push({
+        spaceId: space.id,
+        cropId,
+        xCm: xStep / 2 + column * xStep,
+        yCm: yStep / 2 + row * yStep,
+        row,
+        column,
+        spacing: { inRowCm: crop.inRowCm, betweenRowsCm: crop.betweenRowsCm },
+        ...(orientation === "rotated" ? { orientation } : {}),
+        confidence: spacing?.confidence ?? "low",
+        stage: spacing?.stage ?? "mixed",
+        neighbors: [],
+        placementReason: {
+          category: "deterministic_tie_break",
+          detail: "Jedna uprawa w przestrzeni; wybrano deterministyczną siatkę o największej pojemności.",
+          constrainedByCropIds: [],
+          rejectedGeometryCandidates: 0,
+        },
+      });
+    }
+
+    candidateChecks += placedCount;
+    const spaceLimitReached = placedCount < requestedCount && placedCount < availableCount;
+    if (spaceLimitReached) limitReached = true;
+    if (positions.length === 0 && availableCount === 0 && (groupedTargets === undefined || requestedCount > 0)) {
+      conflicts.push({
+        spaceId: space.id,
+        type: "geometry",
+        cropIds: [cropId],
+        detail: "Dostępna geometria nie mieści żadnej poprawnej pozycji tej uprawy.",
+      });
+    }
+    spaceResults.push({ space, positions, status: spaceLimitReached ? "partial" : "complete" });
+    if (spaceLimitReached) break;
+  }
+
+  for (const space of input.spaces.slice(spaceResults.length)) {
+    spaceResults.push({ space, positions: [], status: "not_processed" });
+  }
+
+  const actualCount = spaceResults.reduce((sum, space) => sum + space.positions.length, 0);
+  const omissions: GardenLayoutOmission[] = [...priorOmissions];
+  if (actualCount === 0 && input.spaces.length > 0) {
+    omissions.push({
+      cropId,
+      reason: limitReached ? "search_limit" : "no_fit",
+      detail: limitReached
+        ? "Nie można potwierdzić braku miejsca, ponieważ część pozycji nie została sprawdzona."
+        : "Nie znaleziono poprawnej pozycji w dostępnej geometrii.",
+    });
+  }
+  if (limitReached && actualCount === 0) throw new GardenLayoutSearchLimitError();
+  const totalRequested = input.spaces.reduce((sum, space) => {
+    const target = groupedTargets?.get(space.id)?.get(cropId);
+    return sum + (target ?? 0);
+  }, 0);
+  const hasShortfall =
+    groupedTargets === undefined
+      ? spaceResults.some((space) => space.status === "partial" || space.status === "not_processed")
+      : actualCount < totalRequested;
+  const warnings = hasShortfall
+    ? [
+        `Osiągnięto jawny limit ${candidateLimit} sprawdzonych pozycji; pokazano najlepszy znaleziony układ. Przestrzenie nieprzetworzone: ${
+          spaceResults
+            .filter((space) => space.status === "not_processed")
+            .map(({ space }) => space.name ?? space.id)
+            .join(", ") || "brak"
+        }. Bieżąca przestrzeń może zawierać układ częściowy.`,
+      ]
+    : [];
+  const totalCount = actualCount;
+
+  return {
+    spaces: spaceResults,
+    cropSummaries: selections.map((selection) =>
+      createSummary(
+        selection,
+        targetByCrop.get(selection.crop.id) ?? 0,
+        selection.crop.id === cropId ? actualCount : 0,
+        totalCount,
+      ),
+    ),
+    omissions,
+    conflicts,
+    warnings,
+    metrics: { candidateChecks, supportedNeighbors: 0, cautionNeighbors: 0, limitReached: hasShortfall },
+  };
+}
+
 /** Generates a bounded, deterministic layout across every supplied garden space. */
 function generateGardenLayoutPass(
   input: GardenLayoutInput,
@@ -768,6 +907,11 @@ function generateGardenLayoutPass(
   }
   const candidateAlternativesLimit = usableCrops.length > 1 ? MAX_CANDIDATE_ALTERNATIVES_PER_CROP : 1;
 
+  const onlyUsableCrop = usableCrops.at(0);
+  if (usableCrops.length === 1 && onlyUsableCrop !== undefined) {
+    return generateSingleCropLayoutPass(input, selections, targetByCrop, onlyUsableCrop, omissions, groupedTargets);
+  }
+
   const spaceResults: GardenLayoutSpaceResult[] = [];
   const conflicts: GardenLayoutConflict[] = [];
   const geometryBlockedBySpace = new Map<string, Set<string>>();
@@ -795,13 +939,14 @@ function generateGardenLayoutPass(
     const truncatedGridCropIdsInSpace = new Set<string>();
     const candidatesByCrop = new Map(
       usableCrops.map((crop) => {
-        const grid = makeCandidates(space, crop);
+        const perCropCandidatePoolLimit = Math.max(1, Math.floor(candidateLimit / Math.max(usableCrops.length, 1)));
+        const grid = makeCandidates(space, crop, perCropCandidatePoolLimit);
         if (grid.truncatedCount > 0) {
           const cropId = crop.selection.crop.id;
           truncatedGridCropIds.add(cropId);
           truncatedGridCropIdsInSpace.add(cropId);
           candidateGridWarnings.push(
-            `W przestrzeni "${space.name ?? space.id}" pominięto ${grid.truncatedCount} z ${grid.totalCandidates} pozycji siatki dla uprawy ${crop.selection.crop.commonNamePl} (limit ${MAX_GRID_POINTS_PER_CROP}).`,
+            `W przestrzeni "${space.name ?? space.id}" jawny limit wyszukiwania pominął ${grid.truncatedCount} z ${grid.totalCandidates} pozycji siatki dla uprawy ${crop.selection.crop.commonNamePl}.`,
           );
         }
         return [crop.selection.crop.id, grid.candidates] as const;
@@ -903,6 +1048,7 @@ function generateGardenLayoutPass(
         row: selected.row,
         column: selected.column,
         spacing: { inRowCm: selected.crop.inRowCm, betweenRowsCm: selected.crop.betweenRowsCm },
+        ...(selected.orientation === "rotated" ? { orientation: selected.orientation } : {}),
         confidence: selected.crop.selection.crop.spacing?.confidence ?? "low",
         stage: selected.crop.selection.crop.spacing?.stage ?? "mixed",
         placementReason: createPlacementReason(best, scored),
@@ -929,6 +1075,7 @@ function generateGardenLayoutPass(
       }
     }
 
+    if (truncatedGridCropIdsInSpace.size > 0) limitReached = true;
     if (candidateChecks >= candidateLimit) {
       limitReached = true;
     }

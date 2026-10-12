@@ -158,6 +158,36 @@ describe("garden plan POST", () => {
     expect(fixture.queries.garden_crops.eq).toHaveBeenCalledWith("garden_id", GARDEN_ID);
   });
 
+  it("round-trips more than 10,000 exact positions through the RPC payload and dashboard decoder", async () => {
+    fixture.reads.garden_spaces.data = [
+      { id: SPACE_ID, name: "Duża skrzynia", space_type: "bed", width_cm: 1_200, length_cm: 1_400, sort_order: 0 },
+    ];
+    const response = await POST(createApiContext(request()));
+    expect(response.status).toBe(200);
+    const responseBody = (await response.json()) as { inputFingerprint: string; plan: unknown };
+    const rpcPayload = fixture.client.rpc.mock.calls[0]?.[1] ?? {};
+
+    // JSON serialization matches the JSONB storage boundary: the dashboard decoder receives plain persisted JSON.
+    const persistedPlan = JSON.parse(JSON.stringify(rpcPayload.p_plan)) as unknown;
+    const decoded = readGardenLayoutResult(persistedPlan);
+    const savedSpace = decoded?.spaces[0];
+    const positions = savedSpace?.positions ?? [];
+    expect(positions.length).toBeGreaterThanOrEqual(10_000);
+    expect(positions.every((position) => position.spaceId === SPACE_ID && position.cropId === "marchew")).toBe(true);
+    expect(savedSpace?.cropAllocations).toEqual([
+      expect.objectContaining({
+        cropId: "marchew",
+        allocatedCount: positions.length,
+        placedCount: positions.length,
+        missingCount: 0,
+      }),
+    ]);
+    expect(typeof positions[0]?.xCm).toBe("number");
+    expect(typeof positions[0]?.yCm).toBe("number");
+    expect(responseBody.plan).toEqual(rpcPayload.p_plan);
+    expect(responseBody.inputFingerprint).toBe(rpcPayload.p_input_fingerprint);
+  });
+
   it("waits for conditional save before returning success", async () => {
     const pendingSave = Promise.withResolvers<DatabaseResult>();
     const enteredSave = Promise.withResolvers<undefined>();

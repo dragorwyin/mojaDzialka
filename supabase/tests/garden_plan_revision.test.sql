@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(27);
 
 insert into auth.users (
   id,
@@ -173,6 +173,60 @@ select is(
     'generated_at', '2026-10-03 15:30:00+00'::timestamptz
   ),
   'guarded replacement persists every new payload field including its explicit generation time'
+);
+select is(public.save_garden_plan_if_current(
+  (select input_revision from public.gardens),
+  jsonb_build_object(
+    'version', 1,
+    'positions', (
+      select jsonb_agg(jsonb_build_object(
+        'cropId', 'marchew',
+        'spaceId', current_setting('test.space_id'),
+        'xCm', n,
+        'yCm', n * 2
+      ) order by n)
+      from generate_series(1, 10000) as generated(n)
+    ),
+    'spaces', jsonb_build_array(jsonb_build_object(
+      'spaceId', current_setting('test.space_id'),
+      'cropAllocations', jsonb_build_array(jsonb_build_object(
+        'cropId', 'marchew',
+        'allocatedCount', 10000,
+        'placedCount', 10000,
+        'missingCount', 0
+      ))
+    ))
+  ),
+  '{"version":1,"spaces":[],"crops":[]}'::jsonb,
+  repeat('f', 64),
+  '2026-10-04 12:00:00+00'::timestamptz
+), true, 'guarded plan RPC accepts at least 10,000 exact positions');
+select is(jsonb_array_length((select plan->'positions' from public.garden_plans)), 10000,
+  'JSONB round-trip retains every large-plan position');
+select is(
+  (select plan from public.garden_plans),
+  jsonb_build_object(
+    'version', 1,
+    'positions', (
+      select jsonb_agg(jsonb_build_object(
+        'cropId', 'marchew',
+        'spaceId', current_setting('test.space_id'),
+        'xCm', n,
+        'yCm', n * 2
+      ) order by n)
+      from generate_series(1, 10000) as generated(n)
+    ),
+    'spaces', jsonb_build_array(jsonb_build_object(
+      'spaceId', current_setting('test.space_id'),
+      'cropAllocations', jsonb_build_array(jsonb_build_object(
+        'cropId', 'marchew',
+        'allocatedCount', 10000,
+        'placedCount', 10000,
+        'missingCount', 0
+      ))
+    ))
+  ),
+  'JSONB round-trip preserves exact large-plan coordinates and allocation fields'
 );
 select is((select input_revision from public.gardens),
   current_setting('test.revision_before_crop_edit')::bigint + 1,

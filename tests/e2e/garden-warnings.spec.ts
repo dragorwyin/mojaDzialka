@@ -57,7 +57,7 @@ test("renders explicit low-confidence and omitted-crop warnings from a fixed res
     }),
   );
 
-  await page.goto("/garden");
+  await page.goto("/garden", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Wygeneruj plan", exact: true }).click();
   const planner = page.getByRole("region", { name: "Układ działki", exact: true });
   await expect(planner).toHaveAttribute("data-plan-status", "current");

@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { createGardenLayoutShortfallReport, type GardenLayoutResult } from "@/lib/garden-layout";
 import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
@@ -10,9 +18,11 @@ import {
   resolveCropThumbnailPresentation,
 } from "./crop-thumbnail-manifest";
 import {
+  GARDEN_DIAGRAM_ZOOM_PIXELS_PER_CM,
   createGardenDiagramProjection,
   getGardenDiagramAspectRatio,
   getGardenDiagramZoomDimensions,
+  type GardenDiagramCropCount,
   type GardenDiagramProjection,
 } from "./garden-layout-diagram";
 
@@ -75,6 +85,24 @@ function formatMissingPositions(count: number): string {
   return String(count) + " pozycji do dosadzenia";
 }
 
+function cropFallbackEmoji(cropId: string, label: string): string {
+  const key = `${cropId} ${label}`.toLocaleLowerCase("pl-PL");
+  if (key.includes("pomidor")) return "🍅";
+  if (key.includes("ogorek") || key.includes("ogórek")) return "🥒";
+  if (key.includes("marchew")) return "🥕";
+  if (key.includes("cebula") || key.includes("czosnek")) return "🧅";
+  if (key.includes("fasola") || key.includes("groch") || key.includes("bób")) return "🫘";
+  if (key.includes("burak") || key.includes("rzodkiew") || key.includes("rzepa")) return "🌱";
+  if (key.includes("kapusta") || key.includes("sałata") || key.includes("jarmuż")) return "🥬";
+  if (key.includes("brokuł") || key.includes("kalafior")) return "🥦";
+  if (key.includes("papryka")) return "🫑";
+  if (key.includes("kukurydza")) return "🌽";
+  if (key.includes("ziemniak")) return "🥔";
+  if (key.includes("dynia") || key.includes("cukinia")) return "🎃";
+  if (key.includes("koper") || key.includes("pietruszka") || key.includes("szpinak")) return "🌿";
+  return "🌱";
+}
+
 function cropName(cropId: string, cropNames: Record<string, string>): string {
   return cropNames[cropId] ?? resolveGardenCropSelection(cropId).displayName;
 }
@@ -82,17 +110,19 @@ function cropName(cropId: string, cropNames: Record<string, string>): string {
 function CropAtlasGlyph({
   cropId,
   code,
+  fallbackLabel = code,
   size,
   x,
   y,
 }: {
   cropId: string;
   code: string;
+  fallbackLabel?: string;
   size: number;
   x?: number;
   y?: number;
 }) {
-  const presentation = resolveCropThumbnailPresentation(cropId, code);
+  const presentation = resolveCropThumbnailPresentation(cropId, fallbackLabel);
   const [atlasFailed, setAtlasFailed] = useState(false);
 
   return (
@@ -128,8 +158,8 @@ function CropAtlasGlyph({
         </svg>
       )}
       {(presentation.kind === "text" || atlasFailed) && (
-        <text x="0" y="5" textAnchor="middle" className="fill-garden-foreground" fontSize="28" fontWeight="700">
-          {presentation.fallbackLabel}
+        <text x="0" y="34" textAnchor="middle" fontSize="76" role="img" aria-label={presentation.fallbackLabel}>
+          {cropFallbackEmoji(cropId, presentation.fallbackLabel)}
         </text>
       )}
     </svg>
@@ -142,8 +172,15 @@ interface GardenSpaceDiagramProps {
   projection: GardenDiagramProjection<GardenPosition>;
   cropCodes: Map<string, string>;
   cropNames: Record<string, string>;
+  minMarkerSizeCm?: number;
   className?: string;
   style?: CSSProperties;
+  onMarkerSelect?: (details: {
+    cropCounts: readonly GardenDiagramCropCount[];
+    position?: GardenPosition;
+    clientX: number;
+    clientY: number;
+  }) => void;
 }
 
 function GardenSpaceDiagram({
@@ -152,8 +189,10 @@ function GardenSpaceDiagram({
   projection,
   cropCodes,
   cropNames,
+  minMarkerSizeCm = 0,
   className = "text-garden-muted block h-auto w-full",
   style,
+  onMarkerSelect,
 }: GardenSpaceDiagramProps) {
   const viewBox = projection.viewBox;
   const soilPatternId = `garden-soil-${useId().replaceAll(":", "")}`;
@@ -230,25 +269,112 @@ function GardenSpaceDiagram({
           aria-hidden="true"
         />
       ))}
-      {projection.markers.map(({ position, center, diameterCm }) => {
+      {projection.markers.map(({ position, positions: groupedPositions, cropCounts, center, diameterCm }) => {
+        if (position === undefined) {
+          const cropLabels = cropCounts
+            .map(({ cropId, count }) => `${cropName(cropId, cropNames)}: ${count}`)
+            .join(", ");
+          const label = `${groupedPositions.length} roślin w skupisku. ${cropLabels}`;
+          const visibleCrops = [...cropCounts].sort((left, right) => right.count - left.count).slice(0, 3);
+          const markerSize = Math.max(Math.min(diameterCm * 0.72, 7), 3.4, minMarkerSizeCm);
+          const markerGap = markerSize * 0.08;
+          const markerWidth = visibleCrops.length * markerSize + Math.max(0, visibleCrops.length - 1) * markerGap;
+          const countLabel = `+${groupedPositions.length}`;
+          const badgeWidth = markerSize * (0.72 + countLabel.length * 0.35);
+          const badgeHeight = markerSize * 0.72;
+          const clusterWidth = markerWidth + markerGap + badgeWidth;
+          return (
+            <g
+              key={`aggregate-${groupedPositions.map(({ cropId, row, column }) => `${cropId}-${row}-${column}`).join("_")}`}
+              data-garden-marker="true"
+              role="button"
+              tabIndex={0}
+              className="focus-visible:outline-garden-focus cursor-pointer focus-visible:outline-2"
+              aria-label={label}
+              transform={`translate(${center.xCm} ${center.yCm})`}
+              onClick={(event) => onMarkerSelect?.({ cropCounts, clientX: event.clientX, clientY: event.clientY })}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                onMarkerSelect?.({ cropCounts, clientX: 0, clientY: 0 });
+              }}
+            >
+              <title>{label}</title>
+              {visibleCrops.map((crop, index) => (
+                <CropAtlasGlyph
+                  key={crop.cropId}
+                  cropId={crop.cropId}
+                  code={cropCodes.get(crop.cropId) ?? "?"}
+                  fallbackLabel={cropName(crop.cropId, cropNames)}
+                  size={markerSize}
+                  x={-clusterWidth / 2 + index * (markerSize + markerGap)}
+                  y={-markerSize / 2}
+                />
+              ))}
+              <g aria-hidden="true" transform={`translate(${clusterWidth / 2 - badgeWidth} ${-badgeHeight / 2})`}>
+                <rect
+                  width={badgeWidth}
+                  height={badgeHeight}
+                  rx={badgeHeight / 2}
+                  className="fill-garden-surface stroke-app-border"
+                  strokeWidth={Math.max(0.12, markerSize * 0.035)}
+                />
+                <text
+                  x={badgeWidth / 2}
+                  y={badgeHeight / 2}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-garden-foreground"
+                  fontSize={markerSize * 0.48}
+                  fontWeight="600"
+                >
+                  {countLabel}
+                </text>
+              </g>
+            </g>
+          );
+        }
         const code = cropCodes.get(position.cropId) ?? "?";
         const name = cropName(position.cropId, cropNames);
         const label = `${name}, pozycja ${position.row + 1}, ${position.column + 1}, ${position.xCm} × ${position.yCm} cm`;
+        const markerSize = Math.max(diameterCm, minMarkerSizeCm);
 
         return (
           <g
             key={`${position.cropId}-${position.row}-${position.column}`}
-            role="img"
+            data-garden-marker="true"
+            role="button"
+            tabIndex={0}
+            className="focus-visible:outline-garden-focus cursor-pointer focus-visible:outline-2"
             aria-label={`${code} · ${label}`}
             transform={`translate(${center.xCm} ${center.yCm})`}
+            onClick={(event) =>
+              onMarkerSelect?.({
+                cropCounts: [{ cropId: position.cropId, count: 1 }],
+                position,
+                clientX: event.clientX,
+                clientY: event.clientY,
+              })
+            }
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              onMarkerSelect?.({
+                cropCounts: [{ cropId: position.cropId, count: 1 }],
+                position,
+                clientX: 0,
+                clientY: 0,
+              });
+            }}
           >
             <title>{`${code} · ${label}`}</title>
             <CropAtlasGlyph
               cropId={position.cropId}
               code={code}
-              size={diameterCm}
-              x={-diameterCm / 2}
-              y={-diameterCm / 2}
+              fallbackLabel={name}
+              size={markerSize}
+              x={-markerSize / 2}
+              y={-markerSize / 2}
             />
           </g>
         );
@@ -279,109 +405,450 @@ function GardenSpaceDiagramViewer({
   cropCodes: Map<string, string>;
   cropNames: Record<string, string>;
 }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const openButtonRef = useRef<HTMLButtonElement>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedMarker, setSelectedMarker] = useState<{
+    cropCounts: readonly GardenDiagramCropCount[];
+    position?: GardenPosition;
+    anchor: { x: number; y: number };
+  } | null>(null);
+  const [pixelsPerCm, setPixelsPerCm] = useState(1);
+  const [fitPixelsPerCm, setFitPixelsPerCm] = useState(1);
+  const pixelsPerCmRef = useRef(1);
+  const fitPixelsPerCmRef = useRef(1);
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const dragPointerRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
+  const pinchStartRef = useRef<{ distance: number; zoom: number } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const canvasFrameRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
-  const projection = createGardenDiagramProjection(space, positions);
-  const zoomDimensions = getGardenDiagramZoomDimensions(projection);
+  const [viewportRect, setViewportRect] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const pendingZoomAnchorRef = useRef<{ contentX: number; contentY: number; x: number; y: number } | null>(null);
+  const projection = createGardenDiagramProjection(space, positions, "overview");
+  const emptyDetailProjection = createGardenDiagramProjection(space, [], "detail");
+  const zoomFactor = pixelsPerCm / Math.max(fitPixelsPerCm, 0.001);
+  const visiblePositions = useMemo(() => {
+    if (!viewportRect) return [];
+    const marginCm = Math.max(6, 40 / zoomFactor);
+    const minXCm = viewportRect.left / pixelsPerCm + emptyDetailProjection.viewBox.xCm - marginCm;
+    const maxXCm =
+      (viewportRect.left + viewportRect.width) / pixelsPerCm + emptyDetailProjection.viewBox.xCm + marginCm;
+    const minYCm = viewportRect.top / pixelsPerCm + emptyDetailProjection.viewBox.yCm - marginCm;
+    const maxYCm =
+      (viewportRect.top + viewportRect.height) / pixelsPerCm + emptyDetailProjection.viewBox.yCm + marginCm;
+    return positions.filter(({ xCm, yCm }) => xCm >= minXCm && xCm <= maxXCm && yCm >= minYCm && yCm <= maxYCm);
+  }, [
+    emptyDetailProjection.viewBox.xCm,
+    emptyDetailProjection.viewBox.yCm,
+    pixelsPerCm,
+    positions,
+    viewportRect,
+    zoomFactor,
+  ]);
+  const dialogProjection = useMemo(() => {
+    if (zoomFactor >= 2 && visiblePositions.length <= GARDEN_DIAGRAM_MAX_DETAIL_MARKERS) {
+      return createGardenDiagramProjection(space, visiblePositions, "detail");
+    }
+
+    return createGardenDiagramProjection(space, visiblePositions, "overview", 32 / pixelsPerCm, 500);
+  }, [pixelsPerCm, space, visiblePositions, zoomFactor]);
+  const baseZoomDimensions = getGardenDiagramZoomDimensions(emptyDetailProjection);
+  const zoomDimensions = {
+    widthPx: (baseZoomDimensions.widthPx * pixelsPerCm) / GARDEN_DIAGRAM_ZOOM_PIXELS_PER_CM,
+    heightPx: (baseZoomDimensions.heightPx * pixelsPerCm) / GARDEN_DIAGRAM_ZOOM_PIXELS_PER_CM,
+  };
   const spaceName = space.name ?? "Przestrzeń działki";
 
+  function zoomAt(nextPixelsPerCm: number, x?: number, y?: number) {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+    const currentPixelsPerCm = pixelsPerCmRef.current;
+    const currentFitPixelsPerCm = fitPixelsPerCmRef.current;
+    const boundedPixelsPerCm = Math.max(
+      currentFitPixelsPerCm * 0.5,
+      Math.min(currentFitPixelsPerCm * 8, nextPixelsPerCm),
+    );
+    if (boundedPixelsPerCm === currentPixelsPerCm) return;
+    const anchorX = x ?? viewport.clientWidth / 2;
+    const anchorY = y ?? viewport.clientHeight / 2;
+    pendingZoomAnchorRef.current = {
+      contentX: (viewport.scrollLeft + anchorX) / currentPixelsPerCm,
+      contentY: (viewport.scrollTop + anchorY) / currentPixelsPerCm,
+      x: anchorX,
+      y: anchorY,
+    };
+    pixelsPerCmRef.current = boundedPixelsPerCm;
+    setPixelsPerCm(boundedPixelsPerCm);
+  }
+
+  function getPointerDistance(points: { x: number; y: number }[]) {
+    const [first, second] = points;
+    return Math.hypot(second.x - first.x, second.y - first.y);
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.target instanceof Element && event.target.closest('[data-garden-marker="true"]')) return;
+    if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 1) return;
+    event.preventDefault();
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    pointersRef.current.set(event.pointerId, point);
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    const points = [...pointersRef.current.values()];
+    if (points.length >= 2) {
+      dragPointerRef.current = null;
+      setIsPanning(false);
+      pinchStartRef.current = {
+        distance: Math.max(1, getPointerDistance(points)),
+        zoom: pixelsPerCmRef.current,
+      };
+    } else {
+      dragPointerRef.current = { pointerId: event.pointerId, ...point };
+      setIsPanning(true);
+    }
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!pointersRef.current.has(event.pointerId)) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    pointersRef.current.set(event.pointerId, point);
+    const points = [...pointersRef.current.values()];
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+
+    if (points.length >= 2 && pinchStartRef.current) {
+      const distance = getPointerDistance(points);
+      const midpoint = {
+        x: (points[0].x + points[1].x) / 2,
+        y: (points[0].y + points[1].y) / 2,
+      };
+      zoomAt(pinchStartRef.current.zoom * (distance / pinchStartRef.current.distance), midpoint.x, midpoint.y);
+      return;
+    }
+
+    const drag = dragPointerRef.current;
+    if (drag?.pointerId !== event.pointerId) return;
+    viewport.scrollTo({ left: viewport.scrollLeft - (point.x - drag.x), top: viewport.scrollTop - (point.y - drag.y) });
+    dragPointerRef.current = { pointerId: event.pointerId, ...point };
+  }
+
+  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    pointersRef.current.delete(event.pointerId);
+    pinchStartRef.current = null;
+    const remaining = [...pointersRef.current.entries()];
+    if (remaining.length > 0) {
+      const [pointerId, point] = remaining[0];
+      dragPointerRef.current = { pointerId, ...point };
+      setIsPanning(true);
+    } else {
+      dragPointerRef.current = null;
+      setIsPanning(false);
+    }
+  }
+
+  function handleMarkerSelect(details: {
+    cropCounts: readonly GardenDiagramCropCount[];
+    position?: GardenPosition;
+    clientX: number;
+    clientY: number;
+  }) {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+    const bounds = viewport.getBoundingClientRect();
+    const hasPointerPosition = details.clientX > 0 || details.clientY > 0;
+    setSelectedMarker({
+      cropCounts: details.cropCounts,
+      position: details.position,
+      anchor: hasPointerPosition
+        ? { x: details.clientX - bounds.left, y: details.clientY - bounds.top }
+        : { x: viewport.clientWidth / 2, y: viewport.clientHeight / 2 },
+    });
+  }
+
   useEffect(() => {
-    if (!isDialogOpen) return;
-
-    const dialog = dialogRef.current;
-    const openButton = openButtonRef.current;
-    if (!dialog || dialog.open) return;
-
-    dialog.showModal();
-    scrollViewportRef.current?.focus({ preventScroll: true });
+    const viewport = scrollViewportRef.current;
+    const frame = canvasFrameRef.current;
+    const fitDiagram = () => {
+      if (!viewport || !frame) return;
+      const availableWidth = Math.max(1, frame.clientWidth - 80);
+      const availableHeight = Math.max(1, frame.clientHeight - 24);
+      const nextFit = Math.min(
+        availableWidth / emptyDetailProjection.viewBox.widthCm,
+        availableHeight / emptyDetailProjection.viewBox.heightCm,
+      );
+      fitPixelsPerCmRef.current = nextFit;
+      pixelsPerCmRef.current = nextFit;
+      setFitPixelsPerCm(nextFit);
+      setPixelsPerCm(nextFit);
+      viewport.scrollTo({ left: 0, top: 0 });
+      setViewportRect({ left: 0, top: 0, width: viewport.clientWidth, height: viewport.clientHeight });
+    };
+    if (!viewport || !frame) return;
+    fitDiagram();
+    const observer = new ResizeObserver(fitDiagram);
+    observer.observe(frame);
 
     return () => {
-      if (dialog.open) dialog.close();
-      openButton?.focus({ preventScroll: true });
+      observer.disconnect();
     };
-  }, [isDialogOpen]);
+  }, [emptyDetailProjection.viewBox.heightCm, emptyDetailProjection.viewBox.widthCm]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const viewport = scrollViewportRef.current;
+      if (!viewport) return;
+      const anchor = pendingZoomAnchorRef.current;
+      if (anchor) {
+        viewport.scrollTo({
+          left: Math.max(0, anchor.contentX * pixelsPerCm - anchor.x),
+          top: Math.max(0, anchor.contentY * pixelsPerCm - anchor.y),
+        });
+        pendingZoomAnchorRef.current = null;
+      }
+      setViewportRect({
+        left: viewport.scrollLeft,
+        top: viewport.scrollTop,
+        width: viewport.clientWidth,
+        height: viewport.clientHeight,
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [pixelsPerCm]);
 
   return (
-    <>
-      <div className="border-app-border bg-garden-surface space-y-2 rounded-lg border p-2">
-        <p className="text-garden-muted text-xs">
-          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji
-          rośliny.
-        </p>
-        <GardenSpaceDiagram
-          space={space}
-          positions={positions}
-          projection={projection}
-          cropCodes={cropCodes}
-          cropNames={cropNames}
-        />
-      </div>
-
-      <Button
-        ref={openButtonRef}
-        type="button"
-        variant="outline"
-        aria-haspopup="dialog"
-        aria-expanded={isDialogOpen}
-        onClick={() => {
-          setIsDialogOpen(true);
-        }}
-        className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus w-full md:hidden"
+    <section aria-label={`Diagram ${spaceName}`} className="space-y-2">
+      <p className="text-garden-muted text-xs">
+        Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+      </p>
+      <div
+        ref={canvasFrameRef}
+        className="border-app-border bg-garden-surface relative h-72 overflow-hidden rounded-xl border shadow-sm sm:h-80 lg:h-96"
       >
-        Powiększ diagram
-      </Button>
-
-      <dialog
-        ref={dialogRef}
-        aria-label={`Powiększony diagram: ${spaceName}`}
-        onCancel={(event) => {
-          event.preventDefault();
-          setIsDialogOpen(false);
-        }}
-        className="backdrop:bg-garden-input/90 border-app-border bg-garden-input text-garden-foreground m-auto h-dvh max-h-dvh w-screen max-w-none overflow-hidden rounded-2xl border p-0 shadow-2xl backdrop:backdrop-blur-sm"
-      >
-        <div className="flex h-full min-h-0 flex-col">
-          <header className="border-app-border flex shrink-0 items-center justify-between gap-4 border-b p-4">
-            <div>
-              <h2 className="text-garden-foreground font-semibold">{spaceName}</h2>
-              <p className="text-garden-muted mt-1 text-xs">Przewijaj diagram w poziomie i pionie.</p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsDialogOpen(false);
-              }}
-              className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0"
-            >
-              Zamknij
-            </Button>
-          </header>
+        <div
+          ref={scrollViewportRef}
+          tabIndex={0}
+          aria-label={`Płótno diagramu ${spaceName}`}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerEnd}
+          onPointerCancel={handlePointerEnd}
+          onLostPointerCapture={handlePointerEnd}
+          onContextMenu={(event) => {
+            event.preventDefault();
+          }}
+          onScroll={(event) => {
+            const viewport = event.currentTarget;
+            setViewportRect({
+              left: viewport.scrollLeft,
+              top: viewport.scrollTop,
+              width: viewport.clientWidth,
+              height: viewport.clientHeight,
+            });
+          }}
+          onWheel={(event) => {
+            if (!event.ctrlKey && !event.metaKey) return;
+            if (event.deltaY === 0) return;
+            event.preventDefault();
+            const bounds = event.currentTarget.getBoundingClientRect();
+            const factor = Math.exp(-event.deltaY * 0.002);
+            zoomAt(pixelsPerCmRef.current * factor, event.clientX - bounds.left, event.clientY - bounds.top);
+          }}
+          className={`focus-visible:outline-garden-focus absolute inset-0 flex touch-none overflow-auto overscroll-contain p-3 focus-visible:outline-2 focus-visible:outline-offset-2 ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+        >
           <div
-            ref={scrollViewportRef}
-            tabIndex={0}
-            aria-label={`Przewijany diagram ${spaceName}`}
-            className="focus-visible:outline-garden-focus min-h-0 flex-1 overflow-auto overscroll-contain p-3 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="m-auto max-w-none shrink-0"
+            style={{ width: `${zoomDimensions.widthPx}px`, height: `${zoomDimensions.heightPx}px` }}
           >
-            <div
-              className="max-w-none"
-              style={{ width: `${zoomDimensions.widthPx}px`, height: `${zoomDimensions.heightPx}px` }}
-            >
+            {viewportRect && (
               <GardenSpaceDiagram
                 space={space}
-                positions={positions}
-                projection={projection}
+                positions={visiblePositions}
+                projection={dialogProjection}
                 cropCodes={cropCodes}
                 cropNames={cropNames}
+                minMarkerSizeCm={18 / pixelsPerCm}
+                onMarkerSelect={handleMarkerSelect}
                 className="text-garden-muted block h-full w-full max-w-none"
               />
-            </div>
+            )}
           </div>
         </div>
-      </dialog>
-    </>
+
+        <nav
+          aria-label={`Sterowanie diagramem ${spaceName}`}
+          className="border-app-border bg-garden-surface absolute top-3 right-3 z-10 flex flex-col items-center gap-1 rounded-xl border p-1.5 shadow-lg"
+        >
+          <span className="text-garden-muted px-1 py-1 text-xs tabular-nums" aria-live="polite">
+            {Math.round((pixelsPerCm / Math.max(fitPixelsPerCm, 0.001)) * 100)}%
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Powiększ diagram"
+            onClick={() => {
+              zoomAt(pixelsPerCm * 1.25);
+            }}
+            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
+          >
+            +
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Pomniejsz diagram"
+            onClick={() => {
+              zoomAt(pixelsPerCm / 1.25);
+            }}
+            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
+          >
+            −
+          </Button>
+          <div className="bg-app-border my-1 h-px w-7" aria-hidden="true" />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              pendingZoomAnchorRef.current = null;
+              pixelsPerCmRef.current = fitPixelsPerCm;
+              setPixelsPerCm(fitPixelsPerCm);
+              scrollViewportRef.current?.scrollTo({ left: 0, top: 0 });
+            }}
+            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus px-2"
+          >
+            Dopasuj
+          </Button>
+        </nav>
+
+        {selectedMarker && (
+          <aside
+            aria-label="Informacje o zaznaczonych roślinach"
+            className="border-app-border bg-garden-surface absolute right-20 bottom-12 left-3 z-10 max-h-40 overflow-auto rounded-xl border p-3 shadow-lg"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-garden-foreground text-sm font-semibold">
+                  {selectedMarker.position ? "Wybrana roślina" : "Rośliny w tym skupisku"}
+                </p>
+                <ul className="text-garden-muted mt-1 space-y-1 text-xs">
+                  {selectedMarker.cropCounts.map(({ cropId, count }) => (
+                    <li key={cropId}>
+                      {cropName(cropId, cropNames)}
+                      {count > 1 ? ` · ${count} szt.` : ""}
+                    </li>
+                  ))}
+                </ul>
+                {selectedMarker.position && (
+                  <p className="text-garden-muted mt-1 text-xs">
+                    Pozycja: {selectedMarker.position.xCm} × {selectedMarker.position.yCm} cm
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Zamknij informacje o roślinach"
+                onClick={() => {
+                  setSelectedMarker(null);
+                }}
+                className="text-garden-muted size-7 shrink-0"
+              >
+                ×
+              </Button>
+            </div>
+            {!selectedMarker.position && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus mt-2"
+                onClick={() => {
+                  zoomAt(pixelsPerCmRef.current * 1.8, selectedMarker.anchor.x, selectedMarker.anchor.y);
+                }}
+              >
+                Powiększ to skupisko
+              </Button>
+            )}
+          </aside>
+        )}
+
+        <p className="bg-garden-surface/90 text-garden-muted pointer-events-none absolute right-20 bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-xs shadow-sm">
+          Plakietka +N pokazuje wielkość skupiska · kliknij, by poznać gatunek · przeciągnij lub powiększ
+        </p>
+      </div>
+    </section>
+  );
+}
+
+const POSITION_DETAILS_PAGE_SIZE = 100;
+const GARDEN_DIAGRAM_MAX_DETAIL_MARKERS = 500;
+
+function GardenPositionDetails({
+  positions,
+  cropNames,
+}: {
+  positions: readonly GardenPosition[];
+  cropNames: Record<string, string>;
+}) {
+  const [visibleCount, setVisibleCount] = useState(POSITION_DETAILS_PAGE_SIZE);
+  const visiblePositions = positions.slice(0, visibleCount);
+
+  return (
+    <details className="border-app-border bg-garden-surface rounded-lg border px-4 py-3">
+      <summary className="text-garden-foreground cursor-pointer text-sm font-semibold">
+        Sąsiedzi i uzasadnienie pozycji ({positions.length})
+      </summary>
+      <ol className="text-garden-muted mt-3 list-decimal space-y-3 pl-5 text-sm">
+        {visiblePositions.map((position) => (
+          <li key={`${position.cropId}-${position.row}-${position.column}`}>
+            <p className="text-garden-foreground font-medium">
+              {cropName(position.cropId, cropNames)} · {position.xCm} × {position.yCm} cm
+            </p>
+            <p>
+              {position.placementReason?.detail ??
+                "Brak zapisanego uzasadnienia — ten układ mógł powstać przed dodaniem wyjaśnień."}
+            </p>
+            {position.neighbors === undefined ? (
+              <p>Brak zapisanych danych o lokalnych sąsiadach w tym starszym planie.</p>
+            ) : position.neighbors.length === 0 ? (
+              <p>Brak lokalnych sąsiadów w tej samej przestrzeni.</p>
+            ) : (
+              <ul className="list-disc space-y-1 pl-5">
+                {position.neighbors.map((neighbor, index) => (
+                  <li key={`${neighbor.cropId}-${index}`}>
+                    {cropName(neighbor.cropId, cropNames)} — {NEIGHBOR_STATUS_LABELS[neighbor.status]}
+                    {neighbor.rationale ? `: ${neighbor.rationale}` : " — brak potwierdzonego opisu w katalogu."}
+                    {neighbor.sourceIds.length > 0 ? ` Źródła: ${neighbor.sourceIds.join(", ")}.` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ol>
+      {visibleCount < positions.length && (
+        <Button
+          type="button"
+          variant="outline"
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page mt-4"
+          onClick={() => {
+            setVisibleCount((count) => Math.min(count + POSITION_DETAILS_PAGE_SIZE, positions.length));
+          }}
+        >
+          Pokaż kolejne {Math.min(POSITION_DETAILS_PAGE_SIZE, positions.length - visibleCount)}
+        </Button>
+      )}
+    </details>
   );
 }
 
@@ -459,43 +926,7 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
                 cropNames={cropNames}
               />
 
-              {positions.length > 0 && (
-                <details className="border-app-border bg-garden-surface rounded-lg border px-4 py-3">
-                  <summary className="text-garden-foreground cursor-pointer text-sm font-semibold">
-                    Sąsiedzi i uzasadnienie pozycji ({positions.length})
-                  </summary>
-                  <ol className="text-garden-muted mt-3 list-decimal space-y-3 pl-5 text-sm">
-                    {positions.map((position) => (
-                      <li key={`${position.cropId}-${position.row}-${position.column}`}>
-                        <p className="text-garden-foreground font-medium">
-                          {cropName(position.cropId, cropNames)} · {position.xCm} × {position.yCm} cm
-                        </p>
-                        <p>
-                          {position.placementReason?.detail ??
-                            "Brak zapisanego uzasadnienia — ten układ mógł powstać przed dodaniem wyjaśnień."}
-                        </p>
-                        {position.neighbors === undefined ? (
-                          <p>Brak zapisanych danych o lokalnych sąsiadach w tym starszym planie.</p>
-                        ) : position.neighbors.length === 0 ? (
-                          <p>Brak lokalnych sąsiadów w tej samej przestrzeni.</p>
-                        ) : (
-                          <ul className="list-disc space-y-1 pl-5">
-                            {position.neighbors.map((neighbor, index) => (
-                              <li key={`${neighbor.cropId}-${index}`}>
-                                {cropName(neighbor.cropId, cropNames)} — {NEIGHBOR_STATUS_LABELS[neighbor.status]}
-                                {neighbor.rationale
-                                  ? `: ${neighbor.rationale}`
-                                  : " — brak potwierdzonego opisu w katalogu."}
-                                {neighbor.sourceIds.length > 0 ? ` Źródła: ${neighbor.sourceIds.join(", ")}.` : ""}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                </details>
-              )}
+              {positions.length > 0 && <GardenPositionDetails positions={positions} cropNames={cropNames} />}
             </article>
           );
         })}
@@ -534,7 +965,12 @@ export default function GardenLayoutView({ plan, status, cropNames }: Props) {
           <ul className="flex flex-wrap gap-x-4 gap-y-2">
             {plan.cropSummaries.map((summary, index) => (
               <li key={summary.cropId} className="text-garden-muted flex items-center gap-2 text-sm">
-                <CropAtlasGlyph cropId={summary.cropId} code={String(index + 1).padStart(2, "0")} size={28} />
+                <CropAtlasGlyph
+                  cropId={summary.cropId}
+                  code={String(index + 1).padStart(2, "0")}
+                  fallbackLabel={cropName(summary.cropId, cropNames)}
+                  size={28}
+                />
                 <span>
                   <span className="text-garden-foreground font-semibold">{String(index + 1).padStart(2, "0")}</span>{" "}
                   {cropName(summary.cropId, cropNames)}

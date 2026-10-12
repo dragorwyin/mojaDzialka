@@ -30,15 +30,15 @@ describe("garden crop selection validation", () => {
     expect(validateGardenCropSelection([])).toEqual([]);
   });
 
-  it("recognizes retired saved IDs and leaves them out of active POST validation", () => {
+  it("recognizes retired IDs and accepts the newly active broad bean", () => {
     expect(resolveGardenCropSelection("pomidor")).toEqual({ status: "active", displayName: "pomidor Faworyt" });
     expect(resolveGardenCropSelection("fasola-zwykla")).toEqual({
       status: "retired",
       displayName: "fasola szparagowa",
     });
-    expect(resolveGardenCropSelection("bob")).toEqual({ status: "retired", displayName: "bób" });
+    expect(resolveGardenCropSelection("bob")).toEqual({ status: "active", displayName: "bób" });
     expect(validateGardenCropSelection([{ cropId: "fasola-zwykla", proportion: 1 }])).toBeNull();
-    expect(validateGardenCropSelection([{ cropId: "bob", proportion: 1 }])).toBeNull();
+    expect(validateGardenCropSelection([{ cropId: "bob", proportion: 1 }])).toEqual([{ cropId: "bob", proportion: 1 }]);
   });
 
   it("keeps unknown saved IDs distinguishable instead of silently dropping them", () => {
@@ -50,7 +50,6 @@ describe("garden crop selection validation", () => {
     ["a non-array payload", null],
     ["an unknown crop ID", [{ cropId: "unknown-crop", proportion: 1 }]],
     ["a retired bean ID", [{ cropId: "fasola-zwykla", proportion: 1 }]],
-    ["a retired broad bean ID", [{ cropId: "bob", proportion: 1 }]],
     [
       "a duplicate crop ID",
       [

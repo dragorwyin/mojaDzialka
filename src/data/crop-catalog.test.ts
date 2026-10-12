@@ -13,7 +13,7 @@ import {
 import { COMPANION_RELATIONS, CROP_CATALOG, CROP_SOURCES, validateCropCatalog, type SourceId } from "./crop-catalog.js";
 
 describe("crop catalog", () => {
-  it("maps every active crop to one atlas cell and retains a text fallback", () => {
+  it("maps illustrated crops to atlas cells and retains a text fallback for new crop types", () => {
     const activeIds = CROP_CATALOG.map((crop) => crop.id);
     const manifestIds = CROP_THUMBNAIL_MANIFEST.map((cell) => cell.cropId);
     const cellKeys = CROP_THUMBNAIL_MANIFEST.map((cell) => `${cell.row}:${cell.column}`);
@@ -45,12 +45,13 @@ describe("crop catalog", () => {
           other.y + other.height <= frame.y,
       ),
     );
-    const fallback = resolveCropThumbnailPresentation("unmapped-crop", "31");
+    const fallback = resolveCropThumbnailPresentation("fasola-szparagowa", "Fasola szparagowa");
     const chives = CROP_THUMBNAIL_MANIFEST.find((cell) => cell.cropId === "szczypiorek");
 
     expect(CROP_THUMBNAIL_MANIFEST).toHaveLength(31);
     expect(new Set(manifestIds).size).toBe(31);
-    expect([...manifestIds].sort()).toEqual([...activeIds].sort());
+    expect(manifestIds.every((id) => activeIds.includes(id))).toBe(true);
+    expect(activeIds.length).toBeGreaterThan(CROP_THUMBNAIL_MANIFEST.length);
     expect(new Set(cellKeys).size).toBe(31);
     expect(cellKeys).toEqual(expectedCellKeys);
     expect(new Set(frameKeys).size).toBe(31);
@@ -63,10 +64,10 @@ describe("crop catalog", () => {
     expect(CROP_ATLAS_SOURCE_WIDTH).toBe(1275);
     expect(CROP_ATLAS_SOURCE_HEIGHT).toBe(1234);
     expect(chives && getCropAtlasCellViewBox(chives)).toBe("46 1047 151 177");
-    expect(fallback).toEqual({ kind: "text", fallbackLabel: "31" });
+    expect(fallback).toEqual({ kind: "text", fallbackLabel: "Fasola szparagowa" });
   });
 
-  it("contains exactly the 31 agreed active IDs and no retired bean records", () => {
+  it("keeps stable base IDs and adds distinct plant types instead of cultivar records", () => {
     const expectedIds = [
       "pomidor",
       "pomidor-koktajlowy-palikowany",
@@ -99,19 +100,45 @@ describe("crop catalog", () => {
       "groch",
       "koper",
       "szczypiorek",
+      "bob",
+      "fasola-szparagowa",
+      "fasola-wielokwiatowa-na-suche-nasiona",
+      "kapusta-brukselska",
+      "kapusta-pekinska",
+      "burak-lisciowy",
+      "endywia",
+      "rzodkiew",
+      "skorzonera",
     ];
 
-    expect(CROP_CATALOG).toHaveLength(31);
-    expect(new Set(CROP_CATALOG.map((crop) => crop.id)).size).toBe(31);
-    expect(CROP_CATALOG.map((crop) => crop.id).sort()).toEqual(expectedIds.sort());
+    expect(CROP_CATALOG.length).toBe(40);
+    expect(new Set(CROP_CATALOG.map((crop) => crop.id)).size).toBe(CROP_CATALOG.length);
+    expect(expectedIds.every((id) => CROP_CATALOG.some((crop) => crop.id === id))).toBe(true);
     expect(CROP_CATALOG.every((crop) => crop.commonNamePl.length > 0 && crop.sourceIds.length > 0)).toBe(true);
+    expect(
+      CROP_CATALOG.every(
+        (crop) => !/\b(f1|f2|hybryd|malinowy kapturek|meteor dziekanowski)\b/iu.test(crop.commonNamePl),
+      ),
+    ).toBe(true);
+    expect(CROP_CATALOG.map((crop) => crop.commonNamePl)).toContain("bób");
     expect(COMPANION_RELATIONS.flatMap((relation) => relation.cropIds)).not.toContain("fasola-zwykla");
-    expect(COMPANION_RELATIONS.flatMap((relation) => relation.cropIds)).not.toContain("bob");
   });
 
-  it("keeps final spacing separate from sowing density and preserves missing final data", () => {
+  it("rejects duplicate canonical names and aliases across different crop records", () => {
+    const firstCrop = CROP_CATALOG[0];
+    const secondCrop = CROP_CATALOG[1];
+    const duplicateAliasCatalog = CROP_CATALOG.map((crop) =>
+      crop.id === secondCrop.id ? { ...crop, aliases: [...crop.aliases, firstCrop.commonNamePl] } : crop,
+    );
+
+    expect(() => {
+      validateCropCatalog(duplicateAliasCatalog, COMPANION_RELATIONS);
+    }).toThrow(/duplicate catalog term/);
+  });
+
+  it("keeps final spacing separate from sowing density and gives every active crop a sourced final spacing", () => {
     const cropsWithFinalSpacing = CROP_CATALOG.filter((crop) => crop.finalSpacing !== null);
-    expect(cropsWithFinalSpacing).toHaveLength(28);
+    expect(cropsWithFinalSpacing).toHaveLength(CROP_CATALOG.length);
     expect(
       cropsWithFinalSpacing.every(
         (crop) =>
@@ -145,8 +172,8 @@ describe("crop catalog", () => {
     expect(CROP_CATALOG.find((crop) => crop.id === "szczypiorek")?.finalSpacing?.unit).toBe("clump");
 
     const corn = CROP_CATALOG.find((crop) => crop.id === "kukurydza-cukrowa");
-    expect(corn?.finalSpacing).toBeNull();
-    expect(corn?.spacing).toBeNull();
+    expect(corn?.finalSpacing).toMatchObject({ inRowCm: { min: 20, max: 30 }, confidence: "low" });
+    expect(corn?.spacing).not.toBeNull();
     expect(corn?.sowingDensity?.inRowCm).toEqual({ min: 20, max: 30 });
     const carrot = CROP_CATALOG.find((crop) => crop.id === "marchew");
     expect(carrot).toMatchObject({
@@ -168,14 +195,27 @@ describe("crop catalog", () => {
       /użytkownik zatwierdził minimum 7 cm.*nie jest potwierdzony przez źródła S54\/S55.*po przerywce.*nie gęstość siewu/i,
     );
     expect(carrot?.sowingDensity?.context).toMatch(/siew.*osobny parametr.*nie końcowa obsada/i);
+
+    expect(CROP_CATALOG.find((crop) => crop.id === "fasola-szparagowa")?.finalSpacing).toMatchObject({
+      inRowCm: { min: 5, max: 8 },
+      betweenRowsCm: { min: 40, max: 50 },
+      sourceIds: ["S71", "S77"],
+      confidence: "low",
+    });
+    expect(
+      CROP_CATALOG.find((crop) => crop.id === "fasola-wielokwiatowa-na-suche-nasiona")?.finalSpacing,
+    ).toMatchObject({
+      inRowCm: { min: 30, max: 35 },
+      betweenRowsCm: { min: 50, max: 50 },
+      sourceIds: ["S82"],
+      confidence: "low",
+    });
+    expect(CROP_CATALOG.find((crop) => crop.id === "burak-lisciowy")?.finalSpacing?.unit).toBe("plant");
   });
 
   it("maps final spacing metadata into the layout compatibility view without losing uncertainty", () => {
     for (const crop of CROP_CATALOG) {
-      if (crop.finalSpacing === null) {
-        expect(crop.spacing).toBeNull();
-        continue;
-      }
+      if (crop.finalSpacing === null) throw new Error(`Missing final spacing: ${crop.id}`);
 
       const final = crop.finalSpacing;
       expect(crop.spacing).toEqual({
@@ -192,9 +232,9 @@ describe("crop catalog", () => {
     }
 
     const corn = CROP_CATALOG.find((crop) => crop.id === "kukurydza-cukrowa");
-    expect(corn?.finalSpacing).toBeNull();
+    expect(corn?.finalSpacing).not.toBeNull();
     expect(corn?.sowingDensity).not.toBeNull();
-    expect(corn?.spacing).toBeNull();
+    expect(corn?.spacing).not.toBeNull();
   });
 
   it("keeps local validation and non-blocking relation semantics explicit", () => {
@@ -301,6 +341,16 @@ describe("crop catalog", () => {
     expect(() => {
       validateCropCatalog(CROP_CATALOG, invalidRelations);
     }).toThrow(/unknown crop/);
+  });
+
+  it("rejects an active crop without a source-backed final planting distance", () => {
+    const invalidCatalog = CROP_CATALOG.map((crop) =>
+      crop.id === "kukurydza-cukrowa" ? { ...crop, finalSpacing: null, spacing: null } : crop,
+    );
+
+    expect(() => {
+      validateCropCatalog(invalidCatalog, COMPANION_RELATIONS);
+    }).toThrow(/kukurydza-cukrowa needs source-backed final spacing/);
   });
 
   it("rejects unknown seasonal methods and source references", () => {

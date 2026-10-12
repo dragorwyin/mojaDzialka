@@ -27,7 +27,6 @@ interface Props {
   demoInteraction?: "hover" | "focus";
 }
 
-const MAX_SEARCH_RESULTS = 8;
 const percentageFormatter = new Intl.NumberFormat("pl-PL", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -201,9 +200,7 @@ export default function CropSelectionForm({
     if (!normalizedQuery) return [];
 
     const selectedIds = new Set(selection.map((crop) => crop.cropId));
-    return searchCrops(normalizedQuery)
-      .filter((crop) => !selectedIds.has(crop.id))
-      .slice(0, MAX_SEARCH_RESULTS);
+    return searchCrops(normalizedQuery).filter((crop) => !selectedIds.has(crop.id));
   }, [query, selection]);
 
   const selectedPercentages = selection.map((crop) => crop.proportion);
