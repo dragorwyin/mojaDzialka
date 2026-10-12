@@ -937,4 +937,46 @@ describe("garden layout diagram projection", () => {
     expect(projection.xGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
     expect(projection.yGridLinesCm.every((lineCm) => lineCm % 1_000 === 0)).toBe(true);
   });
+
+  it("aggregates 10,000 positions in overview while detail retains every exact source position", () => {
+    const positions = Array.from({ length: 10_000 }, (_, index) => ({
+      xCm: (index % 100) * 7 + 3.5,
+      yCm: Math.floor(index / 100) * 10 + 5,
+      cropId: index % 3 === 0 ? "marchew" : "cebula",
+      row: Math.floor(index / 100),
+      column: index % 100,
+    }));
+    const before = structuredClone(positions);
+    const space = { widthCm: 700, lengthCm: 1_000 };
+    const overview = createGardenDiagramProjection(space, positions, "overview", undefined, 500);
+    const detail = createGardenDiagramProjection(space, positions, "detail");
+
+    expect(overview.markers.length).toBeLessThan(positions.length / 5);
+    expect(overview.markers.every((marker) => marker.positions.length > 1)).toBe(true);
+    expect(overview.markers.flatMap((marker) => marker.positions)).toHaveLength(positions.length);
+    expect(overview.markers.flatMap((marker) => marker.cropCounts).reduce((sum, crop) => sum + crop.count, 0)).toBe(
+      positions.length,
+    );
+    expect(detail.markers).toHaveLength(positions.length);
+    expect(detail.markers.every((marker, index) => marker.position === positions[index])).toBe(true);
+    expect(
+      detail.markers.every(
+        ({ center }, index) => center.xCm === positions[index]?.xCm && center.yCm === positions[index]?.yCm,
+      ),
+    ).toBe(true);
+    expect(positions[0]).toEqual(before[0]);
+    expect(positions.at(-1)).toEqual(before.at(-1));
+  }, 30_000);
+
+  it("keeps a dense overview bounded while preserving every position in its aggregates", () => {
+    const positions = Array.from({ length: 10_000 }, (_, index) => ({
+      xCm: (index % 100) * 7 + 3.5,
+      yCm: Math.floor(index / 100) * 10 + 5,
+      cropId: "marchew",
+    }));
+    const projection = createGardenDiagramProjection({ widthCm: 700, lengthCm: 1_000 }, positions, "overview", 2, 500);
+
+    expect(projection.markers.length).toBeLessThanOrEqual(500);
+    expect(projection.markers.flatMap((marker) => marker.positions)).toHaveLength(positions.length);
+  });
 });

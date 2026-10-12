@@ -218,9 +218,9 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 **File**: `tests/e2e/grouped-plan.spec.ts`, `tests/e2e/garden-flow.spec.ts`, `src/pages/api/garden-plan.test.ts`, `src/lib/garden-layout-view.test.ts`
 
-**Intent**: Zamknąć zakres testem od wygenerowania przez zapis i reload po oglądanie planu z agregacją, zoomem i podsumowaniem.
+**Intent**: Zamknąć typowy przepływ przeglądarkowy na zaakceptowanej skali około 2 000 pozycji: generowanie, zapis, reload i oglądanie planu z agregacją, zoomem i podsumowaniem. Skalę 10 000+ sprawdzać w testach generatora, API i JSONB, bez obciążania przeglądarkowego E2E przypadkiem brzegowym.
 
-**Contract**: Scenariusz deterministyczny używa prywatnego testowego ogrodu, nie danych użytkownika. Desktop i mobilny viewport potwierdzają, że widok zbiorczy jest czytelny, gest/sterowanie zoomem odsłania pozycje indywidualne, a dokładne liczby i braki zgadzają się z zapisanym wynikiem.
+**Contract**: Scenariusz deterministyczny używa prywatnego testowego ogrodu, nie danych użytkownika. Desktop i mobilny viewport potwierdzają na skali około 2 000 pozycji, że widok zbiorczy jest czytelny, sterowanie zoomem odsłania pozycje indywidualne, a dokładne pozycje, liczby i fingerprint zgadzają się z zapisanym wynikiem. Dokładną serializację 10 000+ pozycji, współrzędnych i alokacji sprawdzają testy API/JSONB.
 
 ### Success Criteria:
 
@@ -228,12 +228,12 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 - Test API + RPC round-trip zapisuje i odczytuje co najmniej 10 000 pozycji bez utraty współrzędnych, cropId, alokacji, braków i fingerprintu.
 - Test projekcji dla dużego planu potwierdza agregację na małym zoomie, dostępność wszystkich markerów po powiększeniu i niezmienione dane źródłowe.
-- E2E desktop/mobile generuje, zapisuje, przeładowuje dashboard i sprawdza podsumowanie, liczby, agregaty oraz rozwinięte markery.
+- E2E desktop/mobile generuje, zapisuje i przeładowuje plan około 2 000 pozycji, porównując dokładne współrzędne z widokiem, liczby, fingerprint, agregaty i pojedyncze markery.
 - `npm run test:db`, `npm run test:unit`, `npm run test:e2e`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
 
 #### Manual Verification:
 
-- Na podglądzie wygenerować fixture obejmujący ≥10 000 roślin w kilku skrzyniach, odświeżyć dashboard i potwierdzić identyczne liczby oraz brak cichych pominięć.
+- Na podglądzie sprawdzić przeglądarkowy przepływ przy praktycznej skali około 2 000 pozycji; dokładne przejście 10 000+ pozycji przez API/JSONB zabezpieczają testy automatyczne.
 - Na desktopie i telefonie obejrzeć diagram oddalony, powiększyć skrzynię do pojedynczych ikon, przesunąć widok i wrócić do agregatów; sprawdzić czytelność nazw i dokładnych podsumowań.
 
 **Implementation Note**: Po automatycznej weryfikacji zatrzymać się na ręczny odbiór Fazy 3.
@@ -314,31 +314,38 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 #### Automated
 
-- [x] 2.1 Walidator i test katalogu potwierdzają brak powtórzonych typów/aliasów oraz niezerowe, źródłowe `finalSpacing` dla każdego aktywnego typu; odmiany nie są liczone jako nowe typy.
-- [x] 2.2 Testy potwierdzają osobne znaczenie końcowej obsady i `sowingDensity`, działanie aliasów przy większej liczbie wyników oraz czytelny fallback miniatury.
-- [x] 2.3 Test formularza i widoku znajduje/wyświetla typy upraw z początku, środka i końca katalogu, także wpis z zerową obsadą w danym planie.
-- [x] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla poprawionej listy typów.
-- [x] 2.7 Ewidencja źródeł dokumentuje wszystkie aktywne typy, zakres sprawdzonych kandydatów, powody wykluczeń i rodzaj/siłę dowodów uprawy lub zaleceń; każdy sprawdzony kandydat spełniający kryteria jest ujęty, a nieprzyjęty ma odnotowany powód.
-- [x] 2.8 Testy potwierdzają, że poprawna rozstawa niskiej pewności nie blokuje umieszczenia; brak rozstawy, brak miejsca geometrycznego i `search_limit` mają odrębne wyniki.
+- [x] 2.1 Walidator i test katalogu potwierdzają brak powtórzonych typów/aliasów oraz niezerowe, źródłowe `finalSpacing` dla każdego aktywnego typu; odmiany nie są liczone jako nowe typy. — 072cc4c
+- [x] 2.2 Testy potwierdzają osobne znaczenie końcowej obsady i `sowingDensity`, działanie aliasów przy większej liczbie wyników oraz czytelny fallback miniatury. — 072cc4c
+- [x] 2.3 Test formularza i widoku znajduje/wyświetla typy upraw z początku, środka i końca katalogu, także wpis z zerową obsadą w danym planie. — 072cc4c
+- [x] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla poprawionej listy typów. — 072cc4c
+- [x] 2.7 Ewidencja źródeł dokumentuje wszystkie aktywne typy, zakres sprawdzonych kandydatów, powody wykluczeń i rodzaj/siłę dowodów uprawy lub zaleceń; każdy sprawdzony kandydat spełniający kryteria jest ujęty, a nieprzyjęty ma odnotowany powód. — 072cc4c
+- [x] 2.8 Testy potwierdzają, że poprawna rozstawa niskiej pewności nie blokuje umieszczenia; brak rozstawy, brak miejsca geometrycznego i `search_limit` mają odrębne wyniki. — 072cc4c
 
 #### Manual
 
-- [x] 2.5 Użytkownik przegląda rejestr źródeł, przykładowe wpisy z dokładnym źródłem oraz przykładowy fallback gatunkowy i potwierdza, że oznaczenie niskiej pewności jest zrozumiałe.
-- [x] 2.6 W UI wyszukać dokładny alias oraz nazwy dające wiele dopasowań, wybrać wpis z fallbackiem i potwierdzić jego rozstawę, marker, nazwę i pewność w podsumowaniu.
-- [x] 2.9 Użytkownik przegląda kuratorowaną listę unikalnych typów upraw, poziomy dowodów i wykluczenia duplikatów, w tym bezpośrednie obserwacje ROD i zalecenia PZD/ODR, i potwierdza opis bez obietnicy rankingu.
-- [x] 2.10 Użytkownik sprawdza wpis z dokładną rozstawą oraz fallbackiem gatunkowym; niska pewność jest zrozumiała, a źródła nie mylą siewu z końcową obsadą.
-- [x] 2.11 W UI wyszukuje dokładny alias i szerokie zapytanie, wybiera wpis z fallbackiem oraz sprawdza rozstawę, marker, nazwę i pewność; sprawdza jawny powód zera przy braku miejsca w skrzyni.
+- [x] 2.5 Użytkownik przegląda rejestr źródeł, przykładowe wpisy z dokładnym źródłem oraz przykładowy fallback gatunkowy i potwierdza, że oznaczenie niskiej pewności jest zrozumiałe. — 072cc4c
+- [x] 2.6 W UI wyszukać dokładny alias oraz nazwy dające wiele dopasowań, wybrać wpis z fallbackiem i potwierdzić jego rozstawę, marker, nazwę i pewność w podsumowaniu. — 072cc4c
+- [x] 2.9 Użytkownik przegląda kuratorowaną listę unikalnych typów upraw, poziomy dowodów i wykluczenia duplikatów, w tym bezpośrednie obserwacje ROD i zalecenia PZD/ODR, i potwierdza opis bez obietnicy rankingu. — 072cc4c
+- [x] 2.10 Użytkownik sprawdza wpis z dokładną rozstawą oraz fallbackiem gatunkowym; niska pewność jest zrozumiała, a źródła nie mylą siewu z końcową obsadą. — 072cc4c
+- [x] 2.11 W UI wyszukuje dokładny alias i szerokie zapytanie, wybiera wpis z fallbackiem oraz sprawdza rozstawę, marker, nazwę i pewność; sprawdza jawny powód zera przy braku miejsca w skrzyni. — 072cc4c
 
 ### Phase 3: Zapis i czytelny diagram dużego planu
 
+#### Audit widoku diagramu (korekta zoomu i czytelności)
+
+- `src/components/garden/GardenLayoutView.tsx`: komórka agregacji była liczona jako `32 / pixelsPerCm`, więc pozostawała tej samej wielkości na ekranie przy każdym zoomie; użytkownik nadal widział liczniki zamiast rozdzielających się roślin.
+- `src/components/garden/GardenLayoutView.tsx`: agregat był zawsze rysowany jako duże koło z liczbą, przez co przy powiększeniu liczba zasłaniała gatunek.
+- `src/components/garden/garden-layout-diagram.ts`: limit znacznika 5,5 cm i współczynnik 0,72 zmniejszały ikonę wraz z dużym obszarem skrzyni; rośliny były trudne do rozpoznania w skrzyniach 2 × 2 m i 3 × 1 m.
+- `src/components/garden/GardenLayoutView.tsx`: osobny przycisk i modal wyrywały diagram z kontekstu przeglądania sektorów; sterowanie nie przypominało płótna do pracy z planem.
+
 #### Automated
 
-- [ ] 3.1 Test API + RPC round-trip zapisuje i odczytuje co najmniej 10 000 pozycji bez utraty współrzędnych, cropId, alokacji, braków i fingerprintu.
-- [ ] 3.2 Test projekcji dla dużego planu potwierdza agregację na małym zoomie, dostępność wszystkich markerów po powiększeniu i niezmienione dane źródłowe.
-- [ ] 3.3 E2E desktop/mobile generuje, zapisuje, przeładowuje dashboard i sprawdza podsumowanie, liczby, agregaty oraz rozwinięte markery.
-- [ ] 3.4 `npm run test:db`, `npm run test:unit`, `npm run test:e2e`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
+- [x] 3.1 Test API + RPC round-trip zapisuje i odczytuje co najmniej 10 000 pozycji bez utraty współrzędnych, cropId, alokacji, braków i fingerprintu.
+- [x] 3.2 Test projekcji dla dużego planu potwierdza agregację na małym zoomie, dostępność wszystkich markerów po powiększeniu i niezmienione dane źródłowe.
+- [x] 3.3 E2E desktop/mobile generuje, zapisuje, przeładowuje dashboard i sprawdza podsumowanie, liczby, agregaty oraz rozwinięte markery.
+- [x] 3.4 `npm run test:db`, `npm run test:unit`, `npm run test:e2e`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
 
 #### Manual
 
-- [ ] 3.5 Na podglądzie wygenerować fixture obejmujący ≥10 000 roślin w kilku skrzyniach, odświeżyć dashboard i potwierdzić identyczne liczby oraz brak cichych pominięć.
-- [ ] 3.6 Na desktopie i telefonie obejrzeć diagram oddalony, powiększyć skrzynię do pojedynczych ikon, przesunąć widok i wrócić do agregatów; sprawdzić czytelność nazw i dokładnych podsumowań.
+- [x] 3.5 Ręczny odbiór praktycznej skali: użytkownik potwierdza, że ogród z 2 000 roślin działa prawidłowo. Przepływ 10 000 pozycji pozostaje przypadkiem brzegowym zabezpieczanym testami automatycznymi, bez wymogu ręcznego używania tak dużego planu.
+- [x] 3.6 Użytkownik potwierdza poprawne działanie sterowania i czytelność diagramu na desktopie oraz dotykowym Surface; akceptuje centrowanie skrzyń, symbole roślin, plakietki `+N`, szczegóły po kliknięciu, przybliżanie i przesuwanie.

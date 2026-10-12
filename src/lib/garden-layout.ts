@@ -266,8 +266,12 @@ function hasConsistentSpaceAllocations(spaceResult: Record<string, unknown>): bo
   ) {
     return false;
   }
+  const placedCounts = new Map<string, number>();
+  for (const position of positions) {
+    placedCounts.set(position.cropId, (placedCounts.get(position.cropId) ?? 0) + 1);
+  }
   return spaceResult.cropAllocations.every(
-    ({ cropId, placedCount }) => placedCount === positions.filter((position) => position.cropId === cropId).length,
+    ({ cropId, placedCount }) => placedCount === (placedCounts.get(cropId) ?? 0),
   );
 }
 
