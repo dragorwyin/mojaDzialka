@@ -56,7 +56,7 @@ describe("garden layout capacity", () => {
       { cropId: "marchew", allocatedCount: 10_000, placedCount: 10_000, missingCount: 0 },
     ]);
     expect(result.warnings).toEqual([]);
-  });
+  }, 10_000);
 
   it("rotates Faworyt's 50 × 100 cm spacing to fit a 120 × 80 cm bed", () => {
     const faworyt = CROP_CATALOG.find((crop) => crop.id === "pomidor");
@@ -77,5 +77,21 @@ describe("garden layout capacity", () => {
     });
     expect(result.cropSummaries[0]?.actualCount).toBeGreaterThan(0);
     expect(result.metrics.limitReached).toBe(false);
+  });
+
+  it("does not block a distinct crop type with a low-confidence sourced spacing", () => {
+    const crop = CROP_CATALOG.find((entry) => entry.id === "burak-lisciowy");
+    if (!crop?.finalSpacing) throw new Error("Missing low-confidence crop fixture");
+
+    const result = generateGardenLayout({
+      spaces: [{ id: "bed", name: "Skrzynia", widthCm: 120, lengthCm: 80 }],
+      crops: [{ crop, proportion: 100 }],
+      relations: [],
+    });
+
+    expect(crop.finalSpacing.confidence).toBe("low");
+    expect(result.spaces[0]?.positions.length).toBeGreaterThan(0);
+    expect(result.cropSummaries[0]?.cropId).toBe(crop.id);
+    expect(result.cropSummaries[0]?.actualCount).toBeGreaterThan(0);
   });
 });

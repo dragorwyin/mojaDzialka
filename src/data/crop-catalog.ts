@@ -73,7 +73,23 @@ export type SourceId =
   | "S64"
   | "S65"
   | "S66"
-  | "S67";
+  | "S67"
+  | "S68"
+  | "S69"
+  | "S70"
+  | "S71"
+  | "S72"
+  | "S73"
+  | "S74"
+  | "S75"
+  | "S76"
+  | "S77"
+  | "S78"
+  | "S79"
+  | "S80"
+  | "S81"
+  | "S82"
+  | "S83";
 
 export interface SourceReference {
   id: SourceId;
@@ -543,6 +559,115 @@ export const CROP_SOURCES: readonly SourceReference[] = [
     context:
       "Metodyka wskazuje temperaturę gleby i regionalny termin sadzenia sadzeniaków; kalendarz jest orientacyjny i zależny od warunków.",
   },
+  {
+    id: "S68",
+    title: "COBORU: Lista odmian roślin warzywnych wpisanych do krajowego rejestru w Polsce 2026",
+    url: "https://coboru.gov.pl/Publikacje_COBORU/Listy_odmian/LORW_2026.pdf",
+    context:
+      "Urzędowy wykaz nazw i grup odmian. Potwierdza tożsamość odmiany, nie jej popularność w ogrodach amatorskich ani rozstawę.",
+  },
+  {
+    id: "S69",
+    title: "PZD: Urządzanie ogrodu i działki — obserwacje ROD w Bydgoszczy",
+    url: "https://pzd.pl/artykuly/24318/61/Urzadzanie-ogrodu-i-dzialki.html",
+    context:
+      "Bezpośredni, lokalny opis najpopularniejszych warzyw uprawianych w odwiedzonym ROD; nie jest to reprezentatywna próba krajowa.",
+  },
+  {
+    id: "S70",
+    title: "PZD: Nowi działkowcy pytają — kiedy wysiewamy warzywa?",
+    url: "https://pzd.pl/artykuly/25025/135/Nowi-dzialkowcy-pytaja-kiedy-wysiewamy-warzywa.html",
+    context:
+      "Zalecenia dla działkowców wymieniają gatunki wysiewane i sadzone w warzywniku; potwierdzają przydatność, nie krajową częstotliwość.",
+  },
+  {
+    id: "S71",
+    title: "CDR: Normatywy Produkcji Rolniczej — warzywa uprawiane z siewu",
+    url: "https://poznan.cdr.gov.pl/normatywy/public/pdf/5_1.pdf",
+    context:
+      "Starsza tabela techniczna podaje odległości roślin i osie dla wybranych warzyw z siewu; wartości używane tylko jako jawny, niskiej pewności fallback końcowej obsady.",
+  },
+  {
+    id: "S72",
+    title: "CDR: Normatywy Produkcji Rolniczej — warzywa uprawiane z rozsady",
+    url: "https://poznan.cdr.gov.pl/normatywy/public/pdf/5_2.pdf",
+    context:
+      "Starsza tabela techniczna podaje odległości roślin po sadzeniu rozsady; kontekst to produkcja polowa, dlatego fallback ogrodowy ma niską pewność.",
+  },
+  {
+    id: "S73",
+    title: "PZD: Otwarty program — warzywa i rośliny przyprawowe na działkach",
+    url: "https://mazowiecki.pzd.pl/o-dzialce-z-domu-jakie-warzywa-ziola-i-owoce-uprawiac-w-rod/",
+    context:
+      "Lista roślin polecanych do uprawy na działkach przez Krajową Radę PZD; dowód doboru amatorskiego, nie rankingu częstości.",
+  },
+  {
+    id: "S74",
+    title: "PZD: Nowoczesne metody uprawy warzyw na działce",
+    url: "https://pzd.pl/artykuly/24243/135/Nowoczesne-metody-uprawy-warzyw-na-dzialce.html",
+    context: "Opis warzyw zalecanych do skrzyń i pojemników, w tym bobu; dowód przydatności do ogrodów działkowych.",
+  },
+  {
+    id: "S75",
+    title: "PZD: Porady ogrodnicze na lipiec",
+    url: "https://pzd.pl/artykuly/13203/135/Porady-ogrodnicze-na-lipiec.html",
+    context: "Zalecenia dla działkowców wymieniają rzodkiew jako odrębną od rzodkiewki uprawę na późniejszy siew.",
+  },
+  {
+    id: "S76",
+    title: "PZD: Skorzonera — wężymord, czarny korzeń",
+    url: "https://pzd.pl/artykuly/26381/135/Skorzonera-wezymord-czarny-korzen-warzywo-lepsze-niz-szparagi.html",
+    context:
+      "PZD opisuje jadalny korzeń i uprawę w Polsce, zaznaczając, że to warzywo rzadkie; nazwy wężymord i czarny korzeń są aliasami.",
+  },
+  {
+    id: "S77",
+    title: "InHort: Metody i terminy uprawy fasoli",
+    url: "https://www.inhort.pl/files/program_wieloletni/PW_2015_2020_IO/spr_2015/2.1_2015%20Fasola_Producenci.pdf",
+    context:
+      "Metodyka InHort rozróżnia fasolę szparagową i uprawę na suche nasiona oraz opisuje ich rozstawy w produkcji polowej; dane służą tylko tam, gdzie dotyczą końcowej obsady.",
+  },
+  {
+    id: "S78",
+    title: "University of Minnesota Extension: Growing spinach and Swiss chard in home gardens",
+    url: "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/growing-spinach-and-swiss-chard",
+    context:
+      "Poradnik ogrodu domowego podaje końcową rozstawę boćwiny po przerzedzeniu lub wysadzeniu; zagraniczny punkt odniesienia o niskiej pewności dla Polski.",
+  },
+  {
+    id: "S79",
+    title: "Iowa State University Extension: Growing Brussels Sprouts in the Home Garden",
+    url: "https://yardandgarden.extension.iastate.edu/how-to/growing-brussels-sprouts-home-garden",
+    context:
+      "Poradnik ogrodu domowego podaje rozstawę roślin i rzędów brukselki; zagraniczny punkt odniesienia o niskiej pewności dla Polski.",
+  },
+  {
+    id: "S80",
+    title: "Iowa State University Extension: When should I plant Chinese cabbage?",
+    url: "https://yardandgarden.extension.iastate.edu/faq/when-should-i-plant-chinese-cabbage",
+    context:
+      "Poradnik ogrodowy podaje końcową rozstawę kapusty pekińskiej po przerzedzeniu; zagraniczny punkt odniesienia o niskiej pewności dla Polski.",
+  },
+  {
+    id: "S81",
+    title: "UC ANR: Edible Plant Spacing",
+    url: "https://ucanr.edu/sites/MarinMG/files/343708.pdf",
+    context:
+      "Tabela dla warzywnika domowego podaje odstęp roślin i rzędów endywii; zagraniczny punkt odniesienia o niskiej pewności dla Polski.",
+  },
+  {
+    id: "S82",
+    title: "PlantiCo: Fasola na suche nasiona — katalog odmian własnych",
+    url: "https://nasiona.pl/wp-content/uploads/2023/03/FASOLA-NA-SUCHE-NASIONA.pdf",
+    context:
+      "Polski producent nasion opisuje fasolę na suche nasiona jako osobny cel uprawy, odmiany do amatorskiego ogrodu oraz końcową obsadę i rozstawę.",
+  },
+  {
+    id: "S83",
+    title: "PZD Opole: Zaprojektujmy pierwszy warzywnik",
+    url: "https://ozoopole.pzd.pl/zaprojektujmy-pierwszy-warzywnik/",
+    context: "Poradnik działkowy wymienia kapustę pekińską wśród gatunków przydatnych w pierwszym warzywniku.",
+  },
 ];
 
 const verifiedSpacing = (
@@ -747,7 +872,7 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
   {
     id: "rzodkiewka",
     commonNamePl: "rzodkiewka",
-    aliases: ["rzodkiew", "radish"],
+    aliases: ["radish", "radishka"],
     catalogTier: "core",
     sourceIds: ["S2", "S4", "S6", "S7", "S10"],
     spacing: verifiedSpacing(
@@ -1292,6 +1417,110 @@ const CROP_CATALOG_SEEDS: readonly CropCatalogSeed[] = [
     needsLocalValidation: true,
     validationNotes: "Jedna jednostka końcowej obsady to kępa złożona z kilku roślin, nie pojedynczy pęd.",
   },
+  {
+    id: "bob",
+    commonNamePl: "bób",
+    aliases: ["vicia faba", "fava bean", "broad bean"],
+    catalogTier: "extended",
+    sourceIds: ["S70", "S74"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes:
+      "Polskie zalecenia potwierdzają uprawę na działkach; rozstawa pochodzi ze starszej tabeli produkcyjnej.",
+  },
+  {
+    id: "fasola-szparagowa",
+    commonNamePl: "fasola szparagowa",
+    aliases: ["fasolka szparagowa", "fasola karłowa", "green bean", "snap bean"],
+    catalogTier: "extended",
+    sourceIds: ["S70", "S73", "S77"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes: "Wpis oznacza fasolę zbieraną na zielone strąki; nie obejmuje fasoli uprawianej na suche nasiona.",
+  },
+  {
+    id: "fasola-wielokwiatowa-na-suche-nasiona",
+    commonNamePl: "fasola wielokwiatowa na suche nasiona",
+    aliases: ["fasola sucha", "fasola wielokwiatowa", "dry bean", "runner bean", "bean for dry seeds"],
+    catalogTier: "extended",
+    sourceIds: ["S74", "S77", "S82"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes:
+      "Odrębny cel zbioru o innej rozstawie; liczby i obsada producenta dotyczą karłowej fasoli wielokwiatowej przeznaczonej do uprawy amatorskiej.",
+  },
+  {
+    id: "kapusta-brukselska",
+    commonNamePl: "brukselka",
+    aliases: ["kapusta brukselska", "brussels sprouts"],
+    catalogTier: "extended",
+    sourceIds: ["S70"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes: "Rozstawa opiera się na źródłach produkcyjnych i poradniku ogrodu domowego spoza Polski.",
+  },
+  {
+    id: "kapusta-pekinska",
+    commonNamePl: "kapusta pekińska",
+    aliases: ["sałata pekińska", "napa cabbage", "chinese cabbage"],
+    catalogTier: "extended",
+    sourceIds: ["S83"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes:
+      "Rozstawa pochodzi z poradnika ogrodu domowego spoza Polski; termin uprawy wiosennej i jesiennej różni się.",
+  },
+  {
+    id: "burak-lisciowy",
+    commonNamePl: "burak liściowy",
+    aliases: ["boćwina", "mangold", "swiss chard"],
+    catalogTier: "extended",
+    sourceIds: ["S73"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes:
+      "Wpis oznacza buraka zbieranego na liście i ogonki; rozstawa opiera się na poradniku ogrodu domowego spoza Polski.",
+  },
+  {
+    id: "endywia",
+    commonNamePl: "endywia",
+    aliases: ["escarole", "endive"],
+    catalogTier: "extended",
+    sourceIds: ["S73"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes:
+      "Rozstawa pochodzi z tabeli warzywnika domowego spoza Polski; typ i wielkość rozety wpływają na odstęp.",
+  },
+  {
+    id: "rzodkiew",
+    commonNamePl: "rzodkiew",
+    aliases: ["rzodkiew letnia", "daikon", "long radish"],
+    catalogTier: "extended",
+    sourceIds: ["S75"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes: "Odrębna od drobnej rzodkiewki uprawa korzeniowa; rozstawa pochodzi ze starszej tabeli polowej.",
+  },
+  {
+    id: "skorzonera",
+    commonNamePl: "skorzonera",
+    aliases: ["wężymord", "czarny korzeń", "zimowe szparagi", "black salsify"],
+    catalogTier: "extended",
+    sourceIds: ["S76"],
+    spacing: null,
+    seasonWindows: [],
+    needsLocalValidation: true,
+    validationNotes: "PZD opisuje ją jako rzadką uprawę; rozstawa pochodzi ze starszej tabeli polowej.",
+  },
 ];
 
 interface CropPlantingMetadata {
@@ -1392,7 +1621,15 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
   },
   dynia: {
     catalogConfidence: "low",
-    finalSpacing: null,
+    finalSpacing: finalSpacing(
+      cm(100, 120),
+      cm(100, 200),
+      "plant",
+      "after_thinning",
+      ["S71", "S48"],
+      "low",
+      "Fallback gatunkowy z tabeli CDR dla odległości roślin dyni. Wartość dotyczy starszego układu polowego; liczba pozostawionych roślin w gnieździe i typ dyni mogą zmienić obsadę.",
+    ),
     sowingDensity: sowingDensity(
       null,
       null,
@@ -1405,7 +1642,15 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
   },
   "kukurydza-cukrowa": {
     catalogConfidence: "low",
-    finalSpacing: null,
+    finalSpacing: finalSpacing(
+      cm(20, 30),
+      cm(50, 60),
+      "plant",
+      "after_thinning",
+      ["S71", "S49"],
+      "low",
+      "Fallback gatunkowy z tabeli CDR opisującej odległość roślin kukurydzy cukrowej. Dane pochodzą z produkcji polowej; układ blokowy kilku rzędów nadal jest potrzebny do zapylenia.",
+    ),
     sowingDensity: sowingDensity(
       cm(20, 30),
       cm(76, 91),
@@ -1552,7 +1797,15 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
   },
   "kapusta-biala": {
     catalogConfidence: "low",
-    finalSpacing: null,
+    finalSpacing: finalSpacing(
+      cm(50, 60),
+      cm(50, 60),
+      "plant",
+      "after_planting",
+      ["S72", "S24"],
+      "low",
+      "Fallback gatunkowy dla późnej kapusty białej z tabeli CDR dla sadzonej rozsady. Konkretna odmiana oraz rozmiar główki mogą wymagać szerszego odstępu; wpis odmianowy Kalorama F1 z S24 pozostaje odrębnym źródłem.",
+    ),
     sowingDensity: null,
     sowingDensityNote:
       "Nie potwierdzono wiarygodnej, ogrodowej pary osi dla ogólnego wpisu kapusty; dane odmianowe nie są uniwersalnym zamiennikiem.",
@@ -1746,6 +1999,123 @@ const CROP_PLANTING_METADATA: Readonly<Partial<Record<string, CropPlantingMetada
     ),
     sowingDensity: null,
   },
+  bob: {
+    catalogConfidence: "medium",
+    finalSpacing: finalSpacing(
+      cm(10),
+      cm(40, 60),
+      "plant",
+      "after_thinning",
+      ["S71"],
+      "low",
+      "Końcowa odległość roślin bobu z tabeli CDR dla upraw z siewu; starsza norma polowa, przyjęta jako ostrożny punkt odniesienia dla działki.",
+    ),
+    sowingDensity: null,
+  },
+  "fasola-szparagowa": {
+    catalogConfidence: "medium",
+    finalSpacing: finalSpacing(
+      cm(5, 8),
+      cm(40, 50),
+      "plant",
+      "after_thinning",
+      ["S71", "S77"],
+      "low",
+      "Końcowa rozstawa karłowej fasoli szparagowej z tabeli CDR i metodyki InHort; produkcja polowa, wymaga lokalnej walidacji dla grządki.",
+    ),
+    sowingDensity: null,
+  },
+  "fasola-wielokwiatowa-na-suche-nasiona": {
+    catalogConfidence: "low",
+    finalSpacing: finalSpacing(
+      cm(30, 35),
+      cm(50),
+      "plant",
+      "after_thinning",
+      ["S82"],
+      "low",
+      "Końcowa obsada karłowej fasoli wielokwiatowej na suche nasiona według katalogu PlantiCo: 50 cm między rzędami, 30–35 cm w rzędzie, 68–80 tys. roślin/ha. Producent poleca odmianę do uprawy amatorskiej; zakres może wymagać lokalnej walidacji.",
+    ),
+    sowingDensity: null,
+  },
+  "kapusta-brukselska": {
+    catalogConfidence: "medium",
+    finalSpacing: finalSpacing(
+      cm(45, 50),
+      cm(50),
+      "plant",
+      "after_planting",
+      ["S72", "S79"],
+      "low",
+      "Rozstawa rozsady z tabeli CDR dla produkcji polowej, porównana z poradnikiem ogrodu domowego Iowa State; oba źródła wskazują na duże rośliny wymagające miejsca.",
+    ),
+    sowingDensity: null,
+  },
+  "kapusta-pekinska": {
+    catalogConfidence: "medium",
+    finalSpacing: finalSpacing(
+      cm(25, 30),
+      cm(40, 45),
+      "plant",
+      "after_planting",
+      ["S72", "S80"],
+      "low",
+      "Końcowa rozstawa kapusty pekińskiej z rozsady według CDR, zgodna kierunkowo z odstępem po przerzedzeniu w poradniku Iowa State; starszy kontekst produkcji polowej.",
+    ),
+    sowingDensity: null,
+  },
+  "burak-lisciowy": {
+    catalogConfidence: "low",
+    finalSpacing: finalSpacing(
+      cm(10, 15),
+      cm(46, 76),
+      "plant",
+      "after_thinning",
+      ["S78"],
+      "low",
+      "Boćwina po przerywce lub wysadzeniu według poradnika ogrodu domowego UMN Extension; zagraniczny punkt odniesienia, szerszy dla większych roślin.",
+    ),
+    sowingDensity: null,
+  },
+  endywia: {
+    catalogConfidence: "low",
+    finalSpacing: finalSpacing(
+      cm(23, 30),
+      cm(46, 61),
+      "plant",
+      "after_planting",
+      ["S81"],
+      "low",
+      "Końcowa siatka endywii w tabeli warzywnika domowego UC ANR; zagraniczny zakres może wymagać dostosowania do rozmiaru rozety i polskich warunków.",
+    ),
+    sowingDensity: null,
+  },
+  rzodkiew: {
+    catalogConfidence: "low",
+    finalSpacing: finalSpacing(
+      cm(5, 10),
+      cm(20, 30),
+      "plant",
+      "after_thinning",
+      ["S71"],
+      "low",
+      "Końcowa rozstawa rzodkwi letniej z tabeli CDR dla upraw z siewu; odrębna od rzodkiewki i oparta na starszym układzie polowym.",
+    ),
+    sowingDensity: null,
+  },
+  skorzonera: {
+    catalogConfidence: "low",
+    finalSpacing: finalSpacing(
+      cm(5, 8),
+      cm(30, 40),
+      "plant",
+      "after_thinning",
+      ["S71"],
+      "low",
+      "Końcowa rozstawa skorzonery po przerzedzeniu według tabeli CDR dla produkcji polowej; PZD potwierdza uprawę tej rzadkiej rośliny w Polsce.",
+    ),
+    sowingDensity: null,
+  },
 };
 
 function toLegacySpacing(final: FinalSpacingData | null): SpacingData | null {
@@ -1761,8 +2131,11 @@ function toLegacySpacing(final: FinalSpacingData | null): SpacingData | null {
   );
 }
 
-export const CROP_CATALOG: readonly CropCatalogEntry[] = CROP_CATALOG_SEEDS.map((crop) => {
-  const planting = CROP_PLANTING_METADATA[crop.id];
+const cropSeeds = CROP_CATALOG_SEEDS;
+const plantingMetadata = CROP_PLANTING_METADATA;
+
+export const CROP_CATALOG: readonly CropCatalogEntry[] = cropSeeds.map((crop) => {
+  const planting = plantingMetadata[crop.id];
   if (!planting) throw new Error(`Missing planting metadata for crop ${crop.id}`);
 
   const sourceIds = Array.from(
@@ -1869,18 +2242,38 @@ function canonicalPair(firstId: string, secondId: string): string {
   return [firstId, secondId].sort().join("::");
 }
 
+function normalizeCatalogTerm(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pl-PL")
+    .trim()
+    .replace(/\s+/gu, " ");
+}
+
 export function validateCropCatalog(
   catalog: readonly CropCatalogEntry[] = CROP_CATALOG,
   relations: readonly CompanionRelation[] = COMPANION_RELATIONS,
 ): void {
-  assertCondition(catalog.length === 31, "expected exactly 31 active crop records");
+  assertCondition(catalog.length > 0, "catalog cannot be empty");
 
   const cropIds = new Set<string>();
+  const catalogTerms = new Map<string, string>();
   for (const crop of catalog) {
     assertCondition(crop.id.trim().length > 0, "crop id cannot be empty");
     assertCondition(!cropIds.has(crop.id), "duplicate crop id " + crop.id);
     cropIds.add(crop.id);
     assertCondition(crop.commonNamePl.trim().length > 0, crop.id + " has an empty Polish name");
+    for (const term of [crop.commonNamePl, ...crop.aliases]) {
+      const normalizedTerm = normalizeCatalogTerm(term);
+      assertCondition(normalizedTerm.length > 0, crop.id + " has an empty searchable term");
+      const owningCropId = catalogTerms.get(normalizedTerm);
+      assertCondition(
+        owningCropId === undefined || owningCropId === crop.id,
+        "duplicate catalog term " + term + " used by " + (owningCropId ?? "unknown") + " and " + crop.id,
+      );
+      catalogTerms.set(normalizedTerm, crop.id);
+    }
     assertCondition(
       crop.seasonWindows.length > 0 || crop.needsLocalValidation,
       crop.id + " has no season window or validation flag",
@@ -1889,7 +2282,7 @@ export function validateCropCatalog(
 
     const aliases = new Set<string>();
     for (const alias of crop.aliases) {
-      const normalizedAlias = alias.trim().toLocaleLowerCase("pl-PL");
+      const normalizedAlias = normalizeCatalogTerm(alias);
       assertCondition(normalizedAlias.length > 0, crop.id + " has an empty alias");
       assertCondition(!aliases.has(normalizedAlias), crop.id + " has a duplicate alias");
       aliases.add(normalizedAlias);
@@ -1940,20 +2333,14 @@ export function validateCropCatalog(
       );
     }
 
-    if (crop.finalSpacing !== null) {
-      assertRange(crop.finalSpacing.inRowCm, crop.id + " final in-row spacing");
-      assertRange(crop.finalSpacing.betweenRowsCm, crop.id + " final between-row spacing");
-      assertCondition(crop.finalSpacing.context.trim().length > 0, crop.id + " final spacing has no context");
-      assertCondition(crop.finalSpacing.sourceIds.length > 0, crop.id + " final spacing has no source");
-      assertSourceIds(crop.finalSpacing.sourceIds, crop.id + " final spacing");
-      assertCondition(crop.finalSpacing.stage.length > 0, crop.id + " final spacing has no stage");
-      assertCondition(
-        crop.spacing !== null,
-        crop.id + " final spacing must be exposed to the layout compatibility view",
-      );
-    } else {
-      assertCondition(crop.spacing === null, crop.id + " must not fall back to non-final spacing");
-    }
+    assertCondition(crop.finalSpacing !== null, crop.id + " needs source-backed final spacing");
+    assertRange(crop.finalSpacing.inRowCm, crop.id + " final in-row spacing");
+    assertRange(crop.finalSpacing.betweenRowsCm, crop.id + " final between-row spacing");
+    assertCondition(crop.finalSpacing.context.trim().length > 0, crop.id + " final spacing has no context");
+    assertCondition(crop.finalSpacing.sourceIds.length > 0, crop.id + " final spacing has no source");
+    assertSourceIds(crop.finalSpacing.sourceIds, crop.id + " final spacing");
+    assertCondition(crop.finalSpacing.stage.length > 0, crop.id + " final spacing has no stage");
+    assertCondition(crop.spacing !== null, crop.id + " final spacing must be exposed to the layout compatibility view");
 
     if (crop.sowingDensity !== null) {
       const density = crop.sowingDensity;

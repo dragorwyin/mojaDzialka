@@ -1,8 +1,8 @@
-# Większa obsada ogrodu i katalog 100+ upraw — Implementation Plan
+# Większa obsada ogrodu i rozszerzony katalog upraw — Implementation Plan
 
 ## Overview
 
-Umożliwić wygenerowanie i zapisanie planu z co najmniej 10 000 fizycznych pozycji roślin w całym ogrodzie, bez obecnego limitu 256 kandydatów na uprawę w skrzyni. Rozszerzyć ręcznie weryfikowany katalog do co najmniej 100 wybieralnych wpisów, każdy z obliczalnym końcowym odstępem sadzenia, i pokazać plan w formie czytelnej przy dużej liczbie markerów. Plan zachowuje wcześniejszą regułę jednej zwartej grupy wpisu katalogowego w każdej skrzyni i nie zamienia gęstości siewu w końcową obsadę.
+Umożliwić wygenerowanie i zapisanie planu z co najmniej 10 000 fizycznych pozycji roślin w całym ogrodzie oraz utrzymać czytelność dużego diagramu. Rozszerzyć katalog o jak najwięcej odrębnych, obliczalnych i wyszukiwalnych typów uprawianych lub polecanych do polskich ogródków, bez sztywnego progu liczby. Dla każdej pozycji zachować źródło końcowej obsady i oddzielić jakość dowodów doboru od pewności rozstawy; nie udawać rankingu krajowego, którego źródła nie potwierdzają.
 
 ## Current State Analysis
 
@@ -12,13 +12,15 @@ API `src/pages/api/garden-plan.ts` przekazuje wynik jako cały obiekt do RPC zap
 
 Katalog w `src/data/crop-catalog.ts` egzekwuje dokładnie 31 rekordów; 28 mają `finalSpacing`, a pozostałe mogą mieć brak danych. Nazwy i aliasy można wyszukiwać, lecz formularz pokazuje do 8 wyników, a manifest miniatur ma stałe 31 identyfikatorów. `pomidor`/Faworyt jest wpisem katalogowym z odstępem 50 × 100 cm; generator nie sprawdza obróconej siatki.
 
-Użytkownik zatwierdził: limit 10 000 dotyczy całego ogrodu i generowanie ma trwać do 10 sekund; katalog ma mieć co najmniej 100 wpisów, a odmiany mogą być osobnymi pozycjami; odmiana bez własnych danych może użyć źródłowego rozstawu gatunkowego, jawnie oznaczonego niską pewnością; dla Faworyta należy sprawdzać obie orientacje odstępu; diagram grupuje markery przy oddaleniu i pokazuje pojedyncze pozycje po powiększeniu. Wcześniej zatwierdzono również grupowanie jednego wpisu katalogowego w jednej skrzyni, jawny raport braków i pierwszeństwo grupy nad miękkimi korzyściami sąsiedztwa.
+Generator nie odrzuca poprawnej rozstawy z powodu samego `confidence: low`; `getUsableSpacing` wymaga zweryfikowanych osi i dodatnich wartości (`src/lib/garden-layout.ts:428-437`). Wybrane rośliny mogą jednak nie uzyskać stanowiska przy braku `finalSpacing`, niezweryfikowanych osiach, braku miejsca albo limicie wyszukiwania, a te przyczyny wymagają odrębnego raportowania. Obecne badania rzeczywistych upraw są lokalne i małe: PZD opisuje często uprawiane warzywa w jednym poznańskim ROD, a badanie z Gorzowa objęło 31 działek; dostępne źródła nie tworzą rankingu krajowego 100 warzyw.
+
+Użytkownik zatwierdził: limit 10 000 dotyczy całego ogrodu i generowanie ma trwać do 10 sekund; katalog ma zawierać jak najwięcej różnych, praktycznie odrębnych upraw wybieralnych w polskim warzywniku, bez obowiązkowego minimum 100. Odmiany nie zwiększają liczby typów. Wpisy nie mogą powielać tej samej uprawy pod synonimiczną lub kosmetycznie zmienioną nazwą; odrębny cel użytkowy/uprawowy, np. fasola na suche nasiona i fasola szparagowa, może być osobnym typem. Dotychczasowe typy pozostają. Uprawy bez własnych danych mogą użyć źródłowego rozstawu gatunkowego jawnie oznaczonego niską pewnością; dla Faworyta należy sprawdzać obie orientacje odstępu; diagram grupuje markery przy oddaleniu i pokazuje pojedyncze pozycje po powiększeniu. Wcześniej zatwierdzono również grupowanie jednego wpisu katalogowego w jednej skrzyni, jawny raport braków i pierwszeństwo grupy nad miękkimi korzyściami sąsiedztwa. Lista ma być kuratorowana jako uprawiana lub polecana, bez rankingu; nie wolno zgadywać rozstawy, a kandydat bez wiarygodnych danych końcowej obsady wymaga źródła albo zastąpienia.
 
 ## Desired End State
 
 Generator tworzy co najmniej 10 000 pozycji dla wykonalnego, wieloskrzyniowego przypadku testowego w czasie nieprzekraczającym 10 sekund w środowisku zbliżonym do produkcyjnego. Nie ucina siatki na 256 ani nie kończy planu wyłącznie z powodu obecnego budżetu 2 000; gdy fizyczne ograniczenia lub jawny budżet bezpieczeństwa uniemożliwią osiągnięcie celu, wynik zachowuje najlepsze grupy, dokładnie raportuje braki i nie przedstawia planu jako pełnego.
 
-Katalog zawiera co najmniej 100 stabilnych, wyszukiwalnych wpisów i każdy aktywny wpis ma źródłowe `finalSpacing` z jednostką, etapem, kontekstem i poziomem pewności. Wartość gatunkowa zastosowana dla odmiany jest czytelnie oznaczona jako fallback niskiej pewności. Każdy wybrany wpis może być ujęty w obliczeniu i w podsumowaniu, nawet jeśli warunki konkretnego ogrodu dają mu zero pozycji.
+Katalog obejmuje maksymalny uzasadniony źródłami zbiór stabilnych i wyszukiwalnych, odrębnych typów roślin jadalnych faktycznie uprawianych lub polecanych do polskich ogródków; nie ma arbitralnego minimum liczby. Rejestr dokumentuje zakres sprawdzonych źródeł i powody odrzucenia kandydatów bez wiarygodnej końcowej rozstawy, tak aby „jak najwięcej” oznaczało maksimum w granicach dowodów, nie zgadywanie. Każdy typ ma jedno kanoniczne ID; synonimy są aliasami, a duplikaty, odmiany tego samego typu i kosmetyczne warianty nazwy nie zwiększają liczby odrębnych typów. Odrębne cele użytkowe/ogrodnicze, takie jak fasola szparagowa i na suche nasiona, mogą być osobnymi typami, gdy wpływają na planowanie i mają uzasadnienie źródłowe. Dotychczasowe typy pozostają. Każdy aktywny wpis ma źródłowe `finalSpacing` z jednostką, etapem, kontekstem i poziomem pewności; dane odmianowe mogą jawnie korzystać z fallbacku gatunkowego o niskiej pewności. Niska pewność nie blokuje obliczeń, lecz brak wiarygodnej końcowej rozstawy nie jest zastępowany zmyśloną wartością: taki kandydat trzeba uzupełnić na podstawie źródła albo zastąpić przed aktywacją. Każdy wybrany wpis jest uwzględniony w obliczeniu i podsumowaniu, a zero pozycji ma jawną przyczynę, np. geometrię skrzyni lub brak danych.
 
 Plan 10 000 roślin zapisuje się i odczytuje bez utraty ID, współrzędnych, alokacji ani braków. Diagram pozostaje responsywny: w skali przeglądu markery są agregowane; po powiększeniu wszystkie pozycje są dostępne indywidualnie. Dla skrzyni 120 × 80 cm generator dopuszcza Faworyta z rozstawą 50 × 100 cm poprzez wybór wykonalnej orientacji siatki.
 
@@ -33,13 +35,17 @@ Plan 10 000 roślin zapisuje się i odczytuje bez utraty ID, współrzędnych, a
 - `src/pages/api/garden-plan.ts:99-136`, `src/pages/dashboard.astro:92-106` — plan jest generowany w żądaniu, zapisywany jako pełny JSON przez RPC i walidowany przy odczycie dashboardu.
 - `src/components/garden/garden-layout-diagram.ts:53-115` i `src/components/garden/GardenLayoutView.tsx:233-254,462-475` — projekcja i widok obecnie przetwarzają markery oraz szczegóły pojedynczo.
 - `context/archive/2026-10-11-group-crops-within-garden-beds/plan.md:36-56` — zaakceptowane grupowanie, raport braków i ograniczenie liczby przebiegów.
+- `src/lib/garden-layout.ts:428-437,868-899,1105-1123` — niska pewność nie odrzuca rozstawy; brak danych, brak miejsca i limit wyszukiwania mają osobne przyczyny.
+- PZD opisuje częste nasadzenia w jednym ROD Stokrotka, a badanie Agronomy objęło 31 działek w Gorzowie; są to sygnały lokalne, nie krajowa próba.
+- CDR tabela 5_2 podaje rozstawę uprawianych z rozsady, natomiast tabela 5_1 wymaga interpretacji, czy liczby dla siewu oznaczają obsadę po przerzedzeniu.
 
 ## What We're NOT Doing
 
 - Nie liczymy liczby nasion na tacki, kiełkowania ani zapasu nasion; wynik jest liczbą końcowych jednostek sadzenia w skrzyniach.
 - Nie prognozujemy plonu ani nie rozszerzamy relacji sąsiedztwa poza istniejący, źródłowy zestaw.
 - Nie pozwalamy na ręczne przypisywanie lub przesuwanie roślin i nie osłabiamy wymaganych odstępów ani twardych negatywnych sąsiadów.
-- Nie przedstawiamy katalogu jako rankingu popularności i nie tworzymy niestandardowych wpisów użytkownika.
+- Nie przedstawiamy katalogu jako dokładnego krajowego rankingu; lista ma jawne poziomy dowodów uprawy/rekomendacji.
+- Nie wpisujemy wartości rozstawy bez źródła końcowej obsady ani nie używamy danych siewu, plonu, konsumpcji lub wielkości produkcji jako zamiennika końcowej rozstawy lub dowodu popularności w ogródkach.
 - Nie projektujemy 100 odrębnych ilustracji; brak dedykowanej miniatury nie może blokować wyszukania, obliczenia ani pokazania uprawy.
 - Nie wymagamy 10 000 roślin w pojedynczej skrzyni; zatwierdzony próg dotyczy całego ogrodu.
 - Nie archiwizujemy historii sezonów ani nie zmieniamy granicy prywatności danych działki.
@@ -48,7 +54,7 @@ Plan 10 000 roślin zapisuje się i odczytuje bez utraty ID, współrzędnych, a
 
 Najpierw zastąpić obcinanie siatki i kosztowne wyszukiwanie strategią rozmieszczania zdolną policzyć wykonalne pozycje w całym ogrodzie, bez utraty determinizmu, odstępów, twardych zakazów i wcześniej uzgodnionych grup. Zmiana semantyki generatora unieważni aktualność poprzedniego planu przez wersję algorytmu, pozostawiając zapisany wynik widoczny jako nieaktualny do ponownego obliczenia.
 
-Następnie przygotować źródłowy rejestr co najmniej 100 wpisów, zmienić inwarianty katalogu i włączyć każdy wpis do wyszukiwania oraz prezentacji. Wartości uprawowe wynikają z potwierdzonych danych dla odmiany, a gdy tych brak — z danych gatunkowych z wyraźnym fallbackiem niskiej pewności. Końcowy odstęp nigdy nie jest wyprowadzany z gęstości siewu.
+Następnie opracować rejestr dowodów wyboru możliwie szerokiego zestawu unikalnych typów warzyw i innych roślin jadalnych faktycznie uprawianych lub polecanych do polskich ogródków, ze stopniem i rodzajem poparcia przy każdej pozycji. Osobno uzupełnić źródłowy rejestr końcowej rozstawy. Niska pewność nie blokuje obliczeń, jeśli istnieje źródłowa wartość końcowej obsady; wpis bez wiarygodnej rozstawy zastąpić przed udostępnieniem. Rozszerzyć wyszukiwanie i prezentację tak, aby każdy wybieralny wpis można było odnaleźć, policzyć i zrozumieć również wtedy, gdy skrzynia daje zero pozycji.
 
 Na końcu sprawdzić pełny cykl API, zapisu, odczytu i dashboardu dla dużego wyniku. Warstwa wizualna agreguje markery zależnie od skali, ale nie zmienia przechowywanych współrzędnych ani dokładnego podsumowania. Każda faza kończy się automatycznymi kontrolami oraz ręcznym odbiorem przed rozpoczęciem kolejnej.
 
@@ -113,61 +119,74 @@ Usunąć faktyczny limit 256 oraz budżet, który zatrzymuje obsadę poniżej za
 
 ---
 
-## Phase 2: Katalog 100+ obliczalnych upraw
+## Phase 2: Rozszerzony, unikalny katalog upraw
 
 ### Overview
 
-Rozszerzyć aktywny, wyszukiwalny katalog do minimum 100 pozycji z końcowym odstępem sadzenia dla każdej. Przed dodaniem wartości utworzyć rejestr źródeł i jednostek, a istniejące wyjątki bez końcowej rozstawy uzupełnić albo jawnie zastąpić innymi źródłowo obliczalnymi wpisami.
+Rozszerzyć aktywny, wyszukiwalny katalog o maksymalną liczbę odrębnych typów upraw, dla których można udokumentować przydatność do polskich ogródków i końcową rozstawę. Nie obowiązuje sztywny próg liczby; odmiany, synonimy i duplikaty nie zwiększają liczby typów, a dotychczasowe typy pozostają. Udokumentować rodzaj dowodów dla każdego typu i osobno źródła końcowej rozstawy. Niska pewność źródłowej rozstawy nie blokuje obliczeń; brak wiarygodnych danych końcowej obsady wymaga źródła lub zastąpienia wpisu.
 
 ### Changes Required:
 
-#### 1. Źródłowa lista wpisów i danych końcowej obsady
+#### 1. Ewidencja kandydatów i dowodów uprawy
+
+**File**: `context/changes/expand-crop-capacity-and-catalog/catalog-evidence.md`
+
+**Intent**: Wybrać możliwie szeroki zestaw różnych, praktycznych typów upraw do polskiego warzywnika na podstawie źródeł opisujących faktyczne nasadzenia lub zalecenia skierowane do ogrodników amatorów. Nie ustalać arbitralnego minimum liczby. Synonimy, duplikaty i odmiany tego samego typu nie zwiększają liczby. Zapisać rodzaj oraz siłę dowodów i nie przedstawiać listy jako krajowego rankingu częstości.
+
+**Contract**: Ewidencja rozróżnia bezpośrednią obserwację/uprawę w ROD lub ogrodzie, zalecenie PZD/ODR dla amatorów oraz sygnał kontekstowy. Każdy typ uprawy ma jedno kanoniczne ID; synonimy trafiają do aliasów, a ten sam typ nie może wystąpić drugi raz pod inną nazwą. Osobne ID wymagają odrębnego celu użytkowego/uprawowego lub istotnie odrębnego sposobu planowania, np. fasola szparagowa i fasola na suche nasiona; odmiany nie podnoszą liczby typów. Konsumpcja, produkcja towarowa, rejestr odmian i dostępność handlowa nie są samodzielnym dowodem faktycznej częstości sadzenia. Przy każdym kandydacie widnieje źródło i uzasadnienie włączenia lub odrzucenia.
+
+#### 2. Źródłowe dane końcowej obsady
 
 **File**: `context/changes/expand-crop-capacity-and-catalog/catalog-evidence.md`, `src/data/crop-catalog.ts`
 
-**Intent**: Dobrać co najmniej 100 osobnych, użytecznych wpisów do polskiego ogrodu amatorskiego bez twierdzenia, że lista jest rankingiem popularności. Utrwalić pochodzenie każdej wartości końcowego odstępu, etap sadzenia/przerwania, jednostkę (roślina lub kępa), kontekst odmiany oraz pewność.
+**Intent**: Utrwalić pochodzenie każdej wartości końcowego odstępu, etap sadzenia/przerwania, jednostkę (roślina lub kępa), kontekst odmiany oraz pewność, oddzielnie od dowodów popularności.
 
-**Contract**: Każdy aktywny ID ma niepuste `finalSpacing` z valid `sourceIds`. Gdy dane dla odmiany są niedostępne, wpis może przejąć źródłowy odstęp gatunkowy wyłącznie z jawnie opisanym fallbackiem niskiej pewności. Dane siewne pozostają osobne i nie mogą zastępować końcowej obsady. Wariant otrzymuje osobny ID, gdy wymaga odrębnej tożsamości lub rozstawy; stare ID, zwłaszcza `pomidor`, pozostają stabilne.
+**Contract**: Każdy aktywny ID ma niepuste `finalSpacing` z ważnym `sourceIds`. Gdy dane odmianowe są niedostępne, można użyć źródłowego odstępu gatunkowego z jawnym fallbackiem niskiej pewności. Jeśli źródła nie opisują końcowej obsady albo nie rozstrzygają, czy podany odstęp dotyczy siewu czy roślin po przerzedzeniu, nie zgadywać: kandydata uzupełnić źródłem albo zastąpić przed aktywacją. Dane siewne nie zastępują końcowej obsady. Odmiany mogą mieć własne ID, ale nie zwiększają liczby typów; zachować stabilne dotychczasowe ID, zwłaszcza `pomidor`.
 
-#### 2. Inwarianty i kontrakty testowe katalogu
+#### 3. Inwarianty i kontrakty testowe katalogu
 
 **File**: `src/data/crop-catalog.ts`, `src/data/crop-catalog.test.ts`, `src/lib/crop-catalog.test.ts`
 
-**Intent**: Usunąć dokładne założenie 31 wpisów i zabezpieczyć kompletność wymaganej listy oraz możliwość obliczania każdego aktywnego wpisu.
+**Intent**: Usunąć dokładne założenie 31 wpisów i zabezpieczyć unikalność, kompletność źródeł oraz możliwość obliczania każdego aktywnego wpisu.
 
-**Contract**: Walidator oraz testy wymagają ≥100 unikalnych aktywnych ID, niepustej źródłowej końcowej rozstawy dla każdego ID, poprawnej jednostki/etapu/pewności i braku nieznanych `sourceIds`. Testy ustalają minimalną liczbę i reprezentatywną listę ID zamiast blokować dalsze rozszerzenia dokładnym `length === 100`.
+**Contract**: Walidator i testy wymagają unikalnych kanonicznych ID, braku zduplikowanych typów lub aliasów kolidujących z innym wpisem, niepustej źródłowej końcowej rozstawy dla każdego ID, poprawnej jednostki/etapu/pewności i braku nieznanych `sourceIds`. Testy chronią dotychczasowe ID i reprezentatywne typy oraz zgodność ewidencji z aktywnym katalogiem; nie ustanawiają arbitralnego minimum liczby.
 
-#### 3. Wyszukiwanie i reprezentacja wpisów bez miniatury
+#### 4. Wyszukiwanie, raportowanie obsady i reprezentacja wpisów bez miniatury
 
 **File**: `src/components/garden/CropSelectionForm.tsx`, `src/components/garden/crop-thumbnail-manifest.ts`, `src/components/garden/GardenLayoutView.tsx` oraz ich testy
 
-**Intent**: Pozwolić odkryć każdy wpis w większym katalogu i wyświetlić wybraną uprawę zarówno w diagramie, jak i podsumowaniu bez wymogu tworzenia indywidualnej ilustracji dla każdej pozycji. Zachować czytelne oznaczenie niskiej pewności/fallbacku.
+**Intent**: Pozwolić odkryć każdy wpis w większym katalogu i wyświetlić wybraną uprawę w diagramie oraz podsumowaniu bez wymogu tworzenia ilustracji dla każdej pozycji. Niska pewność nie blokuje obliczeń i pozostaje widoczna; zero pozycji ma wskazywać przyczynę.
 
-**Contract**: Limit 8 widocznych wyników nie może ukryć dopasowania dokładnej nazwy/aliasu ani uniemożliwić przeglądania większej listy. Każdy aktywny cropId mapuje się do znacznika i tekstowej nazwy; brak dedykowanej miniatury używa jawnego fallbacku. Wybrany wpis pozostaje w tabeli podsumowania również przy `actualCount === 0`.
+**Contract**: Limit 8 widocznych wyników nie może ukryć dopasowania dokładnej nazwy/aliasu ani uniemożliwiać odkrycia katalogu. Każdy aktywny cropId mapuje się do znacznika i tekstowej nazwy; brak dedykowanej miniatury używa jawnego fallbacku. Wybrany wpis pozostaje w podsumowaniu przy `actualCount === 0`, a komunikat odróżnia brak/niezweryfikowanie rozstawy od geometrii skrzyni i wyczerpania budżetu wyszukiwania.
 
-#### 4. Zgodność dokumentacji produktu
+#### 5. Zgodność dokumentacji produktu
 
 **File**: `context/foundation/prd.md`
 
-**Intent**: Zaktualizować dotychczasowe twierdzenie o katalogu 31 aktywnych pozycji i ograniczonym katalogu tak, aby PRD opisywał uzgodnione minimum 100 obliczalnych wpisów i końcową obsadę.
+**Intent**: Zaktualizować dotychczasowe twierdzenie o katalogu 31 aktywnych pozycji i ograniczonym katalogu tak, aby PRD opisywał szeroki, unikalny katalog obliczalnych typów i końcową obsadę.
 
-**Contract**: Nie zmieniać pozostałych wymagań PRD; zapisać próg ≥10 000 pozycji w całym ogrodzie i pomiar ≤10 s, a także minimum 100 obliczalnych wpisów ze źródłową pewnością — bez obietnicy rankingu rynkowego ani liczby nasion do wysiewu.
+**Contract**: Nie zmieniać pozostałych wymagań PRD; zapisać próg ≥10 000 pozycji w całym ogrodzie i pomiar ≤10 s, a także maksymalny uzasadniony źródłami zbiór unikalnych i obliczalnych wpisów dobranych jako uprawiane/polecane do ogródków, z ewidencją siły dowodów — bez obietnicy krajowego rankingu ani liczby nasion do wysiewu.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- Walidator i test katalogu potwierdzają co najmniej 100 aktywnych, unikalnych wpisów oraz niezerowe, źródłowe `finalSpacing` dla każdego.
+- Walidator i test katalogu potwierdzają brak powtórzonych typów/aliasów oraz niezerowe, źródłowe `finalSpacing` dla każdego aktywnego typu; odmiany nie są liczone jako nowe typy.
 - Testy potwierdzają osobne znaczenie końcowej obsady i `sowingDensity`, działanie aliasów przy większej liczbie wyników oraz czytelny fallback miniatury.
 - Test formularza i widoku znajduje/wyświetla wpisy z początku, środka i końca katalogu, także wpis z zerową obsadą w danym planie.
 - `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
+- Ewidencja źródeł dokumentuje wszystkie aktywne typy, zakres sprawdzonych kandydatów, powody wykluczeń i rodzaj/siłę dowodów uprawy lub zaleceń; każdy sprawdzony kandydat spełniający kryteria zostaje ujęty, a nieprzyjęty ma odnotowany powód. Lista nie otrzymuje rangi krajowego rankingu.
+- Testy potwierdzają, że poprawna rozstawa niskiej pewności nie blokuje umieszczenia i zachowuje oznaczenie w wyniku; przypadki braku rozstawy, geometrii bez miejsca oraz `search_limit` mają odrębne wyniki.
 
 #### Manual Verification:
 
 - Użytkownik przegląda rejestr źródeł, przykładowe wpisy z dokładnym źródłem oraz przykładowy fallback gatunkowy i potwierdza, że oznaczenie niskiej pewności jest zrozumiałe.
 - W UI wyszukać dokładny alias oraz nazwy dające wiele dopasowań, wybrać wpis z fallbackiem i potwierdzić jego rozstawę, marker, nazwę i pewność w podsumowaniu.
+- Użytkownik przegląda liczbę unikalnych typów uzyskaną w zakresie przejrzanych źródeł, poziomy dowodów i jawne wykluczenia duplikatów, w tym bezpośrednie obserwacje ROD i zalecenia PZD/ODR; potwierdza zakres katalogu i opis bez obietnicy rankingu.
+- Użytkownik sprawdza pozycję z dokładną rozstawą oraz fallbackiem gatunkowym; niska pewność jest zrozumiała, a źródła nie mylą rozstawy siewu z końcową obsadą.
+- W UI wyszukuje dokładny alias i szerokie zapytanie, wybiera wpis z fallbackiem oraz sprawdza rozstawę, marker, nazwę i pewność; sprawdza również jawny powód, gdy geometria skrzyni nie pozwala na żadną pozycję.
 
-**Implementation Note**: Po automatycznej weryfikacji zatrzymać się na ręczną akceptację katalogu i danych przed rozpoczęciem Fazy 3.
+**Implementation Note**: Po automatycznej weryfikacji zatrzymać się na ręczną akceptację listy, ewidencji dowodów i przykładowych rozstaw przed rozpoczęciem Fazy 3.
 
 ---
 
@@ -227,7 +246,8 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 - Duży, ale wykonalny układ wieloskrzyniowy: ≥10 000 pozycji, deterministyczny wynik, bez obcięcia limitami siatki i wyszukiwania.
 - Geometria i polityka: brak nakładania, zachowane odstępy w każdej orientacji, twarde negatywne relacje, jedna zwarta grupa na katalogowy wpis/przestrzeń oraz jawne różnice alokacji.
-- Katalog: ≥100 ID; każde aktywne ID ma niepuste końcowe odstępy, źródło, jednostkę, etap i pewność; gatunkowy fallback jest oznaczony niską pewnością.
+- Katalog: maksymalny źródłowo uzasadniony zbiór unikalnych ID z ewidencją dowodów uprawy lub zaleceń dla polskich ogrodów; każde aktywne ID ma końcowy odstęp, źródło, jednostkę, etap i pewność; synonimy są aliasami, a gatunkowy fallback jest jawny i niskiej pewności.
+- Niska pewność nie blokuje prawidłowej rozstawy; braki rozstawy, dopasowania geometrycznego i budżetu wyszukiwania pozostają odróżnialne.
 - Diagram: agregacja markerów bez modyfikacji danych, wszystkie pojedyncze pozycje dostępne przy powiększeniu, dokładne liczby niezależne od widoku.
 
 ### Integration Tests:
@@ -241,7 +261,7 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 1. Zmierzyć czas generowania ≥10 000 wykonalnych pozycji w środowisku zbliżonym do produkcyjnego; zanotować runtime i czas ≤10 s.
 2. Potwierdzić jedną grupę na uprawę i skrzynię oraz prawidłowe braki dla przypadku ograniczonego geometrią lub twardym sąsiedztwem.
 3. Wybrać Faworyta w skrzyni 120 × 80 cm i sprawdzić prawidłowe współrzędne w obu możliwych orientacjach.
-4. Przejrzeć katalog i fallbacki rozstaw, a następnie wyszukać wpisy przy minimum 100 rekordach.
+4. Przejrzeć katalog, deduplikację i fallbacki rozstaw, a następnie wyszukać typy z różnych grup katalogu.
 5. Zapisać, przeładować i obejrzeć duży plan na desktopie i telefonie — agregaty, indywidualne pozycje po zoomie oraz dokładne liczby.
 
 ## Performance Considerations
@@ -260,6 +280,12 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 ## References
 
 - Badanie repozytorium: `context/changes/expand-crop-capacity-and-catalog/research.md`
+- Rama problemu: `context/changes/expand-crop-capacity-and-catalog/frame.md`
+- CDR, normatywy upraw z rozsady: https://poznan.cdr.gov.pl/normatywy/public/pdf/5_2.pdf
+- CDR, normatywy upraw z siewu: https://poznan.cdr.gov.pl/normatywy/public/pdf/5_1.pdf
+- PZD, obserwacja upraw w ROD Stokrotka: https://pzd.pl/artykuly/24266/61/Warzywa-na-dzialce-coraz-popularniejsze--z-wizyta-w-ROD-Stokrotka-w-Poznaniu.html
+- Badanie działek w Gorzowie: https://doi.org/10.3390/agronomy11091836
+- Badanie polskich ogrodów działkowych: https://journals.sagepub.com/doi/10.2993/0278-0771-38.1.123
 - Reguła grupowania: `context/archive/2026-10-11-group-crops-within-garden-beds/plan.md`
 - Poprzedni kontrakt danych katalogu: `context/changes/garden-crop-catalog-and-layout/research.md`
 - Wcześniejsze ograniczenia algorytmu: `context/changes/testing-algorithm-decisions/research.md`
@@ -273,30 +299,35 @@ Potwierdzić pełen przepływ ponad 10 000 pozycji przez endpoint, zapis JSONB, 
 
 #### Automated
 
-- [x] 1.1 Test generatora tworzy co najmniej 10 000 pozycji dla wykonalnego ogrodu z wieloma przestrzeniami i potwierdza determinizm oraz brak ograniczenia 256/2 000.
-- [x] 1.2 Testy sprawdzają rozstawę, brak nakładania, twarde negatywne sąsiedztwo, pojedynczą zwartą grupę na wpis i przestrzeń oraz dokładne raportowanie niedoborów.
-- [x] 1.3 Test Faworyta umieszcza poprawną pozycję w skrzyni 120 × 80 cm przez obróconą siatkę bez zmiany odstępu 50 × 100 cm.
-- [x] 1.4 Test snapshotu oznacza poprzedni plan jako nieaktualny po zmianie wersji algorytmu.
-- [x] 1.5 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
+- [x] 1.1 Test generatora tworzy co najmniej 10 000 pozycji dla wykonalnego ogrodu z wieloma przestrzeniami i potwierdza determinizm oraz brak ograniczenia 256/2 000. — 1a4c0b2
+- [x] 1.2 Testy sprawdzają rozstawę, brak nakładania, twarde negatywne sąsiedztwo, pojedynczą zwartą grupę na wpis i przestrzeń oraz dokładne raportowanie niedoborów. — 1a4c0b2
+- [x] 1.3 Test Faworyta umieszcza poprawną pozycję w skrzyni 120 × 80 cm przez obróconą siatkę bez zmiany odstępu 50 × 100 cm. — 1a4c0b2
+- [x] 1.4 Test snapshotu oznacza poprzedni plan jako nieaktualny po zmianie wersji algorytmu. — 1a4c0b2
+- [x] 1.5 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą. — 1a4c0b2
 
 #### Manual
 
-- [x] 1.6 Na preview lub środowisku Workers zbliżonym do produkcyjnego wykonalny fixture z co najmniej 10 000 roślin kończy generowanie w ≤10 s; zapisany czas i konfiguracja są dołączone do odbioru.
-- [x] 1.7 Ręcznie sprawdzić mały ogród i duży ogród: mały zachowuje dotychczasowe reguły, duży nie traci pozycji cicho i jasno pokazuje ewentualne braki.
+- [x] 1.6 Na preview lub środowisku Workers zbliżonym do produkcyjnego wykonalny fixture z co najmniej 10 000 roślin kończy generowanie w ≤10 s; zapisany czas i konfiguracja są dołączone do odbioru. — 1a4c0b2
+- [x] 1.7 Ręcznie sprawdzić mały ogród i duży ogród: mały zachowuje dotychczasowe reguły, duży nie traci pozycji cicho i jasno pokazuje ewentualne braki. — 1a4c0b2
 
-### Phase 2: Katalog 100+ obliczalnych upraw
+### Phase 2: Rozszerzony, unikalny katalog upraw
 
 #### Automated
 
-- [ ] 2.1 Walidator i test katalogu potwierdzają co najmniej 100 aktywnych, unikalnych wpisów oraz niezerowe, źródłowe `finalSpacing` dla każdego.
-- [ ] 2.2 Testy potwierdzają osobne znaczenie końcowej obsady i `sowingDensity`, działanie aliasów przy większej liczbie wyników oraz czytelny fallback miniatury.
-- [ ] 2.3 Test formularza i widoku znajduje/wyświetla wpisy z początku, środka i końca katalogu, także wpis z zerową obsadą w danym planie.
-- [ ] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą.
+- [x] 2.1 Walidator i test katalogu potwierdzają brak powtórzonych typów/aliasów oraz niezerowe, źródłowe `finalSpacing` dla każdego aktywnego typu; odmiany nie są liczone jako nowe typy.
+- [x] 2.2 Testy potwierdzają osobne znaczenie końcowej obsady i `sowingDensity`, działanie aliasów przy większej liczbie wyników oraz czytelny fallback miniatury.
+- [x] 2.3 Test formularza i widoku znajduje/wyświetla typy upraw z początku, środka i końca katalogu, także wpis z zerową obsadą w danym planie.
+- [x] 2.4 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą dla poprawionej listy typów.
+- [x] 2.7 Ewidencja źródeł dokumentuje wszystkie aktywne typy, zakres sprawdzonych kandydatów, powody wykluczeń i rodzaj/siłę dowodów uprawy lub zaleceń; każdy sprawdzony kandydat spełniający kryteria jest ujęty, a nieprzyjęty ma odnotowany powód.
+- [x] 2.8 Testy potwierdzają, że poprawna rozstawa niskiej pewności nie blokuje umieszczenia; brak rozstawy, brak miejsca geometrycznego i `search_limit` mają odrębne wyniki.
 
 #### Manual
 
-- [ ] 2.5 Użytkownik przegląda rejestr źródeł, przykładowe wpisy z dokładnym źródłem oraz przykładowy fallback gatunkowy i potwierdza, że oznaczenie niskiej pewności jest zrozumiałe.
-- [ ] 2.6 W UI wyszukać dokładny alias oraz nazwy dające wiele dopasowań, wybrać wpis z fallbackiem i potwierdzić jego rozstawę, marker, nazwę i pewność w podsumowaniu.
+- [x] 2.5 Użytkownik przegląda rejestr źródeł, przykładowe wpisy z dokładnym źródłem oraz przykładowy fallback gatunkowy i potwierdza, że oznaczenie niskiej pewności jest zrozumiałe.
+- [x] 2.6 W UI wyszukać dokładny alias oraz nazwy dające wiele dopasowań, wybrać wpis z fallbackiem i potwierdzić jego rozstawę, marker, nazwę i pewność w podsumowaniu.
+- [x] 2.9 Użytkownik przegląda kuratorowaną listę unikalnych typów upraw, poziomy dowodów i wykluczenia duplikatów, w tym bezpośrednie obserwacje ROD i zalecenia PZD/ODR, i potwierdza opis bez obietnicy rankingu.
+- [x] 2.10 Użytkownik sprawdza wpis z dokładną rozstawą oraz fallbackiem gatunkowym; niska pewność jest zrozumiała, a źródła nie mylą siewu z końcową obsadą.
+- [x] 2.11 W UI wyszukuje dokładny alias i szerokie zapytanie, wybiera wpis z fallbackiem oraz sprawdza rozstawę, marker, nazwę i pewność; sprawdza jawny powód zera przy braku miejsca w skrzyni.
 
 ### Phase 3: Zapis i czytelny diagram dużego planu
 

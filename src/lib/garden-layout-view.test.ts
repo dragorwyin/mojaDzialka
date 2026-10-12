@@ -7,6 +7,22 @@ import { CROP_CATALOG } from "../data/crop-catalog.js";
 import { generateGardenLayout } from "./garden-layout.js";
 
 describe("garden layout shortfall presentation", () => {
+  it("keeps a selected zero-position crop in the summary and explains the bed geometry", () => {
+    const crop = CROP_CATALOG.find((entry) => entry.id === "bob");
+    if (!crop) throw new Error("Missing broad bean fixture.");
+    const plan = generateGardenLayout({
+      spaces: [{ id: "too-small", name: "Mała skrzynia", widthCm: 1, lengthCm: 1 }],
+      crops: [{ crop, proportion: 100 }],
+      relations: [],
+    });
+    const markup = renderToStaticMarkup(createElement(GardenLayoutView, { plan, status: "current", cropNames: {} }));
+
+    expect(plan.cropSummaries[0]).toMatchObject({ cropId: crop.id, actualCount: 0, dataConfidence: "low" });
+    expect(markup).toContain("bób");
+    expect(markup).toContain("0</td>");
+    expect(markup).toContain("nie znaleziono pasującego stanowiska");
+  });
+
   it("shows each bed's deficit and the garden total without mutating the layout", () => {
     const crop = CROP_CATALOG.find((entry) => entry.id === "marchew");
     if (!crop) throw new Error("Missing carrot fixture.");

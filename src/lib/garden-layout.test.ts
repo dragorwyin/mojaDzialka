@@ -828,30 +828,36 @@ describe("garden layout engine", () => {
     expect(result.cropSummaries[0]).toMatchObject({ targetPercentage: 100, actualPercentage: 0, actualCount: 0 });
   });
 
-  it("does not use sowing density as final plant spacing", () => {
-    const sowingOnlyCrop = crop("kukurydza-cukrowa");
-    expect(sowingOnlyCrop.finalSpacing).toBeNull();
-    expect(sowingOnlyCrop.sowingDensity).toMatchObject({
+  it("uses sourced final spacing without conflating it with sowing density", () => {
+    const cornCrop = crop("kukurydza-cukrowa");
+    expect(cornCrop.finalSpacing).toMatchObject({
+      inRowCm: { min: 20, max: 30 },
+      betweenRowsCm: { min: 50, max: 60 },
+      confidence: "low",
+      sourceIds: ["S71", "S49"],
+    });
+    expect(cornCrop.sowingDensity).toMatchObject({
       inRowCm: { min: 20, max: 30 },
       betweenRowsCm: { min: 76, max: 91 },
     });
 
     const result = generateGardenLayout({
       spaces: [{ id: "bed", widthCm: 100, lengthCm: 100 }],
-      crops: [{ crop: sowingOnlyCrop, proportion: 100 }],
+      crops: [{ crop: cornCrop, proportion: 100 }],
       relations: [],
     });
 
-    expect(result.spaces[0]?.positions).toEqual([]);
-    expect(result.omissions).toContainEqual(
+    expect(result.spaces[0]?.positions.length).toBeGreaterThan(0);
+    expect(result.spaces[0]?.positions.every((position) => position.spacing.betweenRowsCm === 50)).toBe(true);
+    expect(result.omissions).not.toContainEqual(
       expect.objectContaining({ cropId: "kukurydza-cukrowa", reason: "missing_spacing" }),
     );
     expect(result.cropSummaries.find((summary) => summary.cropId === "kukurydza-cukrowa")).toMatchObject({
       targetPercentage: 100,
-      actualPercentage: 0,
-      actualCount: 0,
-      dataConfidence: null,
-      spacingStage: null,
+      actualPercentage: 100,
+      actualCount: 10,
+      dataConfidence: "low",
+      spacingStage: "thinning",
     });
   });
 
