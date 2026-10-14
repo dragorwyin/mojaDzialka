@@ -1,10 +1,10 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-async function waitForGardenSetupHydration(page: Page, control: Locator) {
-  const setupIsland = page.locator('astro-island[component-export="default"]').filter({ has: control });
+export async function waitForIslandHydration(page: Page, control: Locator) {
+  const island = page.locator('astro-island[component-export="default"]').filter({ has: control });
 
   // A visible SSR button can be clicked before React attaches the form handlers.
-  await expect(setupIsland).not.toHaveAttribute("ssr", "");
+  await expect(island).not.toHaveAttribute("ssr", "");
 }
 
 export async function generatePlan(page: Page, timeoutMs = 5_000) {
@@ -48,7 +48,7 @@ export async function saveSpaces(page: Page, names: readonly string[]) {
 export async function addSpace(page: Page) {
   if (new URL(page.url()).searchParams.get("tab") !== "sectors") await page.goto("/dashboard?tab=sectors");
   const addButton = page.getByRole("button", { name: "+ Dodaj skrzynię lub sektor", exact: true });
-  await waitForGardenSetupHydration(page, addButton);
+  await waitForIslandHydration(page, addButton);
   await addButton.click();
   await expect(page.getByRole("group", { name: "Przestrzeń 2", exact: true })).toBeVisible();
 }
@@ -58,7 +58,7 @@ export async function removeSecondSpace(page: Page) {
   const removeButton = page
     .getByRole("group", { name: "Przestrzeń 2", exact: true })
     .getByRole("button", { name: "Usuń tę przestrzeń", exact: true });
-  await waitForGardenSetupHydration(page, removeButton);
+  await waitForIslandHydration(page, removeButton);
   await removeButton.click();
   await expect(page.getByRole("group", { name: "Przestrzeń 2", exact: true })).toHaveCount(0);
 }
