@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/garden";
-import { generatePlan } from "./support/garden";
+import { generatePlan, waitForIslandHydration } from "./support/garden";
 
 test("a failed regeneration keeps the old diagram visible and permits a real retry", async ({ page }) => {
   await page.goto("/dashboard");
@@ -25,10 +25,14 @@ test("a rejected crop save shows an error without claiming success or staling th
   await generatePlan(page);
   await page.goto("/dashboard?tab=crops");
   const crops = page.getByRole("region", { name: "Wybór warzyw i udziałów procentowych" });
-  await crops.getByLabel("Udział (%)").nth(0).fill("60.00");
-  await crops.getByLabel("Udział (%)").nth(1).fill("40.00");
+  const proportions = crops.getByLabel("Udział (%)");
+  await waitForIslandHydration(page, proportions.first());
+  await proportions.nth(0).fill("60.00");
+  await proportions.nth(1).fill("40.00");
+  const saveButton = crops.getByRole("button", { name: "Zapisz wybór upraw", exact: true });
+  await expect(saveButton).toBeEnabled();
   await page.route("**/api/garden-crops", (route) => route.fulfill({ status: 503, body: '{"error":"unavailable"}' }));
-  await crops.getByRole("button", { name: "Zapisz wybór upraw", exact: true }).click();
+  await saveButton.click();
 
   await expect(crops.getByRole("alert")).toContainText("Zapisywanie wyboru jest chwilowo niedostępne");
   await expect(crops.getByRole("status").filter({ hasText: "Wybór upraw został zapisany." })).toHaveCount(0);
