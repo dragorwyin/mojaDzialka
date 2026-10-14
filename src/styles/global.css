@@ -219,3 +219,38 @@
     display: none;
   }
 }
+
+.garden-diagram-dialog {
+  inset: 0;
+  width: calc(100vw - 1.5rem);
+  height: calc(100dvh - 1.5rem);
+  max-width: 96rem;
+  max-height: 96dvh;
+  margin: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  background: var(--garden-surface);
+  color: var(--garden-foreground);
+  box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--app-foreground) 28%, transparent);
+}
+
+.garden-diagram-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.garden-diagram-dialog::backdrop {
+  background: color-mix(in srgb, var(--app-foreground) 48%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+@media (min-width: 640px) {
+  .garden-diagram-dialog {
+    width: 96vw;
+    height: 90dvh;
+    padding: 1.25rem;
+    border-radius: 1.5rem;
+  }
+}

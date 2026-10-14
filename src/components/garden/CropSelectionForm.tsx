@@ -301,7 +301,7 @@ export default function CropSelectionForm({
     <section aria-labelledby={titleId} className="space-y-6">
       <header className="max-w-2xl">
         <p className="text-garden-accent mb-2 text-sm font-semibold tracking-[0.2em] uppercase">
-          S-03 · Planowanie upraw
+          Dobierz uprawy
         </p>
         <h2 id={titleId} className="text-garden-foreground text-2xl font-bold">
           Wybór warzyw i udziałów procentowych

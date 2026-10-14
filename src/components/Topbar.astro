@@ -1,35 +1,48 @@
 ---
 import { Button } from "@/components/ui/button";
+import { ChevronDown, UserRound } from "lucide-react";
 
 const { user } = Astro.locals;
 ---
 
-<header class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-app-border bg-app-surface px-4 py-3 text-sm shadow-sm sm:px-5">
-  <a href="/" class="font-semibold tracking-tight text-app-foreground transition-colors hover:text-app-accent-strong">
-    moja działka
+<header class="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-app-border bg-app-surface px-4 py-3 text-sm shadow-sm sm:px-5">
+  <a
+    href="/"
+    aria-label="Moja Działka — strona główna"
+    class="inline-flex min-h-10 items-center gap-2.5 rounded-xl text-app-foreground transition-colors hover:text-app-accent-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-app-focus"
+  >
+    <img src="/garden-mark.svg" alt="" aria-hidden="true" width="40" height="40" class="size-10 shrink-0" />
+    <span class="hidden font-serif text-lg font-semibold tracking-tight sm:inline">moja działka</span>
   </a>
   {user ? (
-    <div class="flex flex-wrap items-center gap-2 sm:gap-4">
-      <span class="max-w-48 truncate text-app-muted" title={user.email}>
-        {user.email}
-      </span>
-      <a
-        href="/dashboard"
-        class="font-medium text-app-accent-strong transition-colors hover:text-app-accent-hover hover:underline"
+    <details class="group relative">
+      <summary
+        aria-label="Otwórz menu konta"
+        class="border-app-border bg-app-surface text-app-foreground hover:bg-app-page focus-visible:ring-garden-focus inline-flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full border px-3 outline-none transition-colors focus-visible:ring-2"
       >
-        Mój ogród
-      </a>
-      <form method="POST" action="/api/auth/signout">
-        <Button
-          type="submit"
-          variant="ghost"
-          size="sm"
-          className="text-app-accent-strong hover:bg-app-page hover:text-app-accent-hover"
-        >
-          Wyloguj się
-        </Button>
-      </form>
-    </div>
+        <UserRound aria-hidden="true" className="text-app-accent-strong size-4" />
+        <span class="font-medium">Konto</span>
+        <ChevronDown
+          aria-hidden="true"
+          className="text-app-muted size-4 transition-transform group-open:rotate-180"
+        />
+      </summary>
+      <div class="border-app-border bg-app-surface absolute top-full right-0 z-30 mt-2 w-64 rounded-2xl border p-3 shadow-lg">
+        <p class="text-app-foreground px-2 py-2 text-sm leading-relaxed break-all" title={user.email}>
+          {user.email}
+        </p>
+        <form method="POST" action="/api/auth/signout" class="border-app-border mt-2 border-t pt-2">
+          <Button
+            type="submit"
+            variant="ghost"
+            size="sm"
+            className="text-app-accent-strong hover:bg-app-page hover:text-app-accent-hover min-h-10 w-full justify-start"
+          >
+            Wyloguj się
+          </Button>
+        </form>
+      </div>
+    </details>
   ) : (
     <nav aria-label="Konto" class="flex items-center gap-2 sm:gap-4">
       <a

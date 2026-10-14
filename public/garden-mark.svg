@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Moja Działka</title>
+  <desc>Prosty kiełek wyrastający z grządki. Kolory odpowiadają tokenom app-soft, app-border i app-accent-strong z src/styles/global.css.</desc>
+  <rect x="3" y="3" width="58" height="58" rx="19" fill="#eaf0e3" stroke="#dce3d5" stroke-width="2"/>
+  <path d="M32 41V25" stroke="#315737" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M31.5 31c-7.2.1-11.2-3.5-11.1-10.2 6.7-.2 10.8 3.4 11.1 10.2Z" fill="#4d7147"/>
+  <path d="M32.5 26.5c.3-6.7 4.4-10.3 11.1-10.2.1 6.7-3.9 10.3-11.1 10.2Z" fill="#315737"/>
+  <path d="M25 41h14l3.2 7H21.8l3.2-7Z" fill="#fffefa" stroke="#315737" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M24 44h16M22.8 47h18.4" stroke="#4d7147" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

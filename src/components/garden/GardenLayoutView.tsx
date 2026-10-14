@@ -7,6 +7,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { createGardenLayoutShortfallReport, type GardenLayoutResult } from "@/lib/garden-layout";
 import { resolveGardenCropSelection } from "@/lib/garden-crop-selection";
@@ -412,6 +413,7 @@ function GardenSpaceDiagramViewer({
   } | null>(null);
   const [pixelsPerCm, setPixelsPerCm] = useState(1);
   const [fitPixelsPerCm, setFitPixelsPerCm] = useState(1);
+  const [isExpanded, setIsExpanded] = useState(false);
   const pixelsPerCmRef = useRef(1);
   const fitPixelsPerCmRef = useRef(1);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
@@ -427,6 +429,7 @@ function GardenSpaceDiagramViewer({
     height: number;
   } | null>(null);
   const pendingZoomAnchorRef = useRef<{ contentX: number; contentY: number; x: number; y: number } | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const projection = createGardenDiagramProjection(space, positions, "overview");
   const emptyDetailProjection = createGardenDiagramProjection(space, [], "detail");
   const zoomFactor = pixelsPerCm / Math.max(fitPixelsPerCm, 0.001);
@@ -461,6 +464,24 @@ function GardenSpaceDiagramViewer({
     heightPx: (baseZoomDimensions.heightPx * pixelsPerCm) / GARDEN_DIAGRAM_ZOOM_PIXELS_PER_CM,
   };
   const spaceName = space.name ?? "Przestrzeń działki";
+
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+    dialog.querySelector<HTMLButtonElement>('[aria-label="Zamknij powiększony widok skrzyni"]')?.focus();
+
+    return () => {
+      if (dialog.open) dialog.close();
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [isExpanded]);
 
   function zoomAt(nextPixelsPerCm: number, x?: number, y?: number) {
     const viewport = scrollViewportRef.current;
@@ -596,7 +617,7 @@ function GardenSpaceDiagramViewer({
     return () => {
       observer.disconnect();
     };
-  }, [emptyDetailProjection.viewBox.heightCm, emptyDetailProjection.viewBox.widthCm]);
+  }, [emptyDetailProjection.viewBox.heightCm, emptyDetailProjection.viewBox.widthCm, isExpanded]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -622,171 +643,233 @@ function GardenSpaceDiagramViewer({
     };
   }, [pixelsPerCm]);
 
-  return (
-    <section aria-label={`Diagram ${spaceName}`} className="space-y-2">
-      <p className="text-garden-muted text-xs">
-        Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
-      </p>
+  const diagramFrame = (
+    <div
+      ref={canvasFrameRef}
+      className={`border-app-border bg-garden-surface relative min-h-0 overflow-hidden rounded-xl border shadow-sm ${
+        isExpanded ? "flex-1" : "h-72 sm:h-80 lg:h-96"
+      }`}
+    >
       <div
-        ref={canvasFrameRef}
-        className="border-app-border bg-garden-surface relative h-72 overflow-hidden rounded-xl border shadow-sm sm:h-80 lg:h-96"
+        ref={scrollViewportRef}
+        tabIndex={0}
+        aria-label={`Płótno diagramu ${spaceName}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onLostPointerCapture={handlePointerEnd}
+        onContextMenu={(event) => {
+          event.preventDefault();
+        }}
+        onScroll={(event) => {
+          const viewport = event.currentTarget;
+          setViewportRect({
+            left: viewport.scrollLeft,
+            top: viewport.scrollTop,
+            width: viewport.clientWidth,
+            height: viewport.clientHeight,
+          });
+        }}
+        onWheel={(event) => {
+          if (!event.ctrlKey && !event.metaKey) return;
+          if (event.deltaY === 0) return;
+          event.preventDefault();
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const factor = Math.exp(-event.deltaY * 0.002);
+          zoomAt(pixelsPerCmRef.current * factor, event.clientX - bounds.left, event.clientY - bounds.top);
+        }}
+        className={`focus-visible:outline-garden-focus absolute inset-0 flex touch-none overflow-auto overscroll-contain p-3 focus-visible:outline-2 focus-visible:outline-offset-2 ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
       >
         <div
-          ref={scrollViewportRef}
-          tabIndex={0}
-          aria-label={`Płótno diagramu ${spaceName}`}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerEnd}
-          onPointerCancel={handlePointerEnd}
-          onLostPointerCapture={handlePointerEnd}
-          onContextMenu={(event) => {
-            event.preventDefault();
-          }}
-          onScroll={(event) => {
-            const viewport = event.currentTarget;
-            setViewportRect({
-              left: viewport.scrollLeft,
-              top: viewport.scrollTop,
-              width: viewport.clientWidth,
-              height: viewport.clientHeight,
-            });
-          }}
-          onWheel={(event) => {
-            if (!event.ctrlKey && !event.metaKey) return;
-            if (event.deltaY === 0) return;
-            event.preventDefault();
-            const bounds = event.currentTarget.getBoundingClientRect();
-            const factor = Math.exp(-event.deltaY * 0.002);
-            zoomAt(pixelsPerCmRef.current * factor, event.clientX - bounds.left, event.clientY - bounds.top);
-          }}
-          className={`focus-visible:outline-garden-focus absolute inset-0 flex touch-none overflow-auto overscroll-contain p-3 focus-visible:outline-2 focus-visible:outline-offset-2 ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+          className="m-auto max-w-none shrink-0"
+          style={{ width: `${zoomDimensions.widthPx}px`, height: `${zoomDimensions.heightPx}px` }}
         >
-          <div
-            className="m-auto max-w-none shrink-0"
-            style={{ width: `${zoomDimensions.widthPx}px`, height: `${zoomDimensions.heightPx}px` }}
-          >
-            {viewportRect && (
-              <GardenSpaceDiagram
-                space={space}
-                positions={visiblePositions}
-                projection={dialogProjection}
-                cropCodes={cropCodes}
-                cropNames={cropNames}
-                minMarkerSizeCm={18 / pixelsPerCm}
-                onMarkerSelect={handleMarkerSelect}
-                className="text-garden-muted block h-full w-full max-w-none"
-              />
-            )}
-          </div>
+          {viewportRect && (
+            <GardenSpaceDiagram
+              space={space}
+              positions={visiblePositions}
+              projection={dialogProjection}
+              cropCodes={cropCodes}
+              cropNames={cropNames}
+              minMarkerSizeCm={18 / pixelsPerCm}
+              onMarkerSelect={handleMarkerSelect}
+              className="text-garden-muted block h-full w-full max-w-none"
+            />
+          )}
         </div>
+      </div>
 
-        <nav
-          aria-label={`Sterowanie diagramem ${spaceName}`}
-          className="garden-diagram-zoom-controls border-app-border bg-garden-surface absolute top-3 right-3 z-10 flex flex-col items-center gap-1 rounded-xl border p-1.5 shadow-lg"
+      <nav
+        aria-label={`Sterowanie diagramem ${spaceName}`}
+        className="garden-diagram-zoom-controls border-app-border bg-garden-surface absolute top-3 right-3 z-10 flex flex-col items-center gap-1 rounded-xl border p-1.5 shadow-lg"
+      >
+        <span className="text-garden-muted px-1 py-1 text-xs tabular-nums" aria-live="polite">
+          {Math.round((pixelsPerCm / Math.max(fitPixelsPerCm, 0.001)) * 100)}%
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Powiększ diagram"
+          onClick={() => {
+            zoomAt(pixelsPerCm * 1.25);
+          }}
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
         >
-          <span className="text-garden-muted px-1 py-1 text-xs tabular-nums" aria-live="polite">
-            {Math.round((pixelsPerCm / Math.max(fitPixelsPerCm, 0.001)) * 100)}%
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Powiększ diagram"
-            onClick={() => {
-              zoomAt(pixelsPerCm * 1.25);
-            }}
-            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
-          >
-            +
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Pomniejsz diagram"
-            onClick={() => {
-              zoomAt(pixelsPerCm / 1.25);
-            }}
-            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
-          >
-            −
-          </Button>
-          <div className="bg-app-border my-1 h-px w-7" aria-hidden="true" />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              pendingZoomAnchorRef.current = null;
-              pixelsPerCmRef.current = fitPixelsPerCm;
-              setPixelsPerCm(fitPixelsPerCm);
-              scrollViewportRef.current?.scrollTo({ left: 0, top: 0 });
-            }}
-            className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus px-2"
-          >
-            Dopasuj
-          </Button>
-        </nav>
+          +
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Pomniejsz diagram"
+          onClick={() => {
+            zoomAt(pixelsPerCm / 1.25);
+          }}
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus"
+        >
+          −
+        </Button>
+        <div className="bg-app-border my-1 h-px w-7" aria-hidden="true" />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            pendingZoomAnchorRef.current = null;
+            pixelsPerCmRef.current = fitPixelsPerCm;
+            setPixelsPerCm(fitPixelsPerCm);
+            scrollViewportRef.current?.scrollTo({ left: 0, top: 0 });
+          }}
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus px-2"
+        >
+          Dopasuj
+        </Button>
+      </nav>
 
-        {selectedMarker && (
-          <aside
-            aria-label="Informacje o zaznaczonych roślinach"
-            className="border-app-border bg-garden-surface absolute right-20 bottom-12 left-3 z-10 max-h-40 overflow-auto rounded-xl border p-3 shadow-lg"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-garden-foreground text-sm font-semibold">
-                  {selectedMarker.position ? "Wybrana roślina" : "Rośliny w tym skupisku"}
+      {selectedMarker && (
+        <aside
+          aria-label="Informacje o zaznaczonych roślinach"
+          className="border-app-border bg-garden-surface absolute right-20 bottom-12 left-3 z-10 max-h-40 overflow-auto rounded-xl border p-3 shadow-lg"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-garden-foreground text-sm font-semibold">
+                {selectedMarker.position ? "Wybrana roślina" : "Rośliny w tym skupisku"}
+              </p>
+              <ul className="text-garden-muted mt-1 space-y-1 text-xs">
+                {selectedMarker.cropCounts.map(({ cropId, count }) => (
+                  <li key={cropId}>
+                    {cropName(cropId, cropNames)}
+                    {count > 1 ? ` · ${count} szt.` : ""}
+                  </li>
+                ))}
+              </ul>
+              {selectedMarker.position && (
+                <p className="text-garden-muted mt-1 text-xs">
+                  Pozycja: {selectedMarker.position.xCm} × {selectedMarker.position.yCm} cm
                 </p>
-                <ul className="text-garden-muted mt-1 space-y-1 text-xs">
-                  {selectedMarker.cropCounts.map(({ cropId, count }) => (
-                    <li key={cropId}>
-                      {cropName(cropId, cropNames)}
-                      {count > 1 ? ` · ${count} szt.` : ""}
-                    </li>
-                  ))}
-                </ul>
-                {selectedMarker.position && (
-                  <p className="text-garden-muted mt-1 text-xs">
-                    Pozycja: {selectedMarker.position.xCm} × {selectedMarker.position.yCm} cm
-                  </p>
-                )}
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Zamknij informacje o roślinach"
-                onClick={() => {
-                  setSelectedMarker(null);
-                }}
-                className="text-garden-muted size-7 shrink-0"
-              >
-                ×
-              </Button>
+              )}
             </div>
-            {!selectedMarker.position && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus mt-2"
-                onClick={() => {
-                  zoomAt(pixelsPerCmRef.current * 1.8, selectedMarker.anchor.x, selectedMarker.anchor.y);
-                }}
-              >
-                Powiększ to skupisko
-              </Button>
-            )}
-          </aside>
-        )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Zamknij informacje o roślinach"
+              onClick={() => {
+                setSelectedMarker(null);
+              }}
+              className="text-garden-muted size-7 shrink-0"
+            >
+              ×
+            </Button>
+          </div>
+          {!selectedMarker.position && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus mt-2"
+              onClick={() => {
+                zoomAt(pixelsPerCmRef.current * 1.8, selectedMarker.anchor.x, selectedMarker.anchor.y);
+              }}
+            >
+              Powiększ to skupisko
+            </Button>
+          )}
+        </aside>
+      )}
+    </div>
+  );
 
-        <p className="bg-garden-surface/90 text-garden-muted pointer-events-none absolute right-3 bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-xs shadow-sm">
-          Plakietka +N pokazuje wielkość skupiska · kliknij, by poznać gatunek · przeciągnij lub powiększ
+  const diagramInstructions = (
+    <p className="text-garden-muted bg-garden-surface border-app-border w-full shrink-0 rounded-lg border px-3 py-2 text-xs">
+      Plakietka +N pokazuje wielkość skupiska · kliknij, by poznać gatunek · przeciągnij lub powiększ
+    </p>
+  );
+
+  const viewerHeader = (
+    <div className="flex shrink-0 items-start justify-between gap-3">
+      <div>
+        {isExpanded && <h2 className="text-garden-foreground mb-1 font-semibold">{spaceName}</h2>}
+        <p className="text-garden-muted text-xs">
+          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
         </p>
       </div>
-    </section>
+      {isExpanded ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label="Zamknij powiększony widok skrzyni"
+          onClick={() => setIsExpanded(false)}
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0"
+        >
+          Zamknij <span aria-hidden="true">×</span>
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label="Powiększ widok skrzyni na cały ekran"
+          onClick={() => setIsExpanded(true)}
+          className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0 sm:hidden"
+        >
+          Powiększ
+        </Button>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {!isExpanded && (
+        <section aria-label={`Diagram ${spaceName}`} className="space-y-2">
+          {viewerHeader}
+          {diagramFrame}
+          {diagramInstructions}
+        </section>
+      )}
+      {isExpanded && typeof document !== "undefined" &&
+        createPortal(
+          <dialog
+            ref={dialogRef}
+            aria-label={`Powiększony diagram ${spaceName}`}
+            className="garden-diagram-dialog"
+            onCancel={(event) => {
+              event.preventDefault();
+              setIsExpanded(false);
+            }}
+          >
+            {viewerHeader}
+            {diagramFrame}
+            {diagramInstructions}
+          </dialog>,
+          document.body,
+        )}
+    </>
   );
 }
 

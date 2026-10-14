@@ -156,7 +156,7 @@ export default function GardenPlanner({
     >
       <header className="max-w-3xl space-y-3">
         <p className="text-garden-accent text-sm font-semibold tracking-widest uppercase">
-          S-04 · Automatyczne rozmieszczenie
+          Gotowy plan
         </p>
         <h2 id="garden-planner-title" className="text-garden-foreground text-2xl font-bold">
           Układ działki
