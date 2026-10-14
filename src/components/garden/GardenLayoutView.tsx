@@ -683,7 +683,7 @@ function GardenSpaceDiagramViewer({
 
         <nav
           aria-label={`Sterowanie diagramem ${spaceName}`}
-          className="border-app-border bg-garden-surface absolute top-3 right-3 z-10 flex flex-col items-center gap-1 rounded-xl border p-1.5 shadow-lg"
+          className="garden-diagram-zoom-controls border-app-border bg-garden-surface absolute top-3 right-3 z-10 flex flex-col items-center gap-1 rounded-xl border p-1.5 shadow-lg"
         >
           <span className="text-garden-muted px-1 py-1 text-xs tabular-nums" aria-live="polite">
             {Math.round((pixelsPerCm / Math.max(fitPixelsPerCm, 0.001)) * 100)}%
@@ -782,7 +782,7 @@ function GardenSpaceDiagramViewer({
           </aside>
         )}
 
-        <p className="bg-garden-surface/90 text-garden-muted pointer-events-none absolute right-20 bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-xs shadow-sm">
+        <p className="bg-garden-surface/90 text-garden-muted pointer-events-none absolute right-3 bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-xs shadow-sm">
           Plakietka +N pokazuje wielkość skupiska · kliknij, by poznać gatunek · przeciągnij lub powiększ
         </p>
       </div>

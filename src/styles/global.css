@@ -213,3 +213,9 @@
     @apply bg-app-page text-app-foreground;
   }
 }
+
+@media (max-width: 639px) and (hover: none) and (pointer: coarse) {
+  .garden-diagram-zoom-controls {
+    display: none;
+  }
+}
