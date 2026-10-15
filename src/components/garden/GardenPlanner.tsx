@@ -155,9 +155,7 @@ export default function GardenPlanner({
       data-plan-status={planState.status}
     >
       <header className="max-w-3xl space-y-3">
-        <p className="text-garden-accent text-sm font-semibold tracking-widest uppercase">
-          Gotowy plan
-        </p>
+        <p className="text-garden-accent text-sm font-semibold tracking-widest uppercase">Gotowy plan</p>
         <h2 id="garden-planner-title" className="text-garden-foreground text-2xl font-bold">
           Układ działki
         </h2>

@@ -814,7 +814,8 @@ function GardenSpaceDiagramViewer({
       <div>
         {isExpanded && <h2 className="text-garden-foreground mb-1 font-semibold">{spaceName}</h2>}
         <p className="text-garden-muted text-xs">
-          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji rośliny.
+          Siatka co {projection.gridStepCm} cm · współrzędne w centymetrach · środek znacznika odpowiada pozycji
+          rośliny.
         </p>
       </div>
       {isExpanded ? (
@@ -823,7 +824,9 @@ function GardenSpaceDiagramViewer({
           variant="outline"
           size="sm"
           aria-label="Zamknij powiększony widok skrzyni"
-          onClick={() => setIsExpanded(false)}
+          onClick={() => {
+            setIsExpanded(false);
+          }}
           className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0"
         >
           Zamknij <span aria-hidden="true">×</span>
@@ -834,7 +837,9 @@ function GardenSpaceDiagramViewer({
           variant="outline"
           size="sm"
           aria-label="Powiększ widok skrzyni na cały ekran"
-          onClick={() => setIsExpanded(true)}
+          onClick={() => {
+            setIsExpanded(true);
+          }}
           className="border-app-border bg-garden-surface text-garden-foreground hover:bg-app-page focus-visible:ring-garden-focus shrink-0 sm:hidden"
         >
           Powiększ
@@ -852,7 +857,8 @@ function GardenSpaceDiagramViewer({
           {diagramInstructions}
         </section>
       )}
-      {isExpanded && typeof document !== "undefined" &&
+      {isExpanded &&
+        typeof document !== "undefined" &&
         createPortal(
           <dialog
             ref={dialogRef}

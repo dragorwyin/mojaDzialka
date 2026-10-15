@@ -22,10 +22,7 @@ const { user } = Astro.locals;
       >
         <UserRound aria-hidden="true" className="text-app-accent-strong size-4" />
         <span class="font-medium">Konto</span>
-        <ChevronDown
-          aria-hidden="true"
-          className="text-app-muted size-4 transition-transform group-open:rotate-180"
-        />
+        <ChevronDown aria-hidden="true" className="text-app-muted size-4 transition-transform group-open:rotate-180" />
       </summary>
       <div class="border-app-border bg-app-surface absolute top-full right-0 z-30 mt-2 w-64 rounded-2xl border p-3 shadow-lg">
         <p class="text-app-foreground px-2 py-2 text-sm leading-relaxed break-all" title={user.email}>
